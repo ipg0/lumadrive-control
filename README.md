@@ -1,6 +1,6 @@
-# app
+# Lumadrive Control
 
-A new Flutter project.
+Lumadrive Control is the control app for Lumadrive.
 
 ## Getting Started
 

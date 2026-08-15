@@ -5,18 +5,18 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "app",
+      "name": "Lumadrive Control",
       "request": "launch",
       "type": "dart"
     },
     {
-      "name": "app (profile mode)",
+      "name": "Lumadrive Control (profile mode)",
       "request": "launch",
       "type": "dart",
       "flutterMode": "profile"
     },
     {
-      "name": "app (release mode)",
+      "name": "Lumadrive Control (release mode)",
       "request": "launch",
       "type": "dart",
       "flutterMode": "release"
