@@ -188,12 +188,15 @@ class BleController extends Notifier<BleState> {
 
   void _handleConnectionState(BleConnectionState connectionState) {
     debugPrint('Connection state changed: $connectionState');
-    debugPrint('Current state: {$state.device}');
+    debugPrint('Current state: $state');
 
     if (state.device == null) return;
 
     if (_isDisconnecting &&
         connectionState == BleConnectionState.disconnected) {
+      debugPrint(
+        'isDisconnecting is true and connectionState is disconnected, ignoring',
+      );
       return;
     }
 
@@ -201,6 +204,8 @@ class BleController extends Notifier<BleState> {
       _deviceConnected();
     } else if (connectionState == BleConnectionState.disconnected) {
       if (state is BleConnecting) return;
+
+      debugPrint('Disconnected from device: ${state.device!.remoteId}');
 
       state = const BleError(
         'Disconnected from device',

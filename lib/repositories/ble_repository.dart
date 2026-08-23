@@ -137,28 +137,55 @@ class BleRepository {
         .toList(growable: false);
   }
 
-  Future<MeshInteropState> getDeviceMeshStatus(BleService service) async {
-    final meshStatusCharacteristic = service._service.characteristics
-        .firstWhere(
-          (characteristic) =>
-              characteristic.uuid == meshStatusCharacteristicUuid,
-          orElse: () => throw Exception('Mesh status characteristic not found'),
-        );
-
-    final buffer = await meshStatusCharacteristic.read(timeout: 15);
-
-    debugPrint(
-      'Characteristic properties: ${meshStatusCharacteristic.properties}',
+  BluetoothCharacteristic _getCharacteristic(
+    BleService service,
+    Guid characteristicUuid,
+  ) {
+    return service._service.characteristics.firstWhere(
+      (characteristic) => characteristic.uuid == characteristicUuid,
+      orElse: () => throw Exception(
+        'Characteristic $characteristicUuid not found in service ${service.uuid}',
+      ),
     );
-    debugPrint('Raw buffer: $buffer');
+  }
 
-    if (buffer.isEmpty) {
-      throw Exception(
-        'Mesh status payload is empty. Read path worked, but device returned no data.',
+  Future<MeshInteropState> getDeviceMeshStatus(BleService service) async {
+    try {
+      final meshStatusCharacteristic = _getCharacteristic(
+        service,
+        meshStatusCharacteristicUuid,
       );
-    }
 
-    return MeshInteropState.fromBuffer(buffer)..freeze();
+      final buffer = await meshStatusCharacteristic.read(timeout: 15);
+
+      if (buffer.isEmpty) {
+        throw Exception(
+          'Mesh status payload is empty. Read path worked, but device returned no data.',
+        );
+      }
+
+      return MeshInteropState.fromBuffer(buffer)..freeze();
+    } catch (e) {
+      debugPrint('Failed to read mesh status: $e');
+      throw Exception('Failed to get mesh status');
+    }
+  }
+
+  Stream<MeshInteropState> subscribeToMeshStatus(BleService service) {
+    try {
+      final meshStatusCharacteristic = _getCharacteristic(
+        service,
+        meshStatusCharacteristicUuid,
+      );
+
+      meshStatusCharacteristic.setNotifyValue(true);
+      return meshStatusCharacteristic.lastValueStream.map(
+        (bytes) => MeshInteropState.fromBuffer(bytes),
+      );
+    } catch (e) {
+      debugPrint('Failed to subscribe to mesh status: $e');
+      throw Exception('Failed to subscribe to mesh status');
+    }
   }
 }
 

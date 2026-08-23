@@ -14,12 +14,6 @@ class DeviceSelectPage extends ConsumerWidget {
     final devicesEmpty =
         !devicesAsync.isLoading && (devicesAsync.value?.isEmpty ?? true);
 
-    debugPrint(
-      "Devices: ${devicesAsync.value?.map((d) => [d.advName, d.remoteId]).toList()}",
-    );
-    debugPrint("Devices: ${devicesAsync.value?.length ?? 0}");
-    debugPrint("Devices empty: $devicesEmpty");
-
     return Scaffold(
       appBar: AppBar(title: Text('Select controller')),
       floatingActionButton: FloatingActionButton(

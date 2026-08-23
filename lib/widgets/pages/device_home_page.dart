@@ -1,61 +1,234 @@
+import 'dart:async';
+
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:lumadrive_control/utils/stringify_mac.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lumadrive_control/controllers/ble_controller.dart';
+import 'package:lumadrive_control/controllers/mesh_controller.dart';
+import 'package:relative_time/relative_time.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
-class DeviceHomePage extends ConsumerWidget {
+class DeviceHomePage extends ConsumerStatefulWidget {
   const DeviceHomePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final bleState = ref.watch(bleControllerProvider);
+  ConsumerState<DeviceHomePage> createState() => _DeviceHomePageState();
+}
 
-    ref.listen<BleState>(bleControllerProvider, (previous, next) {
-      if (next is BleIdle) {
-        context.go('/');
-        return;
-      }
+class _DeviceHomePageState extends ConsumerState<DeviceHomePage> {
+  Timer? _relativeTimeRefreshTimer;
 
-      if (next is! BleConnected) {
-        debugPrint(
-          'Device disconnected, showing snackbar ${next.runtimeType} ${(next as BleError).message}',
-        );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'Lost connection to device',
-              style: TextStyle(color: Theme.of(context).colorScheme.onError),
-            ),
-            action: SnackBarAction(
-              label: 'To controller list',
-              textColor: Theme.of(context).colorScheme.onError,
-              onPressed: () {
-                context.go('/');
-              },
-            ),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
+  @override
+  void initState() {
+    super.initState();
+    _relativeTimeRefreshTimer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (!mounted) return;
+      debugPrint('Refreshing relative time display');
+      setState(() {});
     });
+  }
+
+  @override
+  void dispose() {
+    _relativeTimeRefreshTimer?.cancel();
+    super.dispose();
+  }
+
+  Widget _buildLoadingSkeleton() {
+    return Skeletonizer(
+      enabled: true,
+      child: ListView.builder(
+        key: const ValueKey('mesh-loading'),
+        itemCount: 6,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: ElevatedButton(
+              onPressed: null,
+              style: ElevatedButton.styleFrom(padding: EdgeInsets.zero),
+              child: const ListTile(
+                title: Text('AA:AA:AA:AA:AA:AA'),
+                subtitle: Text('Online 1 minute ago'),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildMasterMeshListNode(
+    BuildContext context,
+    WidgetRef ref,
+    MeshState mesh,
+  ) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(padding: EdgeInsets.zero),
+        child: ListTile(
+          title: Text(mesh.masterDevice.advName),
+          subtitle: Text("Master"),
+          leading: Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: const Icon(
+              Icons.circle,
+              color: Colors.greenAccent,
+              size: 12,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSlaveMeshListNode(
+    BuildContext context,
+    WidgetRef ref,
+    MeshState mesh,
+    int index,
+  ) {
+    final node = mesh.interopState.nodes[index];
+    final nodeOnline = ref
+        .read(meshControllerProvider.notifier)
+        .getNodeOnlineStatus(node);
+    final lastSyncedAt = ref
+        .read(meshControllerProvider.notifier)
+        .getNodeLastSyncedAt(node);
+    final lastSyncedRelative = lastSyncedAt?.relativeTime(context);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: ElevatedButton(
+        onPressed: () {},
+        style: ElevatedButton.styleFrom(padding: EdgeInsets.zero),
+        child: ListTile(
+          leading: Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: nodeOnline
+                ? const Icon(Icons.circle, color: Colors.greenAccent, size: 12)
+                : const Icon(Icons.circle, color: Colors.redAccent, size: 12),
+          ),
+          title: Text('Slave ${macBytesToString(node.mac)}'),
+          subtitle: Text(
+            '${nodeOnline ? 'Online' : 'Offline'} (synced $lastSyncedRelative)',
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMeshList(BuildContext context, WidgetRef ref, MeshState mesh) {
+    return Column(
+      children: [
+        ListView.builder(
+          key: const ValueKey('mesh-list'),
+          itemCount: mesh.interopState.nodes.length + 1,
+          shrinkWrap: true,
+          itemBuilder: (context, index) {
+            if (index == 0) {
+              return _buildMasterMeshListNode(context, ref, mesh);
+            } else {
+              return _buildSlaveMeshListNode(context, ref, mesh, index - 1);
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context, WidgetRef ref, Object error) {
+    return Column(
+      key: const ValueKey('mesh-error'),
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      spacing: 16,
+      children: [
+        Text(
+          'Lost connection to device',
+          style: Theme.of(context).textTheme.headlineSmall,
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(
+          width: 200,
+          height: 200,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              SizedBox(
+                width: 130,
+                height: 130,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.link_off,
+                size: 48,
+                color: Theme.of(context).colorScheme.onError,
+              ),
+            ],
+          ),
+        ),
+        Text(
+          error.toString(),
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        ElevatedButton.icon(
+          onPressed: () {
+            ref.read(bleControllerProvider.notifier).disconnect();
+            context.go('/');
+          },
+          icon: const Icon(Icons.arrow_back),
+          label: const Text('Back to controller list'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMeshContent(BuildContext context, WidgetRef ref) {
+    final meshState = ref.watch(meshControllerProvider);
+
+    if (meshState.isLoading) {
+      return _buildLoadingSkeleton();
+    }
+
+    return PageTransitionSwitcher(
+      duration: 300.milliseconds,
+      transitionBuilder: (child, primaryAnimation, secondaryAnimation) {
+        return SharedAxisTransition(
+          animation: primaryAnimation,
+          secondaryAnimation: secondaryAnimation,
+          transitionType: SharedAxisTransitionType.horizontal,
+          child: child,
+        );
+      },
+      child: meshState.when(
+        data: (mesh) => _buildMeshList(context, ref, mesh),
+        error: (error, stackTrace) => _buildErrorState(context, ref, error),
+        loading: _buildLoadingSkeleton,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bleState = ref.watch(bleControllerProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(bleState.deviceName ?? 'Unknown Device')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('ID: ${bleState.device?.remoteId ?? 'Unknown'}'),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () async {
-                await ref.read(bleControllerProvider.notifier).disconnect();
-              },
-              icon: const Icon(Icons.bluetooth_disabled),
-              label: const Text('Disconnect'),
-            ),
-          ],
-        ),
+      body: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Center(child: _buildMeshContent(context, ref)),
       ),
     );
   }
