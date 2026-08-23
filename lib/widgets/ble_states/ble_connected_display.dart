@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'dart:async';
 
-import 'package:lumadrive_control/providers/ble_controller.dart';
+import 'package:lumadrive_control/controllers/ble_controller.dart';
 
 class BleConnectedDisplay extends ConsumerStatefulWidget {
   const BleConnectedDisplay({super.key, required this.state});

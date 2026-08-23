@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lumadrive_control/providers/ble_controller.dart';
+import 'package:lumadrive_control/controllers/ble_controller.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class BleErrorDisplay extends ConsumerWidget {

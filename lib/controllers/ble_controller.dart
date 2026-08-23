@@ -1,20 +1,19 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumadrive_control/data/database.dart';
-import 'package:lumadrive_control/providers/database_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:lumadrive_control/repositories/ble_repository.dart';
+import 'package:lumadrive_control/repositories/database_repository.dart';
 
 sealed class BleState {
   const BleState();
 
-  BluetoothDevice? get device => null;
+  BleDevice? get device => null;
   SavedDevice? get savedDevice => null;
+  BleService? get lumadriveService => null;
 
   String? get deviceName => savedDevice?.advName ?? device?.advName;
 }
@@ -24,17 +23,17 @@ class BleIdle extends BleState {
 }
 
 class BleScanning extends BleState {
-  final Set<BluetoothDevice> foundDevices;
+  final Set<BleDevice> foundDevices;
 
   const BleScanning(this.foundDevices);
 }
 
 class BleConnecting extends BleState {
-  final BluetoothDevice _device;
+  final BleDevice _device;
   final SavedDevice? _savedDevice;
 
   @override
-  BluetoothDevice get device => _device;
+  BleDevice get device => _device;
 
   @override
   SavedDevice? get savedDevice => _savedDevice;
@@ -43,16 +42,20 @@ class BleConnecting extends BleState {
 }
 
 class BleConnected extends BleState {
-  final BluetoothDevice _device;
+  final BleDevice _device;
   final SavedDevice? _savedDevice;
+  final BleService? _lumadriveService;
 
   @override
-  BluetoothDevice get device => _device;
+  BleDevice get device => _device;
 
   @override
   SavedDevice? get savedDevice => _savedDevice;
 
-  const BleConnected(this._device, {this._savedDevice});
+  @override
+  BleService? get lumadriveService => _lumadriveService;
+
+  const BleConnected(this._device, {this._savedDevice, this._lumadriveService});
 }
 
 class BleError extends BleState {
@@ -63,47 +66,38 @@ class BleError extends BleState {
 }
 
 class BleController extends Notifier<BleState> {
-  StreamSubscription<List<ScanResult>>? _scanSub;
-  StreamSubscription<BluetoothAdapterState>? _adapterSub;
-  StreamSubscription<BluetoothConnectionState>? _connectionSub;
-  bool _isDisconnecting = false;
+  BleRepository get _repository => ref.read(bleRepositoryProvider);
+  DatabaseRepository get _database => ref.read(databaseRepositoryProvider);
 
-  final Guid _lumadrivePrimaryServiceUuid = Guid(
-    '7160c543-73ce-b1ad-484b-c14232943214',
-  );
+  StreamSubscription<List<BleScanResult>>? _scanSub;
+  StreamSubscription<BleAdapterState>? _adapterSub;
+  StreamSubscription<BleConnectionState>? _connectionSub;
+  bool _isDisconnecting = false;
 
   @override
   BleState build() {
-    _adapterSub = FlutterBluePlus.adapterState.listen(_handleAdapterState);
+    _adapterSub = _repository.adapterState.listen(_handleAdapterState);
 
     ref.onDispose(() {
       _scanSub?.cancel();
       _adapterSub?.cancel();
       _connectionSub?.cancel();
-      FlutterBluePlus.stopScan();
+      unawaited(_repository.stopScan());
     });
 
     return const BleIdle();
   }
 
-  Future<bool> _requestPermissions() async {
-    final statuses = await [
-      Permission.bluetoothScan,
-      Permission.bluetoothConnect,
-    ].request();
-    return statuses.values.every((s) => s.isGranted);
-  }
-
-  void _handleAdapterState(BluetoothAdapterState adapterState) {
-    if (adapterState == BluetoothAdapterState.on) return;
+  void _handleAdapterState(BleAdapterState adapterState) {
+    if (adapterState == BleAdapterState.on) return;
 
     switch (state) {
       case BleScanning():
         _scanSub?.cancel();
-        FlutterBluePlus.stopScan();
+        unawaited(_repository.stopScan());
         state = const BleError(
-          "Bluetooth was turned off",
-          details: "Please turn on Bluetooth in Settings",
+          'Bluetooth was turned off',
+          details: 'Please turn on Bluetooth in Settings',
         );
 
       case BleConnecting():
@@ -119,21 +113,23 @@ class BleController extends Notifier<BleState> {
     }
   }
 
-  Future<void> connectToDevice(
-    BluetoothDevice device, {
+  Future<void> connectDevice(
+    BleDevice device, {
     SavedDevice? savedDevice,
   }) async {
     _scanSub?.cancel();
-    await FlutterBluePlus.stopScan();
+    await _repository.stopScan();
 
     state = BleConnecting(device, savedDevice: savedDevice);
 
-    _connectionSub = device.connectionState.listen(_handleConnectionState);
+    _connectionSub = _repository
+        .connectionState(device)
+        .listen(_handleConnectionState);
 
     try {
-      await device.connect(license: .nonprofit, timeout: 10.seconds);
+      await _repository.connect(device, timeout: 10.seconds);
     } catch (e) {
-      state = BleError(
+      state = const BleError(
         'Failed to connect to device',
         details: 'Try restarting the controller and make sure it is in range and powered on',
       );
@@ -143,11 +139,14 @@ class BleController extends Notifier<BleState> {
 
   Future<void> connectToSavedDevice(SavedDevice device) async {
     try {
-      final bluetoothDevice = BluetoothDevice.fromId(device.remoteId);
+      final knownDevice = _repository.deviceFromId(
+        device.remoteId,
+        advName: device.advName,
+      );
 
-      await connectToDevice(bluetoothDevice, savedDevice: device);
+      await connectDevice(knownDevice, savedDevice: device);
     } catch (e) {
-      state = BleError(
+      state = const BleError(
         'Failed to connect to saved device',
         details: 'Check that the device is powered on and in range',
       );
@@ -163,7 +162,7 @@ class BleController extends Notifier<BleState> {
         await disconnect();
       }
 
-      await ref.read(databaseProvider).deleteDevice(remoteId);
+      await _database.deleteDevice(remoteId);
     } catch (e) {
       debugPrint('Failed to delete saved device: $e');
     }
@@ -176,10 +175,9 @@ class BleController extends Notifier<BleState> {
     }
 
     try {
-      // for some reason, awaiting the cancel doesn't prevent the callback from firing
       _isDisconnecting = true;
       await _connectionSub?.cancel();
-      await state.device!.disconnect();
+      await _repository.disconnect(state.device!);
       state = const BleIdle();
     } catch (e) {
       debugPrint('Failed to disconnect from device: $e');
@@ -188,23 +186,20 @@ class BleController extends Notifier<BleState> {
     }
   }
 
-  void _handleConnectionState(BluetoothConnectionState connectionState) {
-    // can't handle connection state if we're not in a state with a selected device
+  void _handleConnectionState(BleConnectionState connectionState) {
     debugPrint('Connection state changed: $connectionState');
-
     debugPrint('Current state: {$state.device}');
 
     if (state.device == null) return;
 
     if (_isDisconnecting &&
-        connectionState == BluetoothConnectionState.disconnected) {
+        connectionState == BleConnectionState.disconnected) {
       return;
     }
 
-    if (connectionState == BluetoothConnectionState.connected) {
+    if (connectionState == BleConnectionState.connected) {
       _deviceConnected();
-    } else if (connectionState == BluetoothConnectionState.disconnected) {
-      // don't display an error page when we just started connecting
+    } else if (connectionState == BleConnectionState.disconnected) {
       if (state is BleConnecting) return;
 
       state = const BleError(
@@ -220,26 +215,42 @@ class BleController extends Notifier<BleState> {
       return;
     }
 
+    try {
+      await _database.upsertDevice(
+        remoteId: state.device!.remoteId.toString(),
+        advName: state.deviceName!,
+        lastConnected: DateTime.now(),
+      );
+    } catch (e) {
+      debugPrint('Failed to save device: $e');
+    }
+
     state = BleConnected(state.device!, savedDevice: state.savedDevice);
 
     try {
-      await ref
-          .read(databaseProvider)
-          .upsertDevice(
-            SavedDevicesCompanion(
-              remoteId: Value(state.device!.remoteId.toString()),
-              advName: Value(state.deviceName!),
-              lastConnected: Value(DateTime.now()),
-            ),
-          );
+      final deviceServices = await _repository.discoverServices(state.device!);
+
+      final relevantService = deviceServices.firstWhere(
+        (service) => service.uuid == _repository.lumadriveServiceUuid,
+        orElse: () => throw Exception('Lumadrive service not found'),
+      );
+
+      debugPrint('Relevant service discovered: ${relevantService.uuid}');
+
+      state = BleConnected(
+        state.device!,
+        savedDevice: state.savedDevice,
+        lumadriveService: relevantService,
+      );
     } catch (e) {
-      debugPrint('Failed to save device: $e');
+      debugPrint('Failed to discover services: $e');
+      unawaited(disconnect());
     }
   }
 
   Future<void> startScan() async {
     try {
-      final granted = await _requestPermissions();
+      final granted = await _repository.requestPermissions();
       if (!granted) {
         state = const BleError(
           'Bluetooth permissions denied',
@@ -248,11 +259,11 @@ class BleController extends Notifier<BleState> {
         return;
       }
 
-      final adapterState = await FlutterBluePlus.adapterState.first;
-      if (adapterState != BluetoothAdapterState.on) {
+      final adapterState = await _repository.adapterState.first;
+      if (adapterState != BleAdapterState.on) {
         if (Platform.isAndroid) {
           try {
-            await FlutterBluePlus.turnOn();
+            await _repository.turnOnBluetooth();
           } catch (e) {
             state = const BleError(
               'Bluetooth is off',
@@ -260,11 +271,9 @@ class BleController extends Notifier<BleState> {
             );
             return;
           }
-          final nowOn = await FlutterBluePlus.adapterState
-              .where((s) => s == BluetoothAdapterState.on)
-              .first
-              .timeout(10.seconds, onTimeout: () => BluetoothAdapterState.off);
-          if (nowOn != BluetoothAdapterState.on) {
+
+          final nowOn = await _repository.waitForAdapterOn();
+          if (nowOn != BleAdapterState.on) {
             state = const BleError(
               'Bluetooth is off',
               details: 'Please turn on Bluetooth in Settings',
@@ -280,24 +289,14 @@ class BleController extends Notifier<BleState> {
         }
       }
 
-      state = BleScanning({});
+      await _repository.startScan();
 
-      FlutterBluePlus.startScan();
-
-      _scanSub = FlutterBluePlus.onScanResults.listen((results) {
-        state = BleScanning(
-          results
-              .where(
-                (result) => result.advertisementData.serviceUuids.any(
-                  (serviceUuid) => serviceUuid == _lumadrivePrimaryServiceUuid,
-                ),
-              )
-              .map((result) => result.device)
-              .toSet(),
-        );
+      _scanSub = _repository.onScanResults.listen((results) {
+        debugPrint('Scan results: ${results.map((e) => e.device.advName)}');
+        state = BleScanning(results.map((result) => result.device).toSet());
       });
     } catch (e) {
-      state = BleError(
+      state = const BleError(
         'Failed to start scanning',
         details: 'Check that Bluetooth is enabled and that the app has permission to scan for Bluetooth devices',
       );
@@ -308,11 +307,11 @@ class BleController extends Notifier<BleState> {
   Future<void> reset() async {
     _scanSub?.cancel();
     _connectionSub?.cancel();
-    FlutterBluePlus.stopScan();
+    unawaited(_repository.stopScan());
 
     if (state.device != null) {
       try {
-        await state.device!.disconnect();
+        await _repository.disconnect(state.device!);
       } catch (e) {
         // ignore
       }

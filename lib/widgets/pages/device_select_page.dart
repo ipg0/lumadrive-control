@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lumadrive_control/providers/ble_controller.dart';
-import 'package:lumadrive_control/providers/database_provider.dart';
+import 'package:lumadrive_control/controllers/ble_controller.dart';
+import 'package:lumadrive_control/providers/saved_devices_provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class DeviceSelectPage extends ConsumerWidget {

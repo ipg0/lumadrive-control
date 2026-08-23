@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lumadrive_control/providers/ble_controller.dart';
+import 'package:lumadrive_control/controllers/ble_controller.dart';
 import 'package:pulsator/pulsator.dart';
 
 class BleScanningDisplay extends ConsumerWidget {
@@ -62,7 +62,7 @@ class BleScanningDisplay extends ConsumerWidget {
                   onPressed: () {
                     ref
                         .read(bleControllerProvider.notifier)
-                        .connectToDevice(device);
+                        .connectDevice(device);
                   },
                 ),
               );

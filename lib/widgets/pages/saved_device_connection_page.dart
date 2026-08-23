@@ -4,7 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumadrive_control/widgets/ble_states/ble_connected_display.dart';
-import 'package:lumadrive_control/providers/ble_controller.dart';
+import 'package:lumadrive_control/controllers/ble_controller.dart';
 import 'package:lumadrive_control/widgets/ble_states/ble_connecting_display.dart';
 import 'package:lumadrive_control/widgets/ble_states/ble_error_display.dart';
 
