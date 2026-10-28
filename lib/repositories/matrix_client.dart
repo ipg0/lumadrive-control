@@ -107,7 +107,7 @@ class MatrixClient {
 
   Stream<MatrixUploadProgress> upload(MatrixConfig config) async* {
     if (_uploading) throw MatrixUploadException('An upload is already in progress');
-    if (config.schemaVersion != 1) {
+    if (config.schemaVersion != 2) {
       throw MatrixUploadException('Unsupported matrix schema version');
     }
     final bytes = config.writeToBuffer();

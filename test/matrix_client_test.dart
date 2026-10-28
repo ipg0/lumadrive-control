@@ -62,16 +62,17 @@ class FakeTransport implements MatrixTransport {
 }
 
 MatrixConfig config() => MatrixConfig(
-  schemaVersion: 1,
+  schemaVersion: 2,
   effects: [MatrixEffect(id: 1, kind: MatrixEffect_Kind.STATIC_COLOR,
     red: 255, alpha: 255)],
   sources: [MatrixSource(id: 2, kind: MatrixSource_Kind.DEFAULT_STATE)],
   conditions: [MatrixCondition(id: 3, kind: MatrixCondition_Kind.ALWAYS)],
   entries: List.generate(32, (i) => MatrixEntry(
     id: i + 1, effectId: 1, sourceId: 2, conditionId: 3, priority: i,
-    targets: List.generate(17, (j) => MatrixTarget(
-      nodeMac: [2 + j * 2, 1, 2, 3, 4, 5], driver: MatrixDriver.WS2812,
-    )),
+  )),
+  layout: List.generate(17, (j) => MatrixLayout(
+    nodeMac: [2 + j * 2, 1, 2, 3, 4, 5], driver: MatrixDriver.WS2812,
+    from: j * 60, to: (j + 1) * 60,
   )),
 );
 
@@ -102,6 +103,64 @@ void main() {
       throwsA(isA<MatrixUploadException>().having(
         (e) => e.status?.error, 'status error', 'Target node is not paired')));
     expect(transport.frames.last.hasAbort(), isTrue);
+  });
+  test('uploads addressed keyframes and parametric animation settings', () async {
+    final transport = FakeTransport(23);
+    addTearDown(transport.notifications.close);
+    final input = config();
+    input.effects
+      ..clear()
+      ..addAll([
+        MatrixEffect(id: 1, kind: MatrixEffect_Kind.KEYFRAMES, loop: true, keyframes: [
+          MatrixKeyframe(timeMs: 0, trackId: 1, position: 3, width: 2, wrap: true,
+            red: 255, alpha: 255, interpolation: MatrixInterpolation.SMOOTH),
+          MatrixKeyframe(timeMs: 1000, trackId: 1, position: 63, width: 0, wrap: true, blue: 255, alpha: 128),
+          MatrixKeyframe(timeMs: 0, trackId: 2, position: 8.5, green: 255, alpha: 255),
+          MatrixKeyframe(timeMs: 1000, trackId: 2, position: -1, red: 255, alpha: 255),
+        ]),
+        MatrixEffect(id: 2, kind: MatrixEffect_Kind.BLINK,
+          red: 255, alpha: 255, periodMs: 500, dutyPercent: 25),
+        MatrixEffect(id: 3, kind: MatrixEffect_Kind.BREATHE,
+          green: 255, alpha: 255, periodMs: 2000),
+        MatrixEffect(id: 4, kind: MatrixEffect_Kind.FLOWING_GRADIENT,
+          red: 255, alpha: 255, periodMs: 3000, wavelengthPixels: 10, reverse: true,
+          secondaryColor: MatrixColor(blue: 255, alpha: 255)),
+      ]);
+    await MatrixClient(transport).upload(input).toList();
+    final effects = MatrixConfig.fromBuffer(transport.received).effects;
+    expect(transport.received, input.writeToBuffer());
+    expect(effects[0].keyframes.first.trackId, 1);
+    expect(effects[0].keyframes.first.position, 3);
+    expect(effects[0].keyframes.first.width, 2);
+    expect(effects[0].keyframes[1].hasWidth(), isTrue);
+    expect(effects[0].keyframes[1].width, 0);
+    expect(effects[0].keyframes.first.wrap, isTrue);
+    expect(effects[0].keyframes.first.interpolation, MatrixInterpolation.SMOOTH);
+    expect(effects[0].keyframes.first.allPixels, isFalse);
+    expect(effects[1].dutyPercent, 25);
+    expect(effects[2].periodMs, 2000);
+    expect(effects[3].secondaryColor.blue, 255);
+    expect(effects[3].reverse, isTrue);
+  });
+  test('uploads one car layout with reversed and overlapping outputs', () async {
+    final transport = FakeTransport(23);
+    addTearDown(transport.notifications.close);
+    final input = config();
+    input.layout
+      ..clear()
+      ..addAll([
+        MatrixLayout(nodeMac: [2, 1, 2, 3, 4, 5], driver: MatrixDriver.WS2812, from: 0, to: 60),
+        MatrixLayout(nodeMac: [4, 1, 2, 3, 4, 5], driver: MatrixDriver.HC595, from: 12, to: 10),
+      ]);
+    await MatrixClient(transport).upload(input).toList();
+    final received = MatrixConfig.fromBuffer(transport.received);
+    expect(received.schemaVersion, 2);
+    expect(received.layout.length, 2);
+    expect(received.layout[0].to, 60);
+    expect(received.layout[1].from, 12);
+    expect(received.layout[1].to, 10);
+    expect(received.entries.length, 32);
+    expect(transport.received, input.writeToBuffer());
   });
   test('uploads a slave GPIO source without changing its identity or edge', () async {
     final transport = FakeTransport(23);
@@ -138,7 +197,7 @@ void main() {
   test('invalid version is rejected before BLE writes', () async {
     final transport = FakeTransport(23);
     addTearDown(transport.notifications.close);
-    await expectLater(MatrixClient(transport).upload(MatrixConfig(schemaVersion: 2)).toList(),
+    await expectLater(MatrixClient(transport).upload(MatrixConfig(schemaVersion: 1)).toList(),
       throwsA(isA<MatrixUploadException>()));
     expect(transport.frames, isEmpty);
   });

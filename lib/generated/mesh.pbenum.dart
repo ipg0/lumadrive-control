@@ -37,19 +37,53 @@ class MatrixDriver extends $pb.ProtobufEnum {
   const MatrixDriver._(super.value, super.name);
 }
 
+class MatrixInterpolation extends $pb.ProtobufEnum {
+  static const MatrixInterpolation LINEAR =
+      MatrixInterpolation._(0, _omitEnumNames ? '' : 'LINEAR');
+  static const MatrixInterpolation STEP =
+      MatrixInterpolation._(1, _omitEnumNames ? '' : 'STEP');
+  static const MatrixInterpolation SMOOTH =
+      MatrixInterpolation._(2, _omitEnumNames ? '' : 'SMOOTH');
+
+  static const $core.List<MatrixInterpolation> values = <MatrixInterpolation>[
+    LINEAR,
+    STEP,
+    SMOOTH,
+  ];
+
+  static final $core.List<MatrixInterpolation?> _byValue =
+      $pb.ProtobufEnum.$_initByValueList(values, 2);
+  static MatrixInterpolation? valueOf($core.int value) =>
+      value < 0 || value >= _byValue.length ? null : _byValue[value];
+
+  const MatrixInterpolation._(super.value, super.name);
+}
+
 class MatrixEffect_Kind extends $pb.ProtobufEnum {
   static const MatrixEffect_Kind EFFECT_UNSPECIFIED =
       MatrixEffect_Kind._(0, _omitEnumNames ? '' : 'EFFECT_UNSPECIFIED');
   static const MatrixEffect_Kind STATIC_COLOR =
       MatrixEffect_Kind._(1, _omitEnumNames ? '' : 'STATIC_COLOR');
+  static const MatrixEffect_Kind KEYFRAMES =
+      MatrixEffect_Kind._(2, _omitEnumNames ? '' : 'KEYFRAMES');
+  static const MatrixEffect_Kind BLINK =
+      MatrixEffect_Kind._(3, _omitEnumNames ? '' : 'BLINK');
+  static const MatrixEffect_Kind BREATHE =
+      MatrixEffect_Kind._(4, _omitEnumNames ? '' : 'BREATHE');
+  static const MatrixEffect_Kind FLOWING_GRADIENT =
+      MatrixEffect_Kind._(5, _omitEnumNames ? '' : 'FLOWING_GRADIENT');
 
   static const $core.List<MatrixEffect_Kind> values = <MatrixEffect_Kind>[
     EFFECT_UNSPECIFIED,
     STATIC_COLOR,
+    KEYFRAMES,
+    BLINK,
+    BREATHE,
+    FLOWING_GRADIENT,
   ];
 
   static final $core.List<MatrixEffect_Kind?> _byValue =
-      $pb.ProtobufEnum.$_initByValueList(values, 1);
+      $pb.ProtobufEnum.$_initByValueList(values, 5);
   static MatrixEffect_Kind? valueOf($core.int value) =>
       value < 0 || value >= _byValue.length ? null : _byValue[value];
 
