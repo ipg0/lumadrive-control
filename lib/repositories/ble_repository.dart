@@ -7,6 +7,26 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumadrive_control/generated/mesh.pb.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:lumadrive_control/repositories/matrix_client.dart';
+
+class _BleMatrixTransport implements MatrixTransport {
+  final BluetoothCharacteristic upload;
+  final BluetoothCharacteristic status;
+  _BleMatrixTransport(this.upload, this.status);
+  @override
+  int get mtu => upload.device.mtuNow;
+  @override
+  Future<void> write(List<int> bytes) => upload.write(bytes, withoutResponse: false);
+  @override
+  Future<List<int>> readStatus() => status.read();
+  @override
+  Stream<List<int>> get invalidations async* {
+    await status.setNotifyValue(true);
+    // Reads share this plugin stream with notifications. Only the one-byte
+    // invalidation notifications should request another read.
+    yield* status.onValueReceived.where((bytes) => bytes.length == 1 && bytes[0] == 1);
+  }
+}
 
 class BleDevice {
   final String remoteId;
@@ -41,6 +61,10 @@ class BleService {
 }
 
 class BleRepository {
+  MatrixClient matrixClient(BleService service) => MatrixClient(_BleMatrixTransport(
+    _getCharacteristic(service, Guid('294b8b2e-57d2-bf85-dc41-5c612c9d1539')),
+    _getCharacteristic(service, Guid('294b8b2f-57d2-bf85-dc41-5c612c9d1539')),
+  ));
   final String lumadriveServiceUuid = '7160c543-73ce-b1ad-484b-c14232943214';
 
   final Guid meshStatusCharacteristicUuid = Guid(

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumadrive_control/controllers/ble_controller.dart';
 import 'package:lumadrive_control/generated/mesh.pb.dart';
 import 'package:lumadrive_control/repositories/ble_repository.dart';
+import 'package:lumadrive_control/repositories/matrix_client.dart';
 
 class MeshState {
   final MeshInteropState interopState;
@@ -16,6 +17,22 @@ class MeshState {
 }
 
 class MeshController extends AsyncNotifier<MeshState> {
+  MatrixClient? _matrixClient;
+  Stream<MatrixUploadProgress> uploadMatrixConfig(MatrixConfig config) {
+    final client = _matrixClient;
+    if (client == null) throw StateError('No connected master');
+    return client.upload(config);
+  }
+  Future<MatrixStatus> getMatrixStatus() {
+    final client = _matrixClient;
+    if (client == null) throw StateError('No connected master');
+    return client.getStatus();
+  }
+  Stream<MatrixStatus> watchMatrixStatus() {
+    final client = _matrixClient;
+    if (client == null) throw StateError('No connected master');
+    return client.watchStatus();
+  }
   BleRepository get _bleRepository => ref.read(bleRepositoryProvider);
   StreamSubscription<MeshInteropState>? _meshStatusSub;
 
@@ -25,6 +42,7 @@ class MeshController extends AsyncNotifier<MeshState> {
 
     switch (connectionState) {
       case BleConnected connected:
+        _matrixClient = _bleRepository.matrixClient(connected.lumadriveService!);
         final initialStatus = await _bleRepository.getDeviceMeshStatus(
           connected.lumadriveService!,
         );
@@ -32,6 +50,7 @@ class MeshController extends AsyncNotifier<MeshState> {
         _subscribeToMeshStatus(connected.lumadriveService!);
 
         ref.onDispose(() {
+          _matrixClient = null;
           _meshStatusSub?.cancel();
         });
 
