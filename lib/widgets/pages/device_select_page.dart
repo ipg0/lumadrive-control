@@ -28,7 +28,22 @@ class DeviceSelectPage extends ConsumerWidget {
         child: Center(
           child: Skeletonizer(
             enabled: devicesAsync.isLoading,
-            child: devicesEmpty
+            child: devicesAsync.hasError
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      spacing: 16,
+                      children: [
+                        const Text('Could not load saved controllers'),
+                        FilledButton.icon(
+                          onPressed: () => ref.invalidate(savedDevicesProvider),
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  )
+                : devicesEmpty
                 ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,

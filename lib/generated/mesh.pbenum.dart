@@ -14,7 +14,8 @@ import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
-/// Driver wiring is firmware-owned. IDs are stable across matrix revisions.
+/// Physical driver slots. The historical names for slots 1/2 are retained;
+/// hardware type is reported independently in LayoutOutput.driver_kind.
 class MatrixDriver extends $pb.ProtobufEnum {
   static const MatrixDriver DRIVER_UNSPECIFIED =
       MatrixDriver._(0, _omitEnumNames ? '' : 'DRIVER_UNSPECIFIED');
@@ -22,19 +23,130 @@ class MatrixDriver extends $pb.ProtobufEnum {
       MatrixDriver._(1, _omitEnumNames ? '' : 'WS2812');
   static const MatrixDriver HC595 =
       MatrixDriver._(2, _omitEnumNames ? '' : 'HC595');
+  static const MatrixDriver DRIVER_3 =
+      MatrixDriver._(3, _omitEnumNames ? '' : 'DRIVER_3');
+  static const MatrixDriver DRIVER_4 =
+      MatrixDriver._(4, _omitEnumNames ? '' : 'DRIVER_4');
+  static const MatrixDriver DRIVER_5 =
+      MatrixDriver._(5, _omitEnumNames ? '' : 'DRIVER_5');
+  static const MatrixDriver DRIVER_6 =
+      MatrixDriver._(6, _omitEnumNames ? '' : 'DRIVER_6');
 
   static const $core.List<MatrixDriver> values = <MatrixDriver>[
     DRIVER_UNSPECIFIED,
     WS2812,
     HC595,
+    DRIVER_3,
+    DRIVER_4,
+    DRIVER_5,
+    DRIVER_6,
   ];
 
   static final $core.List<MatrixDriver?> _byValue =
-      $pb.ProtobufEnum.$_initByValueList(values, 2);
+      $pb.ProtobufEnum.$_initByValueList(values, 6);
   static MatrixDriver? valueOf($core.int value) =>
       value < 0 || value >= _byValue.length ? null : _byValue[value];
 
   const MatrixDriver._(super.value, super.name);
+}
+
+class MatrixDriverKind extends $pb.ProtobufEnum {
+  static const MatrixDriverKind KIND_UNSPECIFIED =
+      MatrixDriverKind._(0, _omitEnumNames ? '' : 'KIND_UNSPECIFIED');
+  static const MatrixDriverKind LED_STRIP =
+      MatrixDriverKind._(1, _omitEnumNames ? '' : 'LED_STRIP');
+  static const MatrixDriverKind RGB_LED_MODULE =
+      MatrixDriverKind._(2, _omitEnumNames ? '' : 'RGB_LED_MODULE');
+
+  static const $core.List<MatrixDriverKind> values = <MatrixDriverKind>[
+    KIND_UNSPECIFIED,
+    LED_STRIP,
+    RGB_LED_MODULE,
+  ];
+
+  static final $core.List<MatrixDriverKind?> _byValue =
+      $pb.ProtobufEnum.$_initByValueList(values, 2);
+  static MatrixDriverKind? valueOf($core.int value) =>
+      value < 0 || value >= _byValue.length ? null : _byValue[value];
+
+  const MatrixDriverKind._(super.value, super.name);
+}
+
+/// Physical locations, ordered continuously from rear left around to rear right.
+class CarPosition extends $pb.ProtobufEnum {
+  static const CarPosition POSITION_UNSPECIFIED =
+      CarPosition._(0, _omitEnumNames ? '' : 'POSITION_UNSPECIFIED');
+  static const CarPosition REAR_LEFT_DOOR =
+      CarPosition._(1, _omitEnumNames ? '' : 'REAR_LEFT_DOOR');
+  static const CarPosition REAR_LEFT_POCKET =
+      CarPosition._(2, _omitEnumNames ? '' : 'REAR_LEFT_POCKET');
+  static const CarPosition REAR_LEFT_HANDLE =
+      CarPosition._(3, _omitEnumNames ? '' : 'REAR_LEFT_HANDLE');
+  static const CarPosition REAR_LEFT_FOOTWELL =
+      CarPosition._(4, _omitEnumNames ? '' : 'REAR_LEFT_FOOTWELL');
+  static const CarPosition FRONT_LEFT_DOOR =
+      CarPosition._(5, _omitEnumNames ? '' : 'FRONT_LEFT_DOOR');
+  static const CarPosition FRONT_LEFT_POCKET =
+      CarPosition._(6, _omitEnumNames ? '' : 'FRONT_LEFT_POCKET');
+  static const CarPosition FRONT_LEFT_HANDLE =
+      CarPosition._(7, _omitEnumNames ? '' : 'FRONT_LEFT_HANDLE');
+  static const CarPosition FRONT_LEFT_FOOTWELL =
+      CarPosition._(8, _omitEnumNames ? '' : 'FRONT_LEFT_FOOTWELL');
+  static const CarPosition CONSOLE_LEFT =
+      CarPosition._(9, _omitEnumNames ? '' : 'CONSOLE_LEFT');
+  static const CarPosition DASH_LEFT =
+      CarPosition._(10, _omitEnumNames ? '' : 'DASH_LEFT');
+  static const CarPosition DASH_RIGHT =
+      CarPosition._(11, _omitEnumNames ? '' : 'DASH_RIGHT');
+  static const CarPosition CONSOLE_RIGHT =
+      CarPosition._(12, _omitEnumNames ? '' : 'CONSOLE_RIGHT');
+  static const CarPosition FRONT_RIGHT_FOOTWELL =
+      CarPosition._(13, _omitEnumNames ? '' : 'FRONT_RIGHT_FOOTWELL');
+  static const CarPosition FRONT_RIGHT_HANDLE =
+      CarPosition._(14, _omitEnumNames ? '' : 'FRONT_RIGHT_HANDLE');
+  static const CarPosition FRONT_RIGHT_POCKET =
+      CarPosition._(15, _omitEnumNames ? '' : 'FRONT_RIGHT_POCKET');
+  static const CarPosition FRONT_RIGHT_DOOR =
+      CarPosition._(16, _omitEnumNames ? '' : 'FRONT_RIGHT_DOOR');
+  static const CarPosition REAR_RIGHT_FOOTWELL =
+      CarPosition._(17, _omitEnumNames ? '' : 'REAR_RIGHT_FOOTWELL');
+  static const CarPosition REAR_RIGHT_HANDLE =
+      CarPosition._(18, _omitEnumNames ? '' : 'REAR_RIGHT_HANDLE');
+  static const CarPosition REAR_RIGHT_POCKET =
+      CarPosition._(19, _omitEnumNames ? '' : 'REAR_RIGHT_POCKET');
+  static const CarPosition REAR_RIGHT_DOOR =
+      CarPosition._(20, _omitEnumNames ? '' : 'REAR_RIGHT_DOOR');
+
+  static const $core.List<CarPosition> values = <CarPosition>[
+    POSITION_UNSPECIFIED,
+    REAR_LEFT_DOOR,
+    REAR_LEFT_POCKET,
+    REAR_LEFT_HANDLE,
+    REAR_LEFT_FOOTWELL,
+    FRONT_LEFT_DOOR,
+    FRONT_LEFT_POCKET,
+    FRONT_LEFT_HANDLE,
+    FRONT_LEFT_FOOTWELL,
+    CONSOLE_LEFT,
+    DASH_LEFT,
+    DASH_RIGHT,
+    CONSOLE_RIGHT,
+    FRONT_RIGHT_FOOTWELL,
+    FRONT_RIGHT_HANDLE,
+    FRONT_RIGHT_POCKET,
+    FRONT_RIGHT_DOOR,
+    REAR_RIGHT_FOOTWELL,
+    REAR_RIGHT_HANDLE,
+    REAR_RIGHT_POCKET,
+    REAR_RIGHT_DOOR,
+  ];
+
+  static final $core.List<CarPosition?> _byValue =
+      $pb.ProtobufEnum.$_initByValueList(values, 20);
+  static CarPosition? valueOf($core.int value) =>
+      value < 0 || value >= _byValue.length ? null : _byValue[value];
+
+  const CarPosition._(super.value, super.name);
 }
 
 class MatrixInterpolation extends $pb.ProtobufEnum {
@@ -72,6 +184,8 @@ class MatrixEffect_Kind extends $pb.ProtobufEnum {
       MatrixEffect_Kind._(4, _omitEnumNames ? '' : 'BREATHE');
   static const MatrixEffect_Kind FLOWING_GRADIENT =
       MatrixEffect_Kind._(5, _omitEnumNames ? '' : 'FLOWING_GRADIENT');
+  static const MatrixEffect_Kind RAINBOW =
+      MatrixEffect_Kind._(6, _omitEnumNames ? '' : 'RAINBOW');
 
   static const $core.List<MatrixEffect_Kind> values = <MatrixEffect_Kind>[
     EFFECT_UNSPECIFIED,
@@ -80,10 +194,11 @@ class MatrixEffect_Kind extends $pb.ProtobufEnum {
     BLINK,
     BREATHE,
     FLOWING_GRADIENT,
+    RAINBOW,
   ];
 
   static final $core.List<MatrixEffect_Kind?> _byValue =
-      $pb.ProtobufEnum.$_initByValueList(values, 5);
+      $pb.ProtobufEnum.$_initByValueList(values, 6);
   static MatrixEffect_Kind? valueOf($core.int value) =>
       value < 0 || value >= _byValue.length ? null : _byValue[value];
 
@@ -129,6 +244,32 @@ class MatrixCondition_Kind extends $pb.ProtobufEnum {
       value < 0 || value >= _byValue.length ? null : _byValue[value];
 
   const MatrixCondition_Kind._(super.value, super.name);
+}
+
+class LayoutRequest_Operation extends $pb.ProtobufEnum {
+  static const LayoutRequest_Operation READ =
+      LayoutRequest_Operation._(0, _omitEnumNames ? '' : 'READ');
+  static const LayoutRequest_Operation IDENTIFY =
+      LayoutRequest_Operation._(1, _omitEnumNames ? '' : 'IDENTIFY');
+  static const LayoutRequest_Operation READ_MATRIX =
+      LayoutRequest_Operation._(2, _omitEnumNames ? '' : 'READ_MATRIX');
+  static const LayoutRequest_Operation READ_ACTIVE_MATRIX =
+      LayoutRequest_Operation._(3, _omitEnumNames ? '' : 'READ_ACTIVE_MATRIX');
+
+  static const $core.List<LayoutRequest_Operation> values =
+      <LayoutRequest_Operation>[
+    READ,
+    IDENTIFY,
+    READ_MATRIX,
+    READ_ACTIVE_MATRIX,
+  ];
+
+  static final $core.List<LayoutRequest_Operation?> _byValue =
+      $pb.ProtobufEnum.$_initByValueList(values, 3);
+  static LayoutRequest_Operation? valueOf($core.int value) =>
+      value < 0 || value >= _byValue.length ? null : _byValue[value];
+
+  const LayoutRequest_Operation._(super.value, super.name);
 }
 
 class MatrixNodeStatus_State extends $pb.ProtobufEnum {

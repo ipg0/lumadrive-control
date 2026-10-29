@@ -26,7 +26,6 @@ class _DeviceHomePageState extends ConsumerState<DeviceHomePage> {
     super.initState();
     _relativeTimeRefreshTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      debugPrint('Refreshing relative time display');
       setState(() {});
     });
   }
@@ -42,6 +41,8 @@ class _DeviceHomePageState extends ConsumerState<DeviceHomePage> {
       enabled: true,
       child: ListView.builder(
         key: const ValueKey('mesh-loading'),
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
         itemCount: 6,
         itemBuilder: (context, index) {
           return Padding(
@@ -125,8 +126,59 @@ class _DeviceHomePageState extends ConsumerState<DeviceHomePage> {
   Widget _buildMeshList(BuildContext context, WidgetRef ref, MeshState mesh) {
     return Column(
       children: [
+        Card(
+          clipBehavior: Clip.antiAlias,
+          child: ListTile(
+            leading: Icon(
+              Icons.table_rows_outlined,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            title: const Text('Matrix & animations'),
+            subtitle: const Text(
+              'Configure triggers, layers and animation settings',
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.go(
+              Uri(
+                path: '/device/matrix',
+                queryParameters: {'controller': mesh.masterDevice.remoteId},
+              ).toString(),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Card(
+          clipBehavior: Clip.antiAlias,
+          child: ListTile(
+            leading: Icon(
+              Icons.view_timeline_outlined,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            title: const Text('Car layout'),
+            subtitle: const Text(
+              'Arrange strips and modules on one shared canvas',
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.go(
+              Uri(
+                path: '/device/layout',
+                queryParameters: {'controller': mesh.masterDevice.remoteId},
+              ).toString(),
+            ),
+          ),
+        ),
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 16),
+          child: Divider(),
+        ),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text('Nodes', style: Theme.of(context).textTheme.titleMedium),
+        ),
+        const SizedBox(height: 8),
         ListView.builder(
           key: const ValueKey('mesh-list'),
+          physics: const NeverScrollableScrollPhysics(),
           itemCount: mesh.interopState.nodes.length + 1,
           shrinkWrap: true,
           itemBuilder: (context, index) {
@@ -142,6 +194,7 @@ class _DeviceHomePageState extends ConsumerState<DeviceHomePage> {
   }
 
   Widget _buildErrorState(BuildContext context, WidgetRef ref, Object error) {
+    final connected = ref.watch(bleControllerProvider) is BleConnected;
     return Column(
       key: const ValueKey('mesh-error'),
       mainAxisAlignment: MainAxisAlignment.center,
@@ -150,7 +203,9 @@ class _DeviceHomePageState extends ConsumerState<DeviceHomePage> {
       spacing: 16,
       children: [
         Text(
-          'Lost connection to device',
+          connected
+              ? 'Could not load controller state'
+              : 'Lost connection to device',
           style: Theme.of(context).textTheme.headlineSmall,
           textAlign: TextAlign.center,
         ),
@@ -183,6 +238,12 @@ class _DeviceHomePageState extends ConsumerState<DeviceHomePage> {
           textAlign: TextAlign.center,
           style: Theme.of(context).textTheme.bodyMedium,
         ),
+        if (connected)
+          FilledButton.icon(
+            onPressed: () => ref.invalidate(meshControllerProvider),
+            icon: const Icon(Icons.refresh),
+            label: const Text('Retry'),
+          ),
         ElevatedButton.icon(
           onPressed: () {
             ref.read(bleControllerProvider.notifier).disconnect();
@@ -225,10 +286,20 @@ class _DeviceHomePageState extends ConsumerState<DeviceHomePage> {
     final bleState = ref.watch(bleControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(bleState.deviceName ?? 'Unknown Device')),
+      appBar: AppBar(
+        title: Text(bleState.deviceName ?? 'Controller'),
+        actions: [
+          IconButton(
+            tooltip: 'Disconnect controller',
+            icon: const Icon(Icons.bluetooth_disabled),
+            onPressed: () =>
+                ref.read(bleControllerProvider.notifier).disconnect(),
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(18),
-        child: Center(child: _buildMeshContent(context, ref)),
+        child: SingleChildScrollView(child: _buildMeshContent(context, ref)),
       ),
     );
   }

@@ -18,77 +18,116 @@ class MeshState {
 
 class MeshController extends AsyncNotifier<MeshState> {
   MatrixClient? _matrixClient;
-  Stream<MatrixUploadProgress> uploadMatrixConfig(MatrixConfig config) {
+  BleConnected? _clientConnection;
+  MatrixClient get _connectedClient {
+    final connection = ref.read(bleControllerProvider);
     final client = _matrixClient;
-    if (client == null) throw StateError('No connected master');
+    if (client == null || !identical(connection, _clientConnection)) {
+      throw StateError('No connected master');
+    }
+    return client;
+  }
+
+  Future<LayoutReadResult> readLayout() {
+    final client = _connectedClient;
+    return client.readLayout();
+  }
+
+  Future<MatrixDocument> readMatrix() => _connectedClient.readMatrix();
+  Future<MatrixDocument> readCurrentMatrix() =>
+      _connectedClient.readCurrentMatrix();
+  Stream<MatrixUploadProgress> updateMatrix(MatrixUpdate update) =>
+      _connectedClient.updateMatrix(update);
+
+  Future<void> identifyOutput(
+    int snapshotId,
+    int outputIndex, {
+    int pixelCount = 0,
+    bool reversed = false,
+  }) {
+    final client = _connectedClient;
+    return client.identifyOutput(
+      snapshotId,
+      outputIndex,
+      pixelCount: pixelCount,
+      reversed: reversed,
+    );
+  }
+
+  Stream<MatrixUploadProgress> uploadLayout(LayoutUpdate update) {
+    final client = _connectedClient;
+    return client.uploadLayout(update);
+  }
+
+  Stream<MatrixUploadProgress> uploadMatrixConfig(MatrixConfig config) {
+    final client = _connectedClient;
     return client.upload(config);
   }
+
   Future<MatrixStatus> getMatrixStatus() {
-    final client = _matrixClient;
-    if (client == null) throw StateError('No connected master');
+    final client = _connectedClient;
     return client.getStatus();
   }
+
   Stream<MatrixStatus> watchMatrixStatus() {
-    final client = _matrixClient;
-    if (client == null) throw StateError('No connected master');
+    final client = _connectedClient;
     return client.watchStatus();
   }
-  BleRepository get _bleRepository => ref.read(bleRepositoryProvider);
-  StreamSubscription<MeshInteropState>? _meshStatusSub;
+
+  int _generation = 0;
 
   @override
   Future<MeshState> build() async {
-    final connectionState = ref.watch(bleControllerProvider);
-
-    switch (connectionState) {
-      case BleConnected connected:
-        _matrixClient = _bleRepository.matrixClient(connected.lumadriveService!);
-        final initialStatus = await _bleRepository.getDeviceMeshStatus(
-          connected.lumadriveService!,
-        );
-
-        _subscribeToMeshStatus(connected.lumadriveService!);
-
-        ref.onDispose(() {
-          _matrixClient = null;
-          _meshStatusSub?.cancel();
-        });
-
-        return MeshState(
-          interopState: initialStatus,
-          masterDevice: connected.device,
-        );
-      case BleError(:final message):
-        debugPrint('HERE');
-        throw Exception(message);
-      case BleIdle():
-        throw Exception('Lost connection to device');
-      default:
-        throw Exception('Unexpected connection state: $connectionState');
+    final connection = ref.watch(bleControllerProvider);
+    final generation = ++_generation;
+    _matrixClient = null;
+    _clientConnection = null;
+    StreamSubscription<MeshInteropState>? subscription;
+    ref.onDispose(() {
+      if (generation == _generation) {
+        ++_generation;
+        _matrixClient = null;
+        _clientConnection = null;
+      }
+      unawaited(subscription?.cancel());
+    });
+    if (connection is! BleConnected) {
+      throw StateError(
+        connection is BleError ? connection.message : 'No connected controller',
+      );
     }
-  }
-
-  void _subscribeToMeshStatus(BleService service) {
-    _meshStatusSub?.cancel();
-    _meshStatusSub = _bleRepository
-        .subscribeToMeshStatus(service)
+    final repository = ref.read(bleRepositoryProvider);
+    final client = repository.matrixClient(connection.lumadriveService);
+    final initial = await repository.getDeviceMeshStatus(
+      connection.lumadriveService,
+    );
+    if (!ref.mounted || generation != _generation) {
+      throw StateError('Connection changed');
+    }
+    _matrixClient = client;
+    _clientConnection = connection;
+    subscription = repository
+        .subscribeToMeshStatus(connection.lumadriveService)
         .listen(
           (status) {
-            final currentState = state.value;
-            if (currentState == null) return;
-
+            if (!ref.mounted || generation != _generation) return;
             state = AsyncData(
-              MeshState(
-                interopState: status,
-                masterDevice: currentState.masterDevice,
-              ),
+              MeshState(interopState: status, masterDevice: connection.device),
             );
           },
-          onError: (error, stackTrace) {
-            debugPrint('Error receiving mesh status: $error');
-            debugPrintStack(stackTrace: stackTrace);
+          onError: (Object error, StackTrace stack) {
+            if (!ref.mounted || generation != _generation) return;
+            state = AsyncError(error, stack);
+          },
+          onDone: () {
+            if (!ref.mounted || generation != _generation) return;
+            state = AsyncError(
+              StateError('Mesh status stream closed'),
+              StackTrace.current,
+            );
           },
         );
+    return MeshState(interopState: initial, masterDevice: connection.device);
   }
 
   bool getNodeOnlineStatus(MeshInteropNode node) {

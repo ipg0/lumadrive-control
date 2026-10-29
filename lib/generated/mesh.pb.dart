@@ -430,6 +430,7 @@ class MatrixEffect extends $pb.GeneratedMessage {
     $core.bool? loop,
     $core.int? wavelengthPixels,
     $core.bool? reverse,
+    $core.String? name,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -446,6 +447,7 @@ class MatrixEffect extends $pb.GeneratedMessage {
     if (loop != null) result.loop = loop;
     if (wavelengthPixels != null) result.wavelengthPixels = wavelengthPixels;
     if (reverse != null) result.reverse = reverse;
+    if (name != null) result.name = name;
     return result;
   }
 
@@ -481,6 +483,7 @@ class MatrixEffect extends $pb.GeneratedMessage {
     ..aI(13, _omitFieldNames ? '' : 'wavelengthPixels',
         fieldType: $pb.PbFieldType.OU3)
     ..aOB(14, _omitFieldNames ? '' : 'reverse')
+    ..aOS(15, _omitFieldNames ? '' : 'name')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -623,6 +626,15 @@ class MatrixEffect extends $pb.GeneratedMessage {
   $core.bool hasReverse() => $_has(13);
   @$pb.TagNumber(14)
   void clearReverse() => $_clearField(14);
+
+  @$pb.TagNumber(15)
+  $core.String get name => $_getSZ(14);
+  @$pb.TagNumber(15)
+  set name($core.String value) => $_setString(14, value);
+  @$pb.TagNumber(15)
+  $core.bool hasName() => $_has(14);
+  @$pb.TagNumber(15)
+  void clearName() => $_clearField(15);
 }
 
 class MatrixSource extends $pb.GeneratedMessage {
@@ -803,12 +815,18 @@ class MatrixLayout extends $pb.GeneratedMessage {
     MatrixDriver? driver,
     $core.int? from,
     $core.int? to,
+    $core.String? name,
+    $core.int? sourceIndex,
+    CarPosition? carPosition,
   }) {
     final result = create();
     if (nodeMac != null) result.nodeMac = nodeMac;
     if (driver != null) result.driver = driver;
     if (from != null) result.from = from;
     if (to != null) result.to = to;
+    if (name != null) result.name = name;
+    if (sourceIndex != null) result.sourceIndex = sourceIndex;
+    if (carPosition != null) result.carPosition = carPosition;
     return result;
   }
 
@@ -831,6 +849,11 @@ class MatrixLayout extends $pb.GeneratedMessage {
         enumValues: MatrixDriver.values)
     ..aI(3, _omitFieldNames ? '' : 'from', fieldType: $pb.PbFieldType.OU3)
     ..aI(4, _omitFieldNames ? '' : 'to', fieldType: $pb.PbFieldType.OU3)
+    ..aOS(5, _omitFieldNames ? '' : 'name')
+    ..aI(6, _omitFieldNames ? '' : 'sourceIndex',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aE<CarPosition>(7, _omitFieldNames ? '' : 'carPosition',
+        enumValues: CarPosition.values)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -887,6 +910,33 @@ class MatrixLayout extends $pb.GeneratedMessage {
   $core.bool hasTo() => $_has(3);
   @$pb.TagNumber(4)
   void clearTo() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get name => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set name($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasName() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearName() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.int get sourceIndex => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set sourceIndex($core.int value) => $_setUnsignedInt32(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasSourceIndex() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearSourceIndex() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  CarPosition get carPosition => $_getN(6);
+  @$pb.TagNumber(7)
+  set carPosition(CarPosition value) => $_setField(7, value);
+  @$pb.TagNumber(7)
+  $core.bool hasCarPosition() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearCarPosition() => $_clearField(7);
 }
 
 class MatrixEntry extends $pb.GeneratedMessage {
@@ -896,6 +946,7 @@ class MatrixEntry extends $pb.GeneratedMessage {
     $core.int? sourceId,
     $core.int? conditionId,
     $core.int? priority,
+    $core.String? name,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -903,6 +954,7 @@ class MatrixEntry extends $pb.GeneratedMessage {
     if (sourceId != null) result.sourceId = sourceId;
     if (conditionId != null) result.conditionId = conditionId;
     if (priority != null) result.priority = priority;
+    if (name != null) result.name = name;
     return result;
   }
 
@@ -925,6 +977,7 @@ class MatrixEntry extends $pb.GeneratedMessage {
     ..aI(4, _omitFieldNames ? '' : 'conditionId',
         fieldType: $pb.PbFieldType.OU3)
     ..aI(5, _omitFieldNames ? '' : 'priority', fieldType: $pb.PbFieldType.OU3)
+    ..aOS(7, _omitFieldNames ? '' : 'name')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -990,6 +1043,15 @@ class MatrixEntry extends $pb.GeneratedMessage {
   $core.bool hasPriority() => $_has(4);
   @$pb.TagNumber(5)
   void clearPriority() => $_clearField(5);
+
+  @$pb.TagNumber(7)
+  $core.String get name => $_getSZ(5);
+  @$pb.TagNumber(7)
+  set name($core.String value) => $_setString(5, value);
+  @$pb.TagNumber(7)
+  $core.bool hasName() => $_has(5);
+  @$pb.TagNumber(7)
+  void clearName() => $_clearField(7);
 }
 
 class MatrixConfig extends $pb.GeneratedMessage {
@@ -1000,6 +1062,7 @@ class MatrixConfig extends $pb.GeneratedMessage {
     $core.Iterable<MatrixCondition>? conditions,
     $core.Iterable<MatrixEntry>? entries,
     $core.Iterable<MatrixLayout>? layout,
+    $core.bool? factoryDefault,
   }) {
     final result = create();
     if (schemaVersion != null) result.schemaVersion = schemaVersion;
@@ -1008,6 +1071,7 @@ class MatrixConfig extends $pb.GeneratedMessage {
     if (conditions != null) result.conditions.addAll(conditions);
     if (entries != null) result.entries.addAll(entries);
     if (layout != null) result.layout.addAll(layout);
+    if (factoryDefault != null) result.factoryDefault = factoryDefault;
     return result;
   }
 
@@ -1036,6 +1100,7 @@ class MatrixConfig extends $pb.GeneratedMessage {
         subBuilder: MatrixEntry.create)
     ..pPM<MatrixLayout>(6, _omitFieldNames ? '' : 'layout',
         subBuilder: MatrixLayout.create)
+    ..aOB(7, _omitFieldNames ? '' : 'factoryDefault')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1080,6 +1145,15 @@ class MatrixConfig extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(6)
   $pb.PbList<MatrixLayout> get layout => $_getList(5);
+
+  @$pb.TagNumber(7)
+  $core.bool get factoryDefault => $_getBF(6);
+  @$pb.TagNumber(7)
+  set factoryDefault($core.bool value) => $_setBool(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasFactoryDefault() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearFactoryDefault() => $_clearField(7);
 }
 
 class TransferBegin extends $pb.GeneratedMessage {
@@ -1239,7 +1313,16 @@ class TransferChunk extends $pb.GeneratedMessage {
   void clearData() => $_clearField(3);
 }
 
-enum MatrixUpload_Operation { begin, chunk, commit, abort, notSet }
+enum MatrixUpload_Operation {
+  begin,
+  chunk,
+  commit,
+  abort,
+  layoutRequest,
+  layoutBegin,
+  matrixBegin,
+  notSet
+}
 
 class MatrixUpload extends $pb.GeneratedMessage {
   factory MatrixUpload({
@@ -1247,12 +1330,18 @@ class MatrixUpload extends $pb.GeneratedMessage {
     TransferChunk? chunk,
     $core.int? commit,
     $core.int? abort,
+    LayoutRequest? layoutRequest,
+    TransferBegin? layoutBegin,
+    TransferBegin? matrixBegin,
   }) {
     final result = create();
     if (begin != null) result.begin = begin;
     if (chunk != null) result.chunk = chunk;
     if (commit != null) result.commit = commit;
     if (abort != null) result.abort = abort;
+    if (layoutRequest != null) result.layoutRequest = layoutRequest;
+    if (layoutBegin != null) result.layoutBegin = layoutBegin;
+    if (matrixBegin != null) result.matrixBegin = matrixBegin;
     return result;
   }
 
@@ -1271,19 +1360,28 @@ class MatrixUpload extends $pb.GeneratedMessage {
     2: MatrixUpload_Operation.chunk,
     3: MatrixUpload_Operation.commit,
     4: MatrixUpload_Operation.abort,
+    5: MatrixUpload_Operation.layoutRequest,
+    6: MatrixUpload_Operation.layoutBegin,
+    7: MatrixUpload_Operation.matrixBegin,
     0: MatrixUpload_Operation.notSet
   };
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'MatrixUpload',
       package: const $pb.PackageName(_omitMessageNames ? '' : 'mesh_interop'),
       createEmptyInstance: create)
-    ..oo(0, [1, 2, 3, 4])
+    ..oo(0, [1, 2, 3, 4, 5, 6, 7])
     ..aOM<TransferBegin>(1, _omitFieldNames ? '' : 'begin',
         subBuilder: TransferBegin.create)
     ..aOM<TransferChunk>(2, _omitFieldNames ? '' : 'chunk',
         subBuilder: TransferChunk.create)
     ..aI(3, _omitFieldNames ? '' : 'commit', fieldType: $pb.PbFieldType.OF3)
     ..aI(4, _omitFieldNames ? '' : 'abort', fieldType: $pb.PbFieldType.OF3)
+    ..aOM<LayoutRequest>(5, _omitFieldNames ? '' : 'layoutRequest',
+        subBuilder: LayoutRequest.create)
+    ..aOM<TransferBegin>(6, _omitFieldNames ? '' : 'layoutBegin',
+        subBuilder: TransferBegin.create)
+    ..aOM<TransferBegin>(7, _omitFieldNames ? '' : 'matrixBegin',
+        subBuilder: TransferBegin.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1309,12 +1407,18 @@ class MatrixUpload extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   @$pb.TagNumber(3)
   @$pb.TagNumber(4)
+  @$pb.TagNumber(5)
+  @$pb.TagNumber(6)
+  @$pb.TagNumber(7)
   MatrixUpload_Operation whichOperation() =>
       _MatrixUpload_OperationByTag[$_whichOneof(0)]!;
   @$pb.TagNumber(1)
   @$pb.TagNumber(2)
   @$pb.TagNumber(3)
   @$pb.TagNumber(4)
+  @$pb.TagNumber(5)
+  @$pb.TagNumber(6)
+  @$pb.TagNumber(7)
   void clearOperation() => $_clearField($_whichOneof(0));
 
   @$pb.TagNumber(1)
@@ -1356,6 +1460,953 @@ class MatrixUpload extends $pb.GeneratedMessage {
   $core.bool hasAbort() => $_has(3);
   @$pb.TagNumber(4)
   void clearAbort() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  LayoutRequest get layoutRequest => $_getN(4);
+  @$pb.TagNumber(5)
+  set layoutRequest(LayoutRequest value) => $_setField(5, value);
+  @$pb.TagNumber(5)
+  $core.bool hasLayoutRequest() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearLayoutRequest() => $_clearField(5);
+  @$pb.TagNumber(5)
+  LayoutRequest ensureLayoutRequest() => $_ensure(4);
+
+  @$pb.TagNumber(6)
+  TransferBegin get layoutBegin => $_getN(5);
+  @$pb.TagNumber(6)
+  set layoutBegin(TransferBegin value) => $_setField(6, value);
+  @$pb.TagNumber(6)
+  $core.bool hasLayoutBegin() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearLayoutBegin() => $_clearField(6);
+  @$pb.TagNumber(6)
+  TransferBegin ensureLayoutBegin() => $_ensure(5);
+
+  @$pb.TagNumber(7)
+  TransferBegin get matrixBegin => $_getN(6);
+  @$pb.TagNumber(7)
+  set matrixBegin(TransferBegin value) => $_setField(7, value);
+  @$pb.TagNumber(7)
+  $core.bool hasMatrixBegin() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearMatrixBegin() => $_clearField(7);
+  @$pb.TagNumber(7)
+  TransferBegin ensureMatrixBegin() => $_ensure(6);
+}
+
+/// Layout-only uploads use the same begin/chunk/commit transport as matrices.
+class LayoutUpdate extends $pb.GeneratedMessage {
+  factory LayoutUpdate({
+    $fixnum.Int64? expectedRevision,
+    $fixnum.Int64? masterSession,
+    $core.Iterable<MatrixLayout>? layout,
+  }) {
+    final result = create();
+    if (expectedRevision != null) result.expectedRevision = expectedRevision;
+    if (masterSession != null) result.masterSession = masterSession;
+    if (layout != null) result.layout.addAll(layout);
+    return result;
+  }
+
+  LayoutUpdate._();
+
+  factory LayoutUpdate.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory LayoutUpdate.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'LayoutUpdate',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'mesh_interop'),
+      createEmptyInstance: create)
+    ..a<$fixnum.Int64>(
+        1, _omitFieldNames ? '' : 'expectedRevision', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(
+        2, _omitFieldNames ? '' : 'masterSession', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..pPM<MatrixLayout>(3, _omitFieldNames ? '' : 'layout',
+        subBuilder: MatrixLayout.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LayoutUpdate clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LayoutUpdate copyWith(void Function(LayoutUpdate) updates) =>
+      super.copyWith((message) => updates(message as LayoutUpdate))
+          as LayoutUpdate;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static LayoutUpdate create() => LayoutUpdate._();
+  @$core.override
+  LayoutUpdate createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static LayoutUpdate getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<LayoutUpdate>(create);
+  static LayoutUpdate? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get expectedRevision => $_getI64(0);
+  @$pb.TagNumber(1)
+  set expectedRevision($fixnum.Int64 value) => $_setInt64(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasExpectedRevision() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearExpectedRevision() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get masterSession => $_getI64(1);
+  @$pb.TagNumber(2)
+  set masterSession($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMasterSession() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMasterSession() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $pb.PbList<MatrixLayout> get layout => $_getList(2);
+}
+
+/// Edits the matrix and animation library, preserving the current physical layout.
+class MatrixUpdate extends $pb.GeneratedMessage {
+  factory MatrixUpdate({
+    $fixnum.Int64? expectedRevision,
+    $fixnum.Int64? masterSession,
+    $core.Iterable<MatrixEffect>? effects,
+    $core.Iterable<MatrixSource>? sources,
+    $core.Iterable<MatrixCondition>? conditions,
+    $core.Iterable<MatrixEntry>? entries,
+  }) {
+    final result = create();
+    if (expectedRevision != null) result.expectedRevision = expectedRevision;
+    if (masterSession != null) result.masterSession = masterSession;
+    if (effects != null) result.effects.addAll(effects);
+    if (sources != null) result.sources.addAll(sources);
+    if (conditions != null) result.conditions.addAll(conditions);
+    if (entries != null) result.entries.addAll(entries);
+    return result;
+  }
+
+  MatrixUpdate._();
+
+  factory MatrixUpdate.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory MatrixUpdate.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'MatrixUpdate',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'mesh_interop'),
+      createEmptyInstance: create)
+    ..a<$fixnum.Int64>(
+        1, _omitFieldNames ? '' : 'expectedRevision', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(
+        2, _omitFieldNames ? '' : 'masterSession', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..pPM<MatrixEffect>(3, _omitFieldNames ? '' : 'effects',
+        subBuilder: MatrixEffect.create)
+    ..pPM<MatrixSource>(4, _omitFieldNames ? '' : 'sources',
+        subBuilder: MatrixSource.create)
+    ..pPM<MatrixCondition>(5, _omitFieldNames ? '' : 'conditions',
+        subBuilder: MatrixCondition.create)
+    ..pPM<MatrixEntry>(6, _omitFieldNames ? '' : 'entries',
+        subBuilder: MatrixEntry.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MatrixUpdate clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MatrixUpdate copyWith(void Function(MatrixUpdate) updates) =>
+      super.copyWith((message) => updates(message as MatrixUpdate))
+          as MatrixUpdate;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MatrixUpdate create() => MatrixUpdate._();
+  @$core.override
+  MatrixUpdate createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static MatrixUpdate getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<MatrixUpdate>(create);
+  static MatrixUpdate? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get expectedRevision => $_getI64(0);
+  @$pb.TagNumber(1)
+  set expectedRevision($fixnum.Int64 value) => $_setInt64(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasExpectedRevision() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearExpectedRevision() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get masterSession => $_getI64(1);
+  @$pb.TagNumber(2)
+  set masterSession($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMasterSession() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMasterSession() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $pb.PbList<MatrixEffect> get effects => $_getList(2);
+
+  @$pb.TagNumber(4)
+  $pb.PbList<MatrixSource> get sources => $_getList(3);
+
+  @$pb.TagNumber(5)
+  $pb.PbList<MatrixCondition> get conditions => $_getList(4);
+
+  @$pb.TagNumber(6)
+  $pb.PbList<MatrixEntry> get entries => $_getList(5);
+}
+
+class MatrixInputNode extends $pb.GeneratedMessage {
+  factory MatrixInputNode({
+    $core.List<$core.int>? nodeMac,
+    $core.Iterable<$core.int>? gpios,
+    $core.bool? known,
+    $core.bool? online,
+  }) {
+    final result = create();
+    if (nodeMac != null) result.nodeMac = nodeMac;
+    if (gpios != null) result.gpios.addAll(gpios);
+    if (known != null) result.known = known;
+    if (online != null) result.online = online;
+    return result;
+  }
+
+  MatrixInputNode._();
+
+  factory MatrixInputNode.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory MatrixInputNode.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'MatrixInputNode',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'mesh_interop'),
+      createEmptyInstance: create)
+    ..a<$core.List<$core.int>>(
+        1, _omitFieldNames ? '' : 'nodeMac', $pb.PbFieldType.OY)
+    ..p<$core.int>(2, _omitFieldNames ? '' : 'gpios', $pb.PbFieldType.KU3)
+    ..aOB(3, _omitFieldNames ? '' : 'known')
+    ..aOB(4, _omitFieldNames ? '' : 'online')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MatrixInputNode clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MatrixInputNode copyWith(void Function(MatrixInputNode) updates) =>
+      super.copyWith((message) => updates(message as MatrixInputNode))
+          as MatrixInputNode;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MatrixInputNode create() => MatrixInputNode._();
+  @$core.override
+  MatrixInputNode createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static MatrixInputNode getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<MatrixInputNode>(create);
+  static MatrixInputNode? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<$core.int> get nodeMac => $_getN(0);
+  @$pb.TagNumber(1)
+  set nodeMac($core.List<$core.int> value) => $_setBytes(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasNodeMac() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearNodeMac() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $pb.PbList<$core.int> get gpios => $_getList(1);
+
+  @$pb.TagNumber(3)
+  $core.bool get known => $_getBF(2);
+  @$pb.TagNumber(3)
+  set known($core.bool value) => $_setBool(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasKnown() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearKnown() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get online => $_getBF(3);
+  @$pb.TagNumber(4)
+  set online($core.bool value) => $_setBool(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasOnline() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearOnline() => $_clearField(4);
+}
+
+class MatrixDocument extends $pb.GeneratedMessage {
+  factory MatrixDocument({
+    $core.List<$core.int>? config,
+    $fixnum.Int64? revision,
+    $fixnum.Int64? masterSession,
+    $core.List<$core.int>? masterMac,
+    $core.Iterable<MatrixInputNode>? nodes,
+    $fixnum.Int64? activeRevision,
+    $core.bool? activationPending,
+    $core.bool? persisted,
+  }) {
+    final result = create();
+    if (config != null) result.config = config;
+    if (revision != null) result.revision = revision;
+    if (masterSession != null) result.masterSession = masterSession;
+    if (masterMac != null) result.masterMac = masterMac;
+    if (nodes != null) result.nodes.addAll(nodes);
+    if (activeRevision != null) result.activeRevision = activeRevision;
+    if (activationPending != null) result.activationPending = activationPending;
+    if (persisted != null) result.persisted = persisted;
+    return result;
+  }
+
+  MatrixDocument._();
+
+  factory MatrixDocument.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory MatrixDocument.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'MatrixDocument',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'mesh_interop'),
+      createEmptyInstance: create)
+    ..a<$core.List<$core.int>>(
+        1, _omitFieldNames ? '' : 'config', $pb.PbFieldType.OY)
+    ..a<$fixnum.Int64>(
+        2, _omitFieldNames ? '' : 'revision', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(
+        3, _omitFieldNames ? '' : 'masterSession', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.List<$core.int>>(
+        4, _omitFieldNames ? '' : 'masterMac', $pb.PbFieldType.OY)
+    ..pPM<MatrixInputNode>(5, _omitFieldNames ? '' : 'nodes',
+        subBuilder: MatrixInputNode.create)
+    ..a<$fixnum.Int64>(
+        6, _omitFieldNames ? '' : 'activeRevision', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOB(7, _omitFieldNames ? '' : 'activationPending')
+    ..aOB(8, _omitFieldNames ? '' : 'persisted')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MatrixDocument clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MatrixDocument copyWith(void Function(MatrixDocument) updates) =>
+      super.copyWith((message) => updates(message as MatrixDocument))
+          as MatrixDocument;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MatrixDocument create() => MatrixDocument._();
+  @$core.override
+  MatrixDocument createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static MatrixDocument getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<MatrixDocument>(create);
+  static MatrixDocument? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<$core.int> get config => $_getN(0);
+  @$pb.TagNumber(1)
+  set config($core.List<$core.int> value) => $_setBytes(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasConfig() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearConfig() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get revision => $_getI64(1);
+  @$pb.TagNumber(2)
+  set revision($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasRevision() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearRevision() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get masterSession => $_getI64(2);
+  @$pb.TagNumber(3)
+  set masterSession($fixnum.Int64 value) => $_setInt64(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasMasterSession() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMasterSession() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.List<$core.int> get masterMac => $_getN(3);
+  @$pb.TagNumber(4)
+  set masterMac($core.List<$core.int> value) => $_setBytes(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasMasterMac() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearMasterMac() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $pb.PbList<MatrixInputNode> get nodes => $_getList(4);
+
+  @$pb.TagNumber(6)
+  $fixnum.Int64 get activeRevision => $_getI64(5);
+  @$pb.TagNumber(6)
+  set activeRevision($fixnum.Int64 value) => $_setInt64(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasActiveRevision() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearActiveRevision() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.bool get activationPending => $_getBF(6);
+  @$pb.TagNumber(7)
+  set activationPending($core.bool value) => $_setBool(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasActivationPending() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearActivationPending() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.bool get persisted => $_getBF(7);
+  @$pb.TagNumber(8)
+  set persisted($core.bool value) => $_setBool(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasPersisted() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearPersisted() => $_clearField(8);
+}
+
+class LayoutOutput extends $pb.GeneratedMessage {
+  factory LayoutOutput({
+    $core.List<$core.int>? nodeMac,
+    MatrixDriver? driver,
+    $core.int? pixelCount,
+    $core.bool? online,
+    $core.bool? ready,
+    $core.bool? known,
+    MatrixDriverKind? driverKind,
+    $core.int? sourceIndex,
+    $core.int? maxPixelCount,
+  }) {
+    final result = create();
+    if (nodeMac != null) result.nodeMac = nodeMac;
+    if (driver != null) result.driver = driver;
+    if (pixelCount != null) result.pixelCount = pixelCount;
+    if (online != null) result.online = online;
+    if (ready != null) result.ready = ready;
+    if (known != null) result.known = known;
+    if (driverKind != null) result.driverKind = driverKind;
+    if (sourceIndex != null) result.sourceIndex = sourceIndex;
+    if (maxPixelCount != null) result.maxPixelCount = maxPixelCount;
+    return result;
+  }
+
+  LayoutOutput._();
+
+  factory LayoutOutput.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory LayoutOutput.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'LayoutOutput',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'mesh_interop'),
+      createEmptyInstance: create)
+    ..a<$core.List<$core.int>>(
+        1, _omitFieldNames ? '' : 'nodeMac', $pb.PbFieldType.OY)
+    ..aE<MatrixDriver>(2, _omitFieldNames ? '' : 'driver',
+        enumValues: MatrixDriver.values)
+    ..aI(3, _omitFieldNames ? '' : 'pixelCount', fieldType: $pb.PbFieldType.OU3)
+    ..aOB(4, _omitFieldNames ? '' : 'online')
+    ..aOB(5, _omitFieldNames ? '' : 'ready')
+    ..aOB(6, _omitFieldNames ? '' : 'known')
+    ..aE<MatrixDriverKind>(7, _omitFieldNames ? '' : 'driverKind',
+        enumValues: MatrixDriverKind.values)
+    ..aI(8, _omitFieldNames ? '' : 'sourceIndex',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aI(9, _omitFieldNames ? '' : 'maxPixelCount',
+        fieldType: $pb.PbFieldType.OU3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LayoutOutput clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LayoutOutput copyWith(void Function(LayoutOutput) updates) =>
+      super.copyWith((message) => updates(message as LayoutOutput))
+          as LayoutOutput;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static LayoutOutput create() => LayoutOutput._();
+  @$core.override
+  LayoutOutput createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static LayoutOutput getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<LayoutOutput>(create);
+  static LayoutOutput? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.List<$core.int> get nodeMac => $_getN(0);
+  @$pb.TagNumber(1)
+  set nodeMac($core.List<$core.int> value) => $_setBytes(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasNodeMac() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearNodeMac() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  MatrixDriver get driver => $_getN(1);
+  @$pb.TagNumber(2)
+  set driver(MatrixDriver value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasDriver() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearDriver() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get pixelCount => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set pixelCount($core.int value) => $_setUnsignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasPixelCount() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearPixelCount() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get online => $_getBF(3);
+  @$pb.TagNumber(4)
+  set online($core.bool value) => $_setBool(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasOnline() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearOnline() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.bool get ready => $_getBF(4);
+  @$pb.TagNumber(5)
+  set ready($core.bool value) => $_setBool(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasReady() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearReady() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get known => $_getBF(5);
+  @$pb.TagNumber(6)
+  set known($core.bool value) => $_setBool(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasKnown() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearKnown() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  MatrixDriverKind get driverKind => $_getN(6);
+  @$pb.TagNumber(7)
+  set driverKind(MatrixDriverKind value) => $_setField(7, value);
+  @$pb.TagNumber(7)
+  $core.bool hasDriverKind() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearDriverKind() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.int get sourceIndex => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set sourceIndex($core.int value) => $_setUnsignedInt32(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasSourceIndex() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearSourceIndex() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.int get maxPixelCount => $_getIZ(8);
+  @$pb.TagNumber(9)
+  set maxPixelCount($core.int value) => $_setUnsignedInt32(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasMaxPixelCount() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearMaxPixelCount() => $_clearField(9);
+}
+
+class LayoutSnapshot extends $pb.GeneratedMessage {
+  factory LayoutSnapshot({
+    $fixnum.Int64? masterSession,
+    $fixnum.Int64? revision,
+    $core.Iterable<MatrixLayout>? layout,
+    $core.Iterable<LayoutOutput>? outputs,
+    $core.int? pendingNodes,
+    $core.List<$core.int>? masterMac,
+  }) {
+    final result = create();
+    if (masterSession != null) result.masterSession = masterSession;
+    if (revision != null) result.revision = revision;
+    if (layout != null) result.layout.addAll(layout);
+    if (outputs != null) result.outputs.addAll(outputs);
+    if (pendingNodes != null) result.pendingNodes = pendingNodes;
+    if (masterMac != null) result.masterMac = masterMac;
+    return result;
+  }
+
+  LayoutSnapshot._();
+
+  factory LayoutSnapshot.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory LayoutSnapshot.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'LayoutSnapshot',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'mesh_interop'),
+      createEmptyInstance: create)
+    ..a<$fixnum.Int64>(
+        1, _omitFieldNames ? '' : 'masterSession', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(
+        2, _omitFieldNames ? '' : 'revision', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..pPM<MatrixLayout>(3, _omitFieldNames ? '' : 'layout',
+        subBuilder: MatrixLayout.create)
+    ..pPM<LayoutOutput>(4, _omitFieldNames ? '' : 'outputs',
+        subBuilder: LayoutOutput.create)
+    ..aI(5, _omitFieldNames ? '' : 'pendingNodes',
+        fieldType: $pb.PbFieldType.OU3)
+    ..a<$core.List<$core.int>>(
+        6, _omitFieldNames ? '' : 'masterMac', $pb.PbFieldType.OY)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LayoutSnapshot clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LayoutSnapshot copyWith(void Function(LayoutSnapshot) updates) =>
+      super.copyWith((message) => updates(message as LayoutSnapshot))
+          as LayoutSnapshot;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static LayoutSnapshot create() => LayoutSnapshot._();
+  @$core.override
+  LayoutSnapshot createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static LayoutSnapshot getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<LayoutSnapshot>(create);
+  static LayoutSnapshot? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get masterSession => $_getI64(0);
+  @$pb.TagNumber(1)
+  set masterSession($fixnum.Int64 value) => $_setInt64(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasMasterSession() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMasterSession() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get revision => $_getI64(1);
+  @$pb.TagNumber(2)
+  set revision($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasRevision() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearRevision() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $pb.PbList<MatrixLayout> get layout => $_getList(2);
+
+  @$pb.TagNumber(4)
+  $pb.PbList<LayoutOutput> get outputs => $_getList(3);
+
+  @$pb.TagNumber(5)
+  $core.int get pendingNodes => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set pendingNodes($core.int value) => $_setUnsignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasPendingNodes() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearPendingNodes() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.List<$core.int> get masterMac => $_getN(5);
+  @$pb.TagNumber(6)
+  set masterMac($core.List<$core.int> value) => $_setBytes(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasMasterMac() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearMasterMac() => $_clearField(6);
+}
+
+class LayoutRequest extends $pb.GeneratedMessage {
+  factory LayoutRequest({
+    $core.int? requestId,
+    LayoutRequest_Operation? operation,
+    $core.int? snapshotId,
+    $core.int? offset,
+    $core.int? outputIndex,
+    $core.int? identifyOptions,
+  }) {
+    final result = create();
+    if (requestId != null) result.requestId = requestId;
+    if (operation != null) result.operation = operation;
+    if (snapshotId != null) result.snapshotId = snapshotId;
+    if (offset != null) result.offset = offset;
+    if (outputIndex != null) result.outputIndex = outputIndex;
+    if (identifyOptions != null) result.identifyOptions = identifyOptions;
+    return result;
+  }
+
+  LayoutRequest._();
+
+  factory LayoutRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory LayoutRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'LayoutRequest',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'mesh_interop'),
+      createEmptyInstance: create)
+    ..aI(1, _omitFieldNames ? '' : 'requestId', fieldType: $pb.PbFieldType.OU3)
+    ..aE<LayoutRequest_Operation>(2, _omitFieldNames ? '' : 'operation',
+        enumValues: LayoutRequest_Operation.values)
+    ..aI(3, _omitFieldNames ? '' : 'snapshotId', fieldType: $pb.PbFieldType.OF3)
+    ..aI(4, _omitFieldNames ? '' : 'offset', fieldType: $pb.PbFieldType.OU3)
+    ..aI(5, _omitFieldNames ? '' : 'outputIndex',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aI(6, _omitFieldNames ? '' : 'identifyOptions',
+        fieldType: $pb.PbFieldType.OF3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LayoutRequest clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LayoutRequest copyWith(void Function(LayoutRequest) updates) =>
+      super.copyWith((message) => updates(message as LayoutRequest))
+          as LayoutRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static LayoutRequest create() => LayoutRequest._();
+  @$core.override
+  LayoutRequest createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static LayoutRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<LayoutRequest>(create);
+  static LayoutRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get requestId => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set requestId($core.int value) => $_setUnsignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasRequestId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRequestId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  LayoutRequest_Operation get operation => $_getN(1);
+  @$pb.TagNumber(2)
+  set operation(LayoutRequest_Operation value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasOperation() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearOperation() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get snapshotId => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set snapshotId($core.int value) => $_setUnsignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasSnapshotId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSnapshotId() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get offset => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set offset($core.int value) => $_setUnsignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasOffset() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearOffset() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get outputIndex => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set outputIndex($core.int value) => $_setUnsignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasOutputIndex() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearOutputIndex() => $_clearField(5);
+
+  /// MTU-23 identify preview: inventory output index in bits 0..7, LED count in 8..19
+  /// (zero uses current capacity), reversed in bit 20; remaining bits reserved.
+  @$pb.TagNumber(6)
+  $core.int get identifyOptions => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set identifyOptions($core.int value) => $_setUnsignedInt32(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasIdentifyOptions() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearIdentifyOptions() => $_clearField(6);
+}
+
+class LayoutResponse extends $pb.GeneratedMessage {
+  factory LayoutResponse({
+    $core.int? requestId,
+    $core.String? error,
+    $core.int? snapshotId,
+    $core.int? totalSize,
+    $core.int? offset,
+    $core.List<$core.int>? data,
+    $core.bool? complete,
+  }) {
+    final result = create();
+    if (requestId != null) result.requestId = requestId;
+    if (error != null) result.error = error;
+    if (snapshotId != null) result.snapshotId = snapshotId;
+    if (totalSize != null) result.totalSize = totalSize;
+    if (offset != null) result.offset = offset;
+    if (data != null) result.data = data;
+    if (complete != null) result.complete = complete;
+    return result;
+  }
+
+  LayoutResponse._();
+
+  factory LayoutResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory LayoutResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'LayoutResponse',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'mesh_interop'),
+      createEmptyInstance: create)
+    ..aI(1, _omitFieldNames ? '' : 'requestId', fieldType: $pb.PbFieldType.OU3)
+    ..aOS(2, _omitFieldNames ? '' : 'error')
+    ..aI(3, _omitFieldNames ? '' : 'snapshotId', fieldType: $pb.PbFieldType.OF3)
+    ..aI(4, _omitFieldNames ? '' : 'totalSize', fieldType: $pb.PbFieldType.OU3)
+    ..aI(5, _omitFieldNames ? '' : 'offset', fieldType: $pb.PbFieldType.OU3)
+    ..a<$core.List<$core.int>>(
+        6, _omitFieldNames ? '' : 'data', $pb.PbFieldType.OY)
+    ..aOB(7, _omitFieldNames ? '' : 'complete')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LayoutResponse clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LayoutResponse copyWith(void Function(LayoutResponse) updates) =>
+      super.copyWith((message) => updates(message as LayoutResponse))
+          as LayoutResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static LayoutResponse create() => LayoutResponse._();
+  @$core.override
+  LayoutResponse createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static LayoutResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<LayoutResponse>(create);
+  static LayoutResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get requestId => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set requestId($core.int value) => $_setUnsignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasRequestId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearRequestId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get error => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set error($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasError() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearError() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get snapshotId => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set snapshotId($core.int value) => $_setUnsignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasSnapshotId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearSnapshotId() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get totalSize => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set totalSize($core.int value) => $_setUnsignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasTotalSize() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearTotalSize() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get offset => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set offset($core.int value) => $_setUnsignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasOffset() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearOffset() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.List<$core.int> get data => $_getN(5);
+  @$pb.TagNumber(6)
+  set data($core.List<$core.int> value) => $_setBytes(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasData() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearData() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.bool get complete => $_getBF(6);
+  @$pb.TagNumber(7)
+  set complete($core.bool value) => $_setBool(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasComplete() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearComplete() => $_clearField(7);
 }
 
 class MatrixNodeStatus extends $pb.GeneratedMessage {
@@ -1665,11 +2716,13 @@ class AnimationOutputMapping extends $pb.GeneratedMessage {
     MatrixDriver? driver,
     $core.int? from,
     $core.int? to,
+    $core.int? sourceIndex,
   }) {
     final result = create();
     if (driver != null) result.driver = driver;
     if (from != null) result.from = from;
     if (to != null) result.to = to;
+    if (sourceIndex != null) result.sourceIndex = sourceIndex;
     return result;
   }
 
@@ -1690,6 +2743,8 @@ class AnimationOutputMapping extends $pb.GeneratedMessage {
         enumValues: MatrixDriver.values)
     ..aI(2, _omitFieldNames ? '' : 'from', fieldType: $pb.PbFieldType.OU3)
     ..aI(3, _omitFieldNames ? '' : 'to', fieldType: $pb.PbFieldType.OU3)
+    ..aI(4, _omitFieldNames ? '' : 'sourceIndex',
+        fieldType: $pb.PbFieldType.OU3)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1738,6 +2793,15 @@ class AnimationOutputMapping extends $pb.GeneratedMessage {
   $core.bool hasTo() => $_has(2);
   @$pb.TagNumber(3)
   void clearTo() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get sourceIndex => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set sourceIndex($core.int value) => $_setUnsignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasSourceIndex() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearSourceIndex() => $_clearField(4);
 }
 
 class AnimationDefinitions extends $pb.GeneratedMessage {

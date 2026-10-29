@@ -22,13 +22,73 @@ const MatrixDriver$json = {
     {'1': 'DRIVER_UNSPECIFIED', '2': 0},
     {'1': 'WS2812', '2': 1},
     {'1': 'HC595', '2': 2},
+    {'1': 'DRIVER_3', '2': 3},
+    {'1': 'DRIVER_4', '2': 4},
+    {'1': 'DRIVER_5', '2': 5},
+    {'1': 'DRIVER_6', '2': 6},
   ],
 };
 
 /// Descriptor for `MatrixDriver`. Decode as a `google.protobuf.EnumDescriptorProto`.
 final $typed_data.Uint8List matrixDriverDescriptor = $convert.base64Decode(
     'CgxNYXRyaXhEcml2ZXISFgoSRFJJVkVSX1VOU1BFQ0lGSUVEEAASCgoGV1MyODEyEAESCQoFSE'
-    'M1OTUQAg==');
+    'M1OTUQAhIMCghEUklWRVJfMxADEgwKCERSSVZFUl80EAQSDAoIRFJJVkVSXzUQBRIMCghEUklW'
+    'RVJfNhAG');
+
+@$core.Deprecated('Use matrixDriverKindDescriptor instead')
+const MatrixDriverKind$json = {
+  '1': 'MatrixDriverKind',
+  '2': [
+    {'1': 'KIND_UNSPECIFIED', '2': 0},
+    {'1': 'LED_STRIP', '2': 1},
+    {'1': 'RGB_LED_MODULE', '2': 2},
+  ],
+};
+
+/// Descriptor for `MatrixDriverKind`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List matrixDriverKindDescriptor = $convert.base64Decode(
+    'ChBNYXRyaXhEcml2ZXJLaW5kEhQKEEtJTkRfVU5TUEVDSUZJRUQQABINCglMRURfU1RSSVAQAR'
+    'ISCg5SR0JfTEVEX01PRFVMRRAC');
+
+@$core.Deprecated('Use carPositionDescriptor instead')
+const CarPosition$json = {
+  '1': 'CarPosition',
+  '2': [
+    {'1': 'POSITION_UNSPECIFIED', '2': 0},
+    {'1': 'REAR_LEFT_DOOR', '2': 1},
+    {'1': 'REAR_LEFT_POCKET', '2': 2},
+    {'1': 'REAR_LEFT_HANDLE', '2': 3},
+    {'1': 'REAR_LEFT_FOOTWELL', '2': 4},
+    {'1': 'FRONT_LEFT_DOOR', '2': 5},
+    {'1': 'FRONT_LEFT_POCKET', '2': 6},
+    {'1': 'FRONT_LEFT_HANDLE', '2': 7},
+    {'1': 'FRONT_LEFT_FOOTWELL', '2': 8},
+    {'1': 'CONSOLE_LEFT', '2': 9},
+    {'1': 'DASH_LEFT', '2': 10},
+    {'1': 'DASH_RIGHT', '2': 11},
+    {'1': 'CONSOLE_RIGHT', '2': 12},
+    {'1': 'FRONT_RIGHT_FOOTWELL', '2': 13},
+    {'1': 'FRONT_RIGHT_HANDLE', '2': 14},
+    {'1': 'FRONT_RIGHT_POCKET', '2': 15},
+    {'1': 'FRONT_RIGHT_DOOR', '2': 16},
+    {'1': 'REAR_RIGHT_FOOTWELL', '2': 17},
+    {'1': 'REAR_RIGHT_HANDLE', '2': 18},
+    {'1': 'REAR_RIGHT_POCKET', '2': 19},
+    {'1': 'REAR_RIGHT_DOOR', '2': 20},
+  ],
+};
+
+/// Descriptor for `CarPosition`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List carPositionDescriptor = $convert.base64Decode(
+    'CgtDYXJQb3NpdGlvbhIYChRQT1NJVElPTl9VTlNQRUNJRklFRBAAEhIKDlJFQVJfTEVGVF9ET0'
+    '9SEAESFAoQUkVBUl9MRUZUX1BPQ0tFVBACEhQKEFJFQVJfTEVGVF9IQU5ETEUQAxIWChJSRUFS'
+    'X0xFRlRfRk9PVFdFTEwQBBITCg9GUk9OVF9MRUZUX0RPT1IQBRIVChFGUk9OVF9MRUZUX1BPQ0'
+    'tFVBAGEhUKEUZST05UX0xFRlRfSEFORExFEAcSFwoTRlJPTlRfTEVGVF9GT09UV0VMTBAIEhAK'
+    'DENPTlNPTEVfTEVGVBAJEg0KCURBU0hfTEVGVBAKEg4KCkRBU0hfUklHSFQQCxIRCg1DT05TT0'
+    'xFX1JJR0hUEAwSGAoURlJPTlRfUklHSFRfRk9PVFdFTEwQDRIWChJGUk9OVF9SSUdIVF9IQU5E'
+    'TEUQDhIWChJGUk9OVF9SSUdIVF9QT0NLRVQQDxIUChBGUk9OVF9SSUdIVF9ET09SEBASFwoTUk'
+    'VBUl9SSUdIVF9GT09UV0VMTBAREhUKEVJFQVJfUklHSFRfSEFORExFEBISFQoRUkVBUl9SSUdI'
+    'VF9QT0NLRVQQExITCg9SRUFSX1JJR0hUX0RPT1IQFA==');
 
 @$core.Deprecated('Use matrixInterpolationDescriptor instead')
 const MatrixInterpolation$json = {
@@ -180,6 +240,7 @@ const MatrixEffect$json = {
       '10': 'wavelengthPixels'
     },
     {'1': 'reverse', '3': 14, '4': 1, '5': 8, '10': 'reverse'},
+    {'1': 'name', '3': 15, '4': 1, '5': 9, '10': 'name'},
   ],
   '4': [MatrixEffect_Kind$json],
 };
@@ -194,6 +255,7 @@ const MatrixEffect_Kind$json = {
     {'1': 'BLINK', '2': 3},
     {'1': 'BREATHE', '2': 4},
     {'1': 'FLOWING_GRADIENT', '2': 5},
+    {'1': 'RAINBOW', '2': 6},
   ],
 };
 
@@ -207,9 +269,10 @@ final $typed_data.Uint8List matrixEffectDescriptor = $convert.base64Decode(
     '9sb3IYCiABKAsyGS5tZXNoX2ludGVyb3AuTWF0cml4Q29sb3JSDnNlY29uZGFyeUNvbG9yEjoK'
     'CWtleWZyYW1lcxgLIAMoCzIcLm1lc2hfaW50ZXJvcC5NYXRyaXhLZXlmcmFtZVIJa2V5ZnJhbW'
     'VzEhIKBGxvb3AYDCABKAhSBGxvb3ASKwoRd2F2ZWxlbmd0aF9waXhlbHMYDSABKA1SEHdhdmVs'
-    'ZW5ndGhQaXhlbHMSGAoHcmV2ZXJzZRgOIAEoCFIHcmV2ZXJzZSJtCgRLaW5kEhYKEkVGRkVDVF'
-    '9VTlNQRUNJRklFRBAAEhAKDFNUQVRJQ19DT0xPUhABEg0KCUtFWUZSQU1FUxACEgkKBUJMSU5L'
-    'EAMSCwoHQlJFQVRIRRAEEhQKEEZMT1dJTkdfR1JBRElFTlQQBQ==');
+    'ZW5ndGhQaXhlbHMSGAoHcmV2ZXJzZRgOIAEoCFIHcmV2ZXJzZRISCgRuYW1lGA8gASgJUgRuYW'
+    '1lInoKBEtpbmQSFgoSRUZGRUNUX1VOU1BFQ0lGSUVEEAASEAoMU1RBVElDX0NPTE9SEAESDQoJ'
+    'S0VZRlJBTUVTEAISCQoFQkxJTksQAxILCgdCUkVBVEhFEAQSFAoQRkxPV0lOR19HUkFESUVOVB'
+    'AFEgsKB1JBSU5CT1cQBg==');
 
 @$core.Deprecated('Use matrixSourceDescriptor instead')
 const MatrixSource$json = {
@@ -295,6 +358,16 @@ const MatrixLayout$json = {
     },
     {'1': 'from', '3': 3, '4': 1, '5': 13, '10': 'from'},
     {'1': 'to', '3': 4, '4': 1, '5': 13, '10': 'to'},
+    {'1': 'name', '3': 5, '4': 1, '5': 9, '10': 'name'},
+    {'1': 'source_index', '3': 6, '4': 1, '5': 13, '10': 'sourceIndex'},
+    {
+      '1': 'car_position',
+      '3': 7,
+      '4': 1,
+      '5': 14,
+      '6': '.mesh_interop.CarPosition',
+      '10': 'carPosition'
+    },
   ],
 };
 
@@ -302,7 +375,9 @@ const MatrixLayout$json = {
 final $typed_data.Uint8List matrixLayoutDescriptor = $convert.base64Decode(
     'CgxNYXRyaXhMYXlvdXQSGQoIbm9kZV9tYWMYASABKAxSB25vZGVNYWMSMgoGZHJpdmVyGAIgAS'
     'gOMhoubWVzaF9pbnRlcm9wLk1hdHJpeERyaXZlclIGZHJpdmVyEhIKBGZyb20YAyABKA1SBGZy'
-    'b20SDgoCdG8YBCABKA1SAnRv');
+    'b20SDgoCdG8YBCABKA1SAnRvEhIKBG5hbWUYBSABKAlSBG5hbWUSIQoMc291cmNlX2luZGV4GA'
+    'YgASgNUgtzb3VyY2VJbmRleBI8CgxjYXJfcG9zaXRpb24YByABKA4yGS5tZXNoX2ludGVyb3Au'
+    'Q2FyUG9zaXRpb25SC2NhclBvc2l0aW9u');
 
 @$core.Deprecated('Use matrixEntryDescriptor instead')
 const MatrixEntry$json = {
@@ -313,6 +388,7 @@ const MatrixEntry$json = {
     {'1': 'source_id', '3': 3, '4': 1, '5': 13, '10': 'sourceId'},
     {'1': 'condition_id', '3': 4, '4': 1, '5': 13, '10': 'conditionId'},
     {'1': 'priority', '3': 5, '4': 1, '5': 13, '10': 'priority'},
+    {'1': 'name', '3': 7, '4': 1, '5': 9, '10': 'name'},
   ],
   '9': [
     {'1': 6, '2': 7},
@@ -324,7 +400,8 @@ const MatrixEntry$json = {
 final $typed_data.Uint8List matrixEntryDescriptor = $convert.base64Decode(
     'CgtNYXRyaXhFbnRyeRIOCgJpZBgBIAEoDVICaWQSGwoJZWZmZWN0X2lkGAIgASgNUghlZmZlY3'
     'RJZBIbCglzb3VyY2VfaWQYAyABKA1SCHNvdXJjZUlkEiEKDGNvbmRpdGlvbl9pZBgEIAEoDVIL'
-    'Y29uZGl0aW9uSWQSGgoIcHJpb3JpdHkYBSABKA1SCHByaW9yaXR5SgQIBhAHUgd0YXJnZXRz');
+    'Y29uZGl0aW9uSWQSGgoIcHJpb3JpdHkYBSABKA1SCHByaW9yaXR5EhIKBG5hbWUYByABKAlSBG'
+    '5hbWVKBAgGEAdSB3RhcmdldHM=');
 
 @$core.Deprecated('Use matrixConfigDescriptor instead')
 const MatrixConfig$json = {
@@ -371,6 +448,7 @@ const MatrixConfig$json = {
       '6': '.mesh_interop.MatrixLayout',
       '10': 'layout'
     },
+    {'1': 'factory_default', '3': 7, '4': 1, '5': 8, '10': 'factoryDefault'},
   ],
 };
 
@@ -381,7 +459,8 @@ final $typed_data.Uint8List matrixConfigDescriptor = $convert.base64Decode(
     'c291cmNlcxgDIAMoCzIaLm1lc2hfaW50ZXJvcC5NYXRyaXhTb3VyY2VSB3NvdXJjZXMSPQoKY2'
     '9uZGl0aW9ucxgEIAMoCzIdLm1lc2hfaW50ZXJvcC5NYXRyaXhDb25kaXRpb25SCmNvbmRpdGlv'
     'bnMSMwoHZW50cmllcxgFIAMoCzIZLm1lc2hfaW50ZXJvcC5NYXRyaXhFbnRyeVIHZW50cmllcx'
-    'IyCgZsYXlvdXQYBiADKAsyGi5tZXNoX2ludGVyb3AuTWF0cml4TGF5b3V0UgZsYXlvdXQ=');
+    'IyCgZsYXlvdXQYBiADKAsyGi5tZXNoX2ludGVyb3AuTWF0cml4TGF5b3V0UgZsYXlvdXQSJwoP'
+    'ZmFjdG9yeV9kZWZhdWx0GAcgASgIUg5mYWN0b3J5RGVmYXVsdA==');
 
 @$core.Deprecated('Use transferBeginDescriptor instead')
 const TransferBegin$json = {
@@ -437,6 +516,33 @@ const MatrixUpload$json = {
     },
     {'1': 'commit', '3': 3, '4': 1, '5': 7, '9': 0, '10': 'commit'},
     {'1': 'abort', '3': 4, '4': 1, '5': 7, '9': 0, '10': 'abort'},
+    {
+      '1': 'layout_request',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.mesh_interop.LayoutRequest',
+      '9': 0,
+      '10': 'layoutRequest'
+    },
+    {
+      '1': 'layout_begin',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.mesh_interop.TransferBegin',
+      '9': 0,
+      '10': 'layoutBegin'
+    },
+    {
+      '1': 'matrix_begin',
+      '3': 7,
+      '4': 1,
+      '5': 11,
+      '6': '.mesh_interop.TransferBegin',
+      '9': 0,
+      '10': 'matrixBegin'
+    },
   ],
   '8': [
     {'1': 'operation'},
@@ -448,7 +554,298 @@ final $typed_data.Uint8List matrixUploadDescriptor = $convert.base64Decode(
     'CgxNYXRyaXhVcGxvYWQSMwoFYmVnaW4YASABKAsyGy5tZXNoX2ludGVyb3AuVHJhbnNmZXJCZW'
     'dpbkgAUgViZWdpbhIzCgVjaHVuaxgCIAEoCzIbLm1lc2hfaW50ZXJvcC5UcmFuc2ZlckNodW5r'
     'SABSBWNodW5rEhgKBmNvbW1pdBgDIAEoB0gAUgZjb21taXQSFgoFYWJvcnQYBCABKAdIAFIFYW'
-    'JvcnRCCwoJb3BlcmF0aW9u');
+    'JvcnQSRAoObGF5b3V0X3JlcXVlc3QYBSABKAsyGy5tZXNoX2ludGVyb3AuTGF5b3V0UmVxdWVz'
+    'dEgAUg1sYXlvdXRSZXF1ZXN0EkAKDGxheW91dF9iZWdpbhgGIAEoCzIbLm1lc2hfaW50ZXJvcC'
+    '5UcmFuc2ZlckJlZ2luSABSC2xheW91dEJlZ2luEkAKDG1hdHJpeF9iZWdpbhgHIAEoCzIbLm1l'
+    'c2hfaW50ZXJvcC5UcmFuc2ZlckJlZ2luSABSC21hdHJpeEJlZ2luQgsKCW9wZXJhdGlvbg==');
+
+@$core.Deprecated('Use layoutUpdateDescriptor instead')
+const LayoutUpdate$json = {
+  '1': 'LayoutUpdate',
+  '2': [
+    {
+      '1': 'expected_revision',
+      '3': 1,
+      '4': 1,
+      '5': 4,
+      '10': 'expectedRevision'
+    },
+    {'1': 'master_session', '3': 2, '4': 1, '5': 4, '10': 'masterSession'},
+    {
+      '1': 'layout',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.mesh_interop.MatrixLayout',
+      '10': 'layout'
+    },
+  ],
+};
+
+/// Descriptor for `LayoutUpdate`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List layoutUpdateDescriptor = $convert.base64Decode(
+    'CgxMYXlvdXRVcGRhdGUSKwoRZXhwZWN0ZWRfcmV2aXNpb24YASABKARSEGV4cGVjdGVkUmV2aX'
+    'Npb24SJQoObWFzdGVyX3Nlc3Npb24YAiABKARSDW1hc3RlclNlc3Npb24SMgoGbGF5b3V0GAMg'
+    'AygLMhoubWVzaF9pbnRlcm9wLk1hdHJpeExheW91dFIGbGF5b3V0');
+
+@$core.Deprecated('Use matrixUpdateDescriptor instead')
+const MatrixUpdate$json = {
+  '1': 'MatrixUpdate',
+  '2': [
+    {
+      '1': 'expected_revision',
+      '3': 1,
+      '4': 1,
+      '5': 4,
+      '10': 'expectedRevision'
+    },
+    {'1': 'master_session', '3': 2, '4': 1, '5': 4, '10': 'masterSession'},
+    {
+      '1': 'effects',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.mesh_interop.MatrixEffect',
+      '10': 'effects'
+    },
+    {
+      '1': 'sources',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.mesh_interop.MatrixSource',
+      '10': 'sources'
+    },
+    {
+      '1': 'conditions',
+      '3': 5,
+      '4': 3,
+      '5': 11,
+      '6': '.mesh_interop.MatrixCondition',
+      '10': 'conditions'
+    },
+    {
+      '1': 'entries',
+      '3': 6,
+      '4': 3,
+      '5': 11,
+      '6': '.mesh_interop.MatrixEntry',
+      '10': 'entries'
+    },
+  ],
+};
+
+/// Descriptor for `MatrixUpdate`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List matrixUpdateDescriptor = $convert.base64Decode(
+    'CgxNYXRyaXhVcGRhdGUSKwoRZXhwZWN0ZWRfcmV2aXNpb24YASABKARSEGV4cGVjdGVkUmV2aX'
+    'Npb24SJQoObWFzdGVyX3Nlc3Npb24YAiABKARSDW1hc3RlclNlc3Npb24SNAoHZWZmZWN0cxgD'
+    'IAMoCzIaLm1lc2hfaW50ZXJvcC5NYXRyaXhFZmZlY3RSB2VmZmVjdHMSNAoHc291cmNlcxgEIA'
+    'MoCzIaLm1lc2hfaW50ZXJvcC5NYXRyaXhTb3VyY2VSB3NvdXJjZXMSPQoKY29uZGl0aW9ucxgF'
+    'IAMoCzIdLm1lc2hfaW50ZXJvcC5NYXRyaXhDb25kaXRpb25SCmNvbmRpdGlvbnMSMwoHZW50cm'
+    'llcxgGIAMoCzIZLm1lc2hfaW50ZXJvcC5NYXRyaXhFbnRyeVIHZW50cmllcw==');
+
+@$core.Deprecated('Use matrixInputNodeDescriptor instead')
+const MatrixInputNode$json = {
+  '1': 'MatrixInputNode',
+  '2': [
+    {'1': 'node_mac', '3': 1, '4': 1, '5': 12, '10': 'nodeMac'},
+    {'1': 'gpios', '3': 2, '4': 3, '5': 13, '10': 'gpios'},
+    {'1': 'known', '3': 3, '4': 1, '5': 8, '10': 'known'},
+    {'1': 'online', '3': 4, '4': 1, '5': 8, '10': 'online'},
+  ],
+};
+
+/// Descriptor for `MatrixInputNode`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List matrixInputNodeDescriptor = $convert.base64Decode(
+    'Cg9NYXRyaXhJbnB1dE5vZGUSGQoIbm9kZV9tYWMYASABKAxSB25vZGVNYWMSFAoFZ3Bpb3MYAi'
+    'ADKA1SBWdwaW9zEhQKBWtub3duGAMgASgIUgVrbm93bhIWCgZvbmxpbmUYBCABKAhSBm9ubGlu'
+    'ZQ==');
+
+@$core.Deprecated('Use matrixDocumentDescriptor instead')
+const MatrixDocument$json = {
+  '1': 'MatrixDocument',
+  '2': [
+    {'1': 'config', '3': 1, '4': 1, '5': 12, '10': 'config'},
+    {'1': 'revision', '3': 2, '4': 1, '5': 4, '10': 'revision'},
+    {'1': 'master_session', '3': 3, '4': 1, '5': 4, '10': 'masterSession'},
+    {'1': 'master_mac', '3': 4, '4': 1, '5': 12, '10': 'masterMac'},
+    {
+      '1': 'nodes',
+      '3': 5,
+      '4': 3,
+      '5': 11,
+      '6': '.mesh_interop.MatrixInputNode',
+      '10': 'nodes'
+    },
+    {'1': 'active_revision', '3': 6, '4': 1, '5': 4, '10': 'activeRevision'},
+    {
+      '1': 'activation_pending',
+      '3': 7,
+      '4': 1,
+      '5': 8,
+      '10': 'activationPending'
+    },
+    {'1': 'persisted', '3': 8, '4': 1, '5': 8, '10': 'persisted'},
+  ],
+};
+
+/// Descriptor for `MatrixDocument`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List matrixDocumentDescriptor = $convert.base64Decode(
+    'Cg5NYXRyaXhEb2N1bWVudBIWCgZjb25maWcYASABKAxSBmNvbmZpZxIaCghyZXZpc2lvbhgCIA'
+    'EoBFIIcmV2aXNpb24SJQoObWFzdGVyX3Nlc3Npb24YAyABKARSDW1hc3RlclNlc3Npb24SHQoK'
+    'bWFzdGVyX21hYxgEIAEoDFIJbWFzdGVyTWFjEjMKBW5vZGVzGAUgAygLMh0ubWVzaF9pbnRlcm'
+    '9wLk1hdHJpeElucHV0Tm9kZVIFbm9kZXMSJwoPYWN0aXZlX3JldmlzaW9uGAYgASgEUg5hY3Rp'
+    'dmVSZXZpc2lvbhItChJhY3RpdmF0aW9uX3BlbmRpbmcYByABKAhSEWFjdGl2YXRpb25QZW5kaW'
+    '5nEhwKCXBlcnNpc3RlZBgIIAEoCFIJcGVyc2lzdGVk');
+
+@$core.Deprecated('Use layoutOutputDescriptor instead')
+const LayoutOutput$json = {
+  '1': 'LayoutOutput',
+  '2': [
+    {'1': 'node_mac', '3': 1, '4': 1, '5': 12, '10': 'nodeMac'},
+    {
+      '1': 'driver',
+      '3': 2,
+      '4': 1,
+      '5': 14,
+      '6': '.mesh_interop.MatrixDriver',
+      '10': 'driver'
+    },
+    {'1': 'pixel_count', '3': 3, '4': 1, '5': 13, '10': 'pixelCount'},
+    {'1': 'online', '3': 4, '4': 1, '5': 8, '10': 'online'},
+    {'1': 'ready', '3': 5, '4': 1, '5': 8, '10': 'ready'},
+    {'1': 'known', '3': 6, '4': 1, '5': 8, '10': 'known'},
+    {
+      '1': 'driver_kind',
+      '3': 7,
+      '4': 1,
+      '5': 14,
+      '6': '.mesh_interop.MatrixDriverKind',
+      '10': 'driverKind'
+    },
+    {'1': 'source_index', '3': 8, '4': 1, '5': 13, '10': 'sourceIndex'},
+    {'1': 'max_pixel_count', '3': 9, '4': 1, '5': 13, '10': 'maxPixelCount'},
+  ],
+};
+
+/// Descriptor for `LayoutOutput`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List layoutOutputDescriptor = $convert.base64Decode(
+    'CgxMYXlvdXRPdXRwdXQSGQoIbm9kZV9tYWMYASABKAxSB25vZGVNYWMSMgoGZHJpdmVyGAIgAS'
+    'gOMhoubWVzaF9pbnRlcm9wLk1hdHJpeERyaXZlclIGZHJpdmVyEh8KC3BpeGVsX2NvdW50GAMg'
+    'ASgNUgpwaXhlbENvdW50EhYKBm9ubGluZRgEIAEoCFIGb25saW5lEhQKBXJlYWR5GAUgASgIUg'
+    'VyZWFkeRIUCgVrbm93bhgGIAEoCFIFa25vd24SPwoLZHJpdmVyX2tpbmQYByABKA4yHi5tZXNo'
+    'X2ludGVyb3AuTWF0cml4RHJpdmVyS2luZFIKZHJpdmVyS2luZBIhCgxzb3VyY2VfaW5kZXgYCC'
+    'ABKA1SC3NvdXJjZUluZGV4EiYKD21heF9waXhlbF9jb3VudBgJIAEoDVINbWF4UGl4ZWxDb3Vu'
+    'dA==');
+
+@$core.Deprecated('Use layoutSnapshotDescriptor instead')
+const LayoutSnapshot$json = {
+  '1': 'LayoutSnapshot',
+  '2': [
+    {'1': 'master_session', '3': 1, '4': 1, '5': 4, '10': 'masterSession'},
+    {'1': 'revision', '3': 2, '4': 1, '5': 4, '10': 'revision'},
+    {
+      '1': 'layout',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.mesh_interop.MatrixLayout',
+      '10': 'layout'
+    },
+    {
+      '1': 'outputs',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.mesh_interop.LayoutOutput',
+      '10': 'outputs'
+    },
+    {'1': 'pending_nodes', '3': 5, '4': 1, '5': 13, '10': 'pendingNodes'},
+    {'1': 'master_mac', '3': 6, '4': 1, '5': 12, '10': 'masterMac'},
+  ],
+};
+
+/// Descriptor for `LayoutSnapshot`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List layoutSnapshotDescriptor = $convert.base64Decode(
+    'Cg5MYXlvdXRTbmFwc2hvdBIlCg5tYXN0ZXJfc2Vzc2lvbhgBIAEoBFINbWFzdGVyU2Vzc2lvbh'
+    'IaCghyZXZpc2lvbhgCIAEoBFIIcmV2aXNpb24SMgoGbGF5b3V0GAMgAygLMhoubWVzaF9pbnRl'
+    'cm9wLk1hdHJpeExheW91dFIGbGF5b3V0EjQKB291dHB1dHMYBCADKAsyGi5tZXNoX2ludGVyb3'
+    'AuTGF5b3V0T3V0cHV0UgdvdXRwdXRzEiMKDXBlbmRpbmdfbm9kZXMYBSABKA1SDHBlbmRpbmdO'
+    'b2RlcxIdCgptYXN0ZXJfbWFjGAYgASgMUgltYXN0ZXJNYWM=');
+
+@$core.Deprecated('Use layoutRequestDescriptor instead')
+const LayoutRequest$json = {
+  '1': 'LayoutRequest',
+  '2': [
+    {'1': 'request_id', '3': 1, '4': 1, '5': 13, '10': 'requestId'},
+    {
+      '1': 'operation',
+      '3': 2,
+      '4': 1,
+      '5': 14,
+      '6': '.mesh_interop.LayoutRequest.Operation',
+      '10': 'operation'
+    },
+    {'1': 'snapshot_id', '3': 3, '4': 1, '5': 7, '10': 'snapshotId'},
+    {'1': 'offset', '3': 4, '4': 1, '5': 13, '10': 'offset'},
+    {'1': 'output_index', '3': 5, '4': 1, '5': 13, '10': 'outputIndex'},
+    {
+      '1': 'identify_options',
+      '3': 6,
+      '4': 1,
+      '5': 7,
+      '9': 0,
+      '10': 'identifyOptions',
+      '17': true
+    },
+  ],
+  '4': [LayoutRequest_Operation$json],
+  '8': [
+    {'1': '_identify_options'},
+  ],
+};
+
+@$core.Deprecated('Use layoutRequestDescriptor instead')
+const LayoutRequest_Operation$json = {
+  '1': 'Operation',
+  '2': [
+    {'1': 'READ', '2': 0},
+    {'1': 'IDENTIFY', '2': 1},
+    {'1': 'READ_MATRIX', '2': 2},
+    {'1': 'READ_ACTIVE_MATRIX', '2': 3},
+  ],
+};
+
+/// Descriptor for `LayoutRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List layoutRequestDescriptor = $convert.base64Decode(
+    'Cg1MYXlvdXRSZXF1ZXN0Eh0KCnJlcXVlc3RfaWQYASABKA1SCXJlcXVlc3RJZBJDCglvcGVyYX'
+    'Rpb24YAiABKA4yJS5tZXNoX2ludGVyb3AuTGF5b3V0UmVxdWVzdC5PcGVyYXRpb25SCW9wZXJh'
+    'dGlvbhIfCgtzbmFwc2hvdF9pZBgDIAEoB1IKc25hcHNob3RJZBIWCgZvZmZzZXQYBCABKA1SBm'
+    '9mZnNldBIhCgxvdXRwdXRfaW5kZXgYBSABKA1SC291dHB1dEluZGV4Ei4KEGlkZW50aWZ5X29w'
+    'dGlvbnMYBiABKAdIAFIPaWRlbnRpZnlPcHRpb25ziAEBIkwKCU9wZXJhdGlvbhIICgRSRUFEEA'
+    'ASDAoISURFTlRJRlkQARIPCgtSRUFEX01BVFJJWBACEhYKElJFQURfQUNUSVZFX01BVFJJWBAD'
+    'QhMKEV9pZGVudGlmeV9vcHRpb25z');
+
+@$core.Deprecated('Use layoutResponseDescriptor instead')
+const LayoutResponse$json = {
+  '1': 'LayoutResponse',
+  '2': [
+    {'1': 'request_id', '3': 1, '4': 1, '5': 13, '10': 'requestId'},
+    {'1': 'error', '3': 2, '4': 1, '5': 9, '10': 'error'},
+    {'1': 'snapshot_id', '3': 3, '4': 1, '5': 7, '10': 'snapshotId'},
+    {'1': 'total_size', '3': 4, '4': 1, '5': 13, '10': 'totalSize'},
+    {'1': 'offset', '3': 5, '4': 1, '5': 13, '10': 'offset'},
+    {'1': 'data', '3': 6, '4': 1, '5': 12, '10': 'data'},
+    {'1': 'complete', '3': 7, '4': 1, '5': 8, '10': 'complete'},
+  ],
+};
+
+/// Descriptor for `LayoutResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List layoutResponseDescriptor = $convert.base64Decode(
+    'Cg5MYXlvdXRSZXNwb25zZRIdCgpyZXF1ZXN0X2lkGAEgASgNUglyZXF1ZXN0SWQSFAoFZXJyb3'
+    'IYAiABKAlSBWVycm9yEh8KC3NuYXBzaG90X2lkGAMgASgHUgpzbmFwc2hvdElkEh0KCnRvdGFs'
+    'X3NpemUYBCABKA1SCXRvdGFsU2l6ZRIWCgZvZmZzZXQYBSABKA1SBm9mZnNldBISCgRkYXRhGA'
+    'YgASgMUgRkYXRhEhoKCGNvbXBsZXRlGAcgASgIUghjb21wbGV0ZQ==');
 
 @$core.Deprecated('Use matrixNodeStatusDescriptor instead')
 const MatrixNodeStatus$json = {
@@ -581,6 +978,7 @@ const AnimationOutputMapping$json = {
     },
     {'1': 'from', '3': 2, '4': 1, '5': 13, '10': 'from'},
     {'1': 'to', '3': 3, '4': 1, '5': 13, '10': 'to'},
+    {'1': 'source_index', '3': 4, '4': 1, '5': 13, '10': 'sourceIndex'},
   ],
 };
 
@@ -588,7 +986,7 @@ const AnimationOutputMapping$json = {
 final $typed_data.Uint8List animationOutputMappingDescriptor = $convert.base64Decode(
     'ChZBbmltYXRpb25PdXRwdXRNYXBwaW5nEjIKBmRyaXZlchgBIAEoDjIaLm1lc2hfaW50ZXJvcC'
     '5NYXRyaXhEcml2ZXJSBmRyaXZlchISCgRmcm9tGAIgASgNUgRmcm9tEg4KAnRvGAMgASgNUgJ0'
-    'bw==');
+    'bxIhCgxzb3VyY2VfaW5kZXgYBCABKA1SC3NvdXJjZUluZGV4');
 
 @$core.Deprecated('Use animationDefinitionsDescriptor instead')
 const AnimationDefinitions$json = {

@@ -16,19 +16,31 @@ class BleScanningDisplay extends ConsumerWidget {
       spacing: 16,
       children: [
         Text(
-          'Searching for devices...',
+          state.starting
+              ? 'Preparing Bluetooth…'
+              : state.active
+              ? 'Searching for devices…'
+              : 'Search finished',
           style: Theme.of(context).textTheme.headlineSmall,
           textAlign: TextAlign.center,
         ),
-        PulseIcon(
-          pulseColor: Colors.blueAccent,
-          pulseDuration: 2.5.seconds,
-          pulseCount: 4,
-          icon: Icons.bluetooth_searching,
-          iconSize: 48,
-          innerSize: 64,
-          pulseSize: 200,
-        ),
+        if (state.active)
+          PulseIcon(
+            pulseColor: Colors.blueAccent,
+            pulseDuration: 2.5.seconds,
+            pulseCount: 4,
+            icon: Icons.bluetooth_searching,
+            iconSize: 48,
+            innerSize: 64,
+            pulseSize: 200,
+          ),
+        if (!state.active)
+          FilledButton.icon(
+            onPressed: () =>
+                ref.read(bleControllerProvider.notifier).startScan(),
+            icon: const Icon(Icons.refresh),
+            label: const Text('Scan again'),
+          ),
         Text(
           'Disconnect the currently connected device or restart the controller to enter connection mode',
           textAlign: TextAlign.center,

@@ -16,7 +16,8 @@ class _BleMatrixTransport implements MatrixTransport {
   @override
   int get mtu => upload.device.mtuNow;
   @override
-  Future<void> write(List<int> bytes) => upload.write(bytes, withoutResponse: false);
+  Future<void> write(List<int> bytes) =>
+      upload.write(bytes, withoutResponse: false);
   @override
   Future<List<int>> readStatus() => status.read();
   @override
@@ -24,7 +25,9 @@ class _BleMatrixTransport implements MatrixTransport {
     await status.setNotifyValue(true);
     // Reads share this plugin stream with notifications. Only the one-byte
     // invalidation notifications should request another read.
-    yield* status.onValueReceived.where((bytes) => bytes.length == 1 && bytes[0] == 1);
+    yield* status.onValueReceived.where(
+      (bytes) => bytes.length == 1 && bytes[0] == 1,
+    );
   }
 }
 
@@ -61,10 +64,16 @@ class BleService {
 }
 
 class BleRepository {
-  MatrixClient matrixClient(BleService service) => MatrixClient(_BleMatrixTransport(
-    _getCharacteristic(service, Guid('294b8b2e-57d2-bf85-dc41-5c612c9d1539')),
-    _getCharacteristic(service, Guid('294b8b2f-57d2-bf85-dc41-5c612c9d1539')),
-  ));
+  MatrixClient matrixClient(BleService service) => MatrixClient(
+    _BleMatrixTransport(
+      _getCharacteristic(service, Guid('294b8b2e-57d2-bf85-dc41-5c612c9d1539')),
+      _getCharacteristic(service, Guid('294b8b2f-57d2-bf85-dc41-5c612c9d1539')),
+    ),
+    readLayoutResponse: () => _getCharacteristic(
+      service,
+      Guid('294b8b30-57d2-bf85-dc41-5c612c9d1539'),
+    ).read(),
+  );
   final String lumadriveServiceUuid = '7160c543-73ce-b1ad-484b-c14232943214';
 
   final Guid meshStatusCharacteristicUuid = Guid(
@@ -119,11 +128,13 @@ class BleRepository {
   }
 
   Future<void> startScan() async {
-    FlutterBluePlus.startScan(
+    await FlutterBluePlus.startScan(
       withServices: [Guid(lumadriveServiceUuid)],
       timeout: 60.seconds,
     );
   }
+
+  Stream<bool> get scanning => FlutterBluePlus.isScanning;
 
   Future<void> turnOnBluetooth() async {
     if (!Platform.isAndroid) {
@@ -195,17 +206,17 @@ class BleRepository {
     }
   }
 
-  Stream<MeshInteropState> subscribeToMeshStatus(BleService service) {
+  Stream<MeshInteropState> subscribeToMeshStatus(BleService service) async* {
     try {
       final meshStatusCharacteristic = _getCharacteristic(
         service,
         meshStatusCharacteristicUuid,
       );
 
-      meshStatusCharacteristic.setNotifyValue(true);
-      return meshStatusCharacteristic.lastValueStream.map(
-        (bytes) => MeshInteropState.fromBuffer(bytes),
-      );
+      await meshStatusCharacteristic.setNotifyValue(true);
+      yield* meshStatusCharacteristic.lastValueStream
+          .where((bytes) => bytes.isNotEmpty)
+          .map((bytes) => MeshInteropState.fromBuffer(bytes)..freeze());
     } catch (e) {
       debugPrint('Failed to subscribe to mesh status: $e');
       throw Exception('Failed to subscribe to mesh status');

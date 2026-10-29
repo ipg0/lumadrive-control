@@ -25,22 +25,31 @@ class DeviceAddPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Pair new controller')),
-      body: Padding(
-        padding: const .all(18),
-        child: Center(
-          child: PageTransitionSwitcher(
-            duration: 300.milliseconds,
-            transitionBuilder: (child, primaryAnimation, secondaryAnimation) {
-              return SharedAxisTransition(
-                animation: primaryAnimation,
-                secondaryAnimation: secondaryAnimation,
-                transitionType: .horizontal,
-                child: child,
-              );
-            },
-            child: _displayState(ref),
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop && ref.read(bleControllerProvider) is! BleConnected) {
+          final controller = ref.read(bleControllerProvider.notifier);
+          final operationId = controller.currentOperation();
+          Future<void>.microtask(() => controller.cancelAttempt(operationId));
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(title: Text('Pair new controller')),
+        body: Padding(
+          padding: const .all(18),
+          child: Center(
+            child: PageTransitionSwitcher(
+              duration: 300.milliseconds,
+              transitionBuilder: (child, primaryAnimation, secondaryAnimation) {
+                return SharedAxisTransition(
+                  animation: primaryAnimation,
+                  secondaryAnimation: secondaryAnimation,
+                  transitionType: .horizontal,
+                  child: child,
+                );
+              },
+              child: _displayState(ref),
+            ),
           ),
         ),
       ),
