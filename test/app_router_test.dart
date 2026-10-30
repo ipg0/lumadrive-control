@@ -103,13 +103,13 @@ void main() {
       connection.emit(ready);
       await tester.pumpAndSettle();
       expect(router.routeInformationProvider.value.uri.path, '/device');
-      expect(find.text('Car layout'), findsOneWidget);
+      expect(find.byTooltip('Car layout'), findsOneWidget);
       repository.meshStreams[service]!.addError(StateError('Mesh unavailable'));
       await tester.pumpAndSettle();
       expect(find.text('Could not load controller state'), findsOneWidget);
       await tester.tap(find.text('Retry'));
       await tester.pumpAndSettle();
-      expect(find.text('Car layout'), findsOneWidget);
+      expect(find.byTooltip('Car layout'), findsOneWidget);
       await tester.tap(find.byTooltip('Disconnect controller'));
       await tester.pumpAndSettle();
       expect(router.routeInformationProvider.value.uri.path, '/');
@@ -176,7 +176,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       final router = container.read(appRouterProvider);
-      await tester.tap(find.text('Car layout'));
+      await tester.tap(find.byTooltip('Car layout'));
       await tester.pumpAndSettle();
       expect(
         router.routerDelegate.currentConfiguration.uri.path,
@@ -194,7 +194,7 @@ void main() {
       router.pop();
       await tester.pumpAndSettle();
       expect(router.routerDelegate.currentConfiguration.uri.path, '/device');
-      await tester.tap(find.text('Car layout'));
+      await tester.tap(find.byTooltip('Car layout'));
       await tester.pumpAndSettle();
       connection.emit(const BleError('Disconnected', device: firstController));
       await tester.pumpAndSettle();

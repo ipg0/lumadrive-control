@@ -244,10 +244,12 @@ class MatrixClient {
   }
 
   Stream<MatrixUploadProgress> upload(MatrixConfig config) async* {
-    if (config.schemaVersion != 2) {
+    if (config.schemaVersion != 0) {
       throw MatrixUploadException('Unsupported matrix schema version');
     }
-    yield* _uploadBytes(config.writeToBuffer(), 0);
+    final bytes = config.writeToBuffer();
+    // An explicit zero schema field keeps an empty v0 matrix transferable.
+    yield* _uploadBytes(bytes.isEmpty ? [8, 0] : bytes, 0);
   }
 
   Stream<MatrixUploadProgress> uploadLayout(LayoutUpdate update) =>

@@ -241,6 +241,14 @@ const MatrixEffect$json = {
     },
     {'1': 'reverse', '3': 14, '4': 1, '5': 8, '10': 'reverse'},
     {'1': 'name', '3': 15, '4': 1, '5': 9, '10': 'name'},
+    {
+      '1': 'gradient_colors',
+      '3': 16,
+      '4': 3,
+      '5': 11,
+      '6': '.mesh_interop.MatrixColor',
+      '10': 'gradientColors'
+    },
   ],
   '4': [MatrixEffect_Kind$json],
 };
@@ -256,6 +264,7 @@ const MatrixEffect_Kind$json = {
     {'1': 'BREATHE', '2': 4},
     {'1': 'FLOWING_GRADIENT', '2': 5},
     {'1': 'RAINBOW', '2': 6},
+    {'1': 'FILL', '2': 7},
   ],
 };
 
@@ -270,9 +279,10 @@ final $typed_data.Uint8List matrixEffectDescriptor = $convert.base64Decode(
     'CWtleWZyYW1lcxgLIAMoCzIcLm1lc2hfaW50ZXJvcC5NYXRyaXhLZXlmcmFtZVIJa2V5ZnJhbW'
     'VzEhIKBGxvb3AYDCABKAhSBGxvb3ASKwoRd2F2ZWxlbmd0aF9waXhlbHMYDSABKA1SEHdhdmVs'
     'ZW5ndGhQaXhlbHMSGAoHcmV2ZXJzZRgOIAEoCFIHcmV2ZXJzZRISCgRuYW1lGA8gASgJUgRuYW'
-    '1lInoKBEtpbmQSFgoSRUZGRUNUX1VOU1BFQ0lGSUVEEAASEAoMU1RBVElDX0NPTE9SEAESDQoJ'
-    'S0VZRlJBTUVTEAISCQoFQkxJTksQAxILCgdCUkVBVEhFEAQSFAoQRkxPV0lOR19HUkFESUVOVB'
-    'AFEgsKB1JBSU5CT1cQBg==');
+    '1lEkIKD2dyYWRpZW50X2NvbG9ycxgQIAMoCzIZLm1lc2hfaW50ZXJvcC5NYXRyaXhDb2xvclIO'
+    'Z3JhZGllbnRDb2xvcnMihAEKBEtpbmQSFgoSRUZGRUNUX1VOU1BFQ0lGSUVEEAASEAoMU1RBVE'
+    'lDX0NPTE9SEAESDQoJS0VZRlJBTUVTEAISCQoFQkxJTksQAxILCgdCUkVBVEhFEAQSFAoQRkxP'
+    'V0lOR19HUkFESUVOVBAFEgsKB1JBSU5CT1cQBhIICgRGSUxMEAc=');
 
 @$core.Deprecated('Use matrixSourceDescriptor instead')
 const MatrixSource$json = {
@@ -301,6 +311,8 @@ const MatrixSource_Kind$json = {
     {'1': 'SOURCE_UNSPECIFIED', '2': 0},
     {'1': 'DEFAULT_STATE', '2': 1},
     {'1': 'GPIO_EDGE', '2': 2},
+    {'1': 'ON_BOOT', '2': 3},
+    {'1': 'ON_MODE_SWITCHED', '2': 4},
   ],
 };
 
@@ -308,8 +320,9 @@ const MatrixSource_Kind$json = {
 final $typed_data.Uint8List matrixSourceDescriptor = $convert.base64Decode(
     'CgxNYXRyaXhTb3VyY2USDgoCaWQYASABKA1SAmlkEjMKBGtpbmQYAiABKA4yHy5tZXNoX2ludG'
     'Vyb3AuTWF0cml4U291cmNlLktpbmRSBGtpbmQSGQoIbm9kZV9tYWMYAyABKAxSB25vZGVNYWMS'
-    'EgoEZ3BpbxgEIAEoDVIEZ3BpbxIWCgZyaXNpbmcYBSABKAhSBnJpc2luZyJACgRLaW5kEhYKEl'
-    'NPVVJDRV9VTlNQRUNJRklFRBAAEhEKDURFRkFVTFRfU1RBVEUQARINCglHUElPX0VER0UQAg==');
+    'EgoEZ3BpbxgEIAEoDVIEZ3BpbxIWCgZyaXNpbmcYBSABKAhSBnJpc2luZyJjCgRLaW5kEhYKEl'
+    'NPVVJDRV9VTlNQRUNJRklFRBAAEhEKDURFRkFVTFRfU1RBVEUQARINCglHUElPX0VER0UQAhIL'
+    'CgdPTl9CT09UEAMSFAoQT05fTU9ERV9TV0lUQ0hFRBAE');
 
 @$core.Deprecated('Use matrixConditionDescriptor instead')
 const MatrixCondition$json = {
@@ -324,6 +337,7 @@ const MatrixCondition$json = {
       '6': '.mesh_interop.MatrixCondition.Kind',
       '10': 'kind'
     },
+    {'1': 'mode_id', '3': 3, '4': 1, '5': 13, '10': 'modeId'},
   ],
   '4': [MatrixCondition_Kind$json],
 };
@@ -334,14 +348,29 @@ const MatrixCondition_Kind$json = {
   '2': [
     {'1': 'CONDITION_UNSPECIFIED', '2': 0},
     {'1': 'ALWAYS', '2': 1},
+    {'1': 'MODE', '2': 2},
   ],
 };
 
 /// Descriptor for `MatrixCondition`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List matrixConditionDescriptor = $convert.base64Decode(
     'Cg9NYXRyaXhDb25kaXRpb24SDgoCaWQYASABKA1SAmlkEjYKBGtpbmQYAiABKA4yIi5tZXNoX2'
-    'ludGVyb3AuTWF0cml4Q29uZGl0aW9uLktpbmRSBGtpbmQiLQoES2luZBIZChVDT05ESVRJT05f'
-    'VU5TUEVDSUZJRUQQABIKCgZBTFdBWVMQAQ==');
+    'ludGVyb3AuTWF0cml4Q29uZGl0aW9uLktpbmRSBGtpbmQSFwoHbW9kZV9pZBgDIAEoDVIGbW9k'
+    'ZUlkIjcKBEtpbmQSGQoVQ09ORElUSU9OX1VOU1BFQ0lGSUVEEAASCgoGQUxXQVlTEAESCAoETU'
+    '9ERRAC');
+
+@$core.Deprecated('Use matrixModeDescriptor instead')
+const MatrixMode$json = {
+  '1': 'MatrixMode',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 13, '10': 'id'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+  ],
+};
+
+/// Descriptor for `MatrixMode`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List matrixModeDescriptor = $convert.base64Decode(
+    'CgpNYXRyaXhNb2RlEg4KAmlkGAEgASgNUgJpZBISCgRuYW1lGAIgASgJUgRuYW1l');
 
 @$core.Deprecated('Use matrixLayoutDescriptor instead')
 const MatrixLayout$json = {
@@ -389,6 +418,13 @@ const MatrixEntry$json = {
     {'1': 'condition_id', '3': 4, '4': 1, '5': 13, '10': 'conditionId'},
     {'1': 'priority', '3': 5, '4': 1, '5': 13, '10': 'priority'},
     {'1': 'name', '3': 7, '4': 1, '5': 9, '10': 'name'},
+    {
+      '1': 'opaque_background',
+      '3': 8,
+      '4': 1,
+      '5': 8,
+      '10': 'opaqueBackground'
+    },
   ],
   '9': [
     {'1': 6, '2': 7},
@@ -401,7 +437,8 @@ final $typed_data.Uint8List matrixEntryDescriptor = $convert.base64Decode(
     'CgtNYXRyaXhFbnRyeRIOCgJpZBgBIAEoDVICaWQSGwoJZWZmZWN0X2lkGAIgASgNUghlZmZlY3'
     'RJZBIbCglzb3VyY2VfaWQYAyABKA1SCHNvdXJjZUlkEiEKDGNvbmRpdGlvbl9pZBgEIAEoDVIL'
     'Y29uZGl0aW9uSWQSGgoIcHJpb3JpdHkYBSABKA1SCHByaW9yaXR5EhIKBG5hbWUYByABKAlSBG'
-    '5hbWVKBAgGEAdSB3RhcmdldHM=');
+    '5hbWUSKwoRb3BhcXVlX2JhY2tncm91bmQYCCABKAhSEG9wYXF1ZUJhY2tncm91bmRKBAgGEAdS'
+    'B3RhcmdldHM=');
 
 @$core.Deprecated('Use matrixConfigDescriptor instead')
 const MatrixConfig$json = {
@@ -449,6 +486,15 @@ const MatrixConfig$json = {
       '10': 'layout'
     },
     {'1': 'factory_default', '3': 7, '4': 1, '5': 8, '10': 'factoryDefault'},
+    {
+      '1': 'modes',
+      '3': 8,
+      '4': 3,
+      '5': 11,
+      '6': '.mesh_interop.MatrixMode',
+      '10': 'modes'
+    },
+    {'1': 'active_mode_id', '3': 9, '4': 1, '5': 13, '10': 'activeModeId'},
   ],
 };
 
@@ -460,7 +506,9 @@ final $typed_data.Uint8List matrixConfigDescriptor = $convert.base64Decode(
     '9uZGl0aW9ucxgEIAMoCzIdLm1lc2hfaW50ZXJvcC5NYXRyaXhDb25kaXRpb25SCmNvbmRpdGlv'
     'bnMSMwoHZW50cmllcxgFIAMoCzIZLm1lc2hfaW50ZXJvcC5NYXRyaXhFbnRyeVIHZW50cmllcx'
     'IyCgZsYXlvdXQYBiADKAsyGi5tZXNoX2ludGVyb3AuTWF0cml4TGF5b3V0UgZsYXlvdXQSJwoP'
-    'ZmFjdG9yeV9kZWZhdWx0GAcgASgIUg5mYWN0b3J5RGVmYXVsdA==');
+    'ZmFjdG9yeV9kZWZhdWx0GAcgASgIUg5mYWN0b3J5RGVmYXVsdBIuCgVtb2RlcxgIIAMoCzIYLm'
+    '1lc2hfaW50ZXJvcC5NYXRyaXhNb2RlUgVtb2RlcxIkCg5hY3RpdmVfbW9kZV9pZBgJIAEoDVIM'
+    'YWN0aXZlTW9kZUlk');
 
 @$core.Deprecated('Use transferBeginDescriptor instead')
 const TransferBegin$json = {
@@ -632,6 +680,15 @@ const MatrixUpdate$json = {
       '6': '.mesh_interop.MatrixEntry',
       '10': 'entries'
     },
+    {
+      '1': 'modes',
+      '3': 7,
+      '4': 3,
+      '5': 11,
+      '6': '.mesh_interop.MatrixMode',
+      '10': 'modes'
+    },
+    {'1': 'active_mode_id', '3': 8, '4': 1, '5': 13, '10': 'activeModeId'},
   ],
 };
 
@@ -642,7 +699,9 @@ final $typed_data.Uint8List matrixUpdateDescriptor = $convert.base64Decode(
     'IAMoCzIaLm1lc2hfaW50ZXJvcC5NYXRyaXhFZmZlY3RSB2VmZmVjdHMSNAoHc291cmNlcxgEIA'
     'MoCzIaLm1lc2hfaW50ZXJvcC5NYXRyaXhTb3VyY2VSB3NvdXJjZXMSPQoKY29uZGl0aW9ucxgF'
     'IAMoCzIdLm1lc2hfaW50ZXJvcC5NYXRyaXhDb25kaXRpb25SCmNvbmRpdGlvbnMSMwoHZW50cm'
-    'llcxgGIAMoCzIZLm1lc2hfaW50ZXJvcC5NYXRyaXhFbnRyeVIHZW50cmllcw==');
+    'llcxgGIAMoCzIZLm1lc2hfaW50ZXJvcC5NYXRyaXhFbnRyeVIHZW50cmllcxIuCgVtb2RlcxgH'
+    'IAMoCzIYLm1lc2hfaW50ZXJvcC5NYXRyaXhNb2RlUgVtb2RlcxIkCg5hY3RpdmVfbW9kZV9pZB'
+    'gIIAEoDVIMYWN0aXZlTW9kZUlk');
 
 @$core.Deprecated('Use matrixInputNodeDescriptor instead')
 const MatrixInputNode$json = {
@@ -951,6 +1010,13 @@ const AnimationLayer$json = {
     },
     {'1': 'priority', '3': 4, '4': 1, '5': 13, '10': 'priority'},
     {'1': 'order', '3': 5, '4': 1, '5': 13, '10': 'order'},
+    {
+      '1': 'opaque_background',
+      '3': 6,
+      '4': 1,
+      '5': 8,
+      '10': 'opaqueBackground'
+    },
   ],
   '9': [
     {'1': 3, '2': 4},
@@ -962,7 +1028,8 @@ const AnimationLayer$json = {
 final $typed_data.Uint8List animationLayerDescriptor = $convert.base64Decode(
     'Cg5BbmltYXRpb25MYXllchIZCghlbnRyeV9pZBgBIAEoDVIHZW50cnlJZBIyCgZlZmZlY3QYAi'
     'ABKAsyGi5tZXNoX2ludGVyb3AuTWF0cml4RWZmZWN0UgZlZmZlY3QSGgoIcHJpb3JpdHkYBCAB'
-    'KA1SCHByaW9yaXR5EhQKBW9yZGVyGAUgASgNUgVvcmRlckoECAMQBFIHZHJpdmVycw==');
+    'KA1SCHByaW9yaXR5EhQKBW9yZGVyGAUgASgNUgVvcmRlchIrChFvcGFxdWVfYmFja2dyb3VuZB'
+    'gGIAEoCFIQb3BhcXVlQmFja2dyb3VuZEoECAMQBFIHZHJpdmVycw==');
 
 @$core.Deprecated('Use animationOutputMappingDescriptor instead')
 const AnimationOutputMapping$json = {

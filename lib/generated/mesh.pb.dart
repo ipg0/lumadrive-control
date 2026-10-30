@@ -431,6 +431,7 @@ class MatrixEffect extends $pb.GeneratedMessage {
     $core.int? wavelengthPixels,
     $core.bool? reverse,
     $core.String? name,
+    $core.Iterable<MatrixColor>? gradientColors,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -448,6 +449,7 @@ class MatrixEffect extends $pb.GeneratedMessage {
     if (wavelengthPixels != null) result.wavelengthPixels = wavelengthPixels;
     if (reverse != null) result.reverse = reverse;
     if (name != null) result.name = name;
+    if (gradientColors != null) result.gradientColors.addAll(gradientColors);
     return result;
   }
 
@@ -484,6 +486,8 @@ class MatrixEffect extends $pb.GeneratedMessage {
         fieldType: $pb.PbFieldType.OU3)
     ..aOB(14, _omitFieldNames ? '' : 'reverse')
     ..aOS(15, _omitFieldNames ? '' : 'name')
+    ..pPM<MatrixColor>(16, _omitFieldNames ? '' : 'gradientColors',
+        subBuilder: MatrixColor.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -635,6 +639,9 @@ class MatrixEffect extends $pb.GeneratedMessage {
   $core.bool hasName() => $_has(14);
   @$pb.TagNumber(15)
   void clearName() => $_clearField(15);
+
+  @$pb.TagNumber(16)
+  $pb.PbList<MatrixColor> get gradientColors => $_getList(15);
 }
 
 class MatrixSource extends $pb.GeneratedMessage {
@@ -745,10 +752,12 @@ class MatrixCondition extends $pb.GeneratedMessage {
   factory MatrixCondition({
     $core.int? id,
     MatrixCondition_Kind? kind,
+    $core.int? modeId,
   }) {
     final result = create();
     if (id != null) result.id = id;
     if (kind != null) result.kind = kind;
+    if (modeId != null) result.modeId = modeId;
     return result;
   }
 
@@ -768,6 +777,7 @@ class MatrixCondition extends $pb.GeneratedMessage {
     ..aI(1, _omitFieldNames ? '' : 'id', fieldType: $pb.PbFieldType.OU3)
     ..aE<MatrixCondition_Kind>(2, _omitFieldNames ? '' : 'kind',
         enumValues: MatrixCondition_Kind.values)
+    ..aI(3, _omitFieldNames ? '' : 'modeId', fieldType: $pb.PbFieldType.OU3)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -806,6 +816,80 @@ class MatrixCondition extends $pb.GeneratedMessage {
   $core.bool hasKind() => $_has(1);
   @$pb.TagNumber(2)
   void clearKind() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get modeId => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set modeId($core.int value) => $_setUnsignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasModeId() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearModeId() => $_clearField(3);
+}
+
+class MatrixMode extends $pb.GeneratedMessage {
+  factory MatrixMode({
+    $core.int? id,
+    $core.String? name,
+  }) {
+    final result = create();
+    if (id != null) result.id = id;
+    if (name != null) result.name = name;
+    return result;
+  }
+
+  MatrixMode._();
+
+  factory MatrixMode.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory MatrixMode.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'MatrixMode',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'mesh_interop'),
+      createEmptyInstance: create)
+    ..aI(1, _omitFieldNames ? '' : 'id', fieldType: $pb.PbFieldType.OU3)
+    ..aOS(2, _omitFieldNames ? '' : 'name')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MatrixMode clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MatrixMode copyWith(void Function(MatrixMode) updates) =>
+      super.copyWith((message) => updates(message as MatrixMode)) as MatrixMode;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MatrixMode create() => MatrixMode._();
+  @$core.override
+  MatrixMode createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static MatrixMode getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<MatrixMode>(create);
+  static MatrixMode? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get id => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set id($core.int value) => $_setUnsignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get name => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set name($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearName() => $_clearField(2);
 }
 
 /// Boundary indices: 0 -> 60 covers pixels 0..59; 12 -> 10 covers 11,10.
@@ -947,6 +1031,7 @@ class MatrixEntry extends $pb.GeneratedMessage {
     $core.int? conditionId,
     $core.int? priority,
     $core.String? name,
+    $core.bool? opaqueBackground,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -955,6 +1040,7 @@ class MatrixEntry extends $pb.GeneratedMessage {
     if (conditionId != null) result.conditionId = conditionId;
     if (priority != null) result.priority = priority;
     if (name != null) result.name = name;
+    if (opaqueBackground != null) result.opaqueBackground = opaqueBackground;
     return result;
   }
 
@@ -978,6 +1064,7 @@ class MatrixEntry extends $pb.GeneratedMessage {
         fieldType: $pb.PbFieldType.OU3)
     ..aI(5, _omitFieldNames ? '' : 'priority', fieldType: $pb.PbFieldType.OU3)
     ..aOS(7, _omitFieldNames ? '' : 'name')
+    ..aOB(8, _omitFieldNames ? '' : 'opaqueBackground')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1052,6 +1139,15 @@ class MatrixEntry extends $pb.GeneratedMessage {
   $core.bool hasName() => $_has(5);
   @$pb.TagNumber(7)
   void clearName() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.bool get opaqueBackground => $_getBF(6);
+  @$pb.TagNumber(8)
+  set opaqueBackground($core.bool value) => $_setBool(6, value);
+  @$pb.TagNumber(8)
+  $core.bool hasOpaqueBackground() => $_has(6);
+  @$pb.TagNumber(8)
+  void clearOpaqueBackground() => $_clearField(8);
 }
 
 class MatrixConfig extends $pb.GeneratedMessage {
@@ -1063,6 +1159,8 @@ class MatrixConfig extends $pb.GeneratedMessage {
     $core.Iterable<MatrixEntry>? entries,
     $core.Iterable<MatrixLayout>? layout,
     $core.bool? factoryDefault,
+    $core.Iterable<MatrixMode>? modes,
+    $core.int? activeModeId,
   }) {
     final result = create();
     if (schemaVersion != null) result.schemaVersion = schemaVersion;
@@ -1072,6 +1170,8 @@ class MatrixConfig extends $pb.GeneratedMessage {
     if (entries != null) result.entries.addAll(entries);
     if (layout != null) result.layout.addAll(layout);
     if (factoryDefault != null) result.factoryDefault = factoryDefault;
+    if (modes != null) result.modes.addAll(modes);
+    if (activeModeId != null) result.activeModeId = activeModeId;
     return result;
   }
 
@@ -1101,6 +1201,10 @@ class MatrixConfig extends $pb.GeneratedMessage {
     ..pPM<MatrixLayout>(6, _omitFieldNames ? '' : 'layout',
         subBuilder: MatrixLayout.create)
     ..aOB(7, _omitFieldNames ? '' : 'factoryDefault')
+    ..pPM<MatrixMode>(8, _omitFieldNames ? '' : 'modes',
+        subBuilder: MatrixMode.create)
+    ..aI(9, _omitFieldNames ? '' : 'activeModeId',
+        fieldType: $pb.PbFieldType.OU3)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1154,6 +1258,18 @@ class MatrixConfig extends $pb.GeneratedMessage {
   $core.bool hasFactoryDefault() => $_has(6);
   @$pb.TagNumber(7)
   void clearFactoryDefault() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $pb.PbList<MatrixMode> get modes => $_getList(7);
+
+  @$pb.TagNumber(9)
+  $core.int get activeModeId => $_getIZ(8);
+  @$pb.TagNumber(9)
+  set activeModeId($core.int value) => $_setUnsignedInt32(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasActiveModeId() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearActiveModeId() => $_clearField(9);
 }
 
 class TransferBegin extends $pb.GeneratedMessage {
@@ -1582,6 +1698,8 @@ class MatrixUpdate extends $pb.GeneratedMessage {
     $core.Iterable<MatrixSource>? sources,
     $core.Iterable<MatrixCondition>? conditions,
     $core.Iterable<MatrixEntry>? entries,
+    $core.Iterable<MatrixMode>? modes,
+    $core.int? activeModeId,
   }) {
     final result = create();
     if (expectedRevision != null) result.expectedRevision = expectedRevision;
@@ -1590,6 +1708,8 @@ class MatrixUpdate extends $pb.GeneratedMessage {
     if (sources != null) result.sources.addAll(sources);
     if (conditions != null) result.conditions.addAll(conditions);
     if (entries != null) result.entries.addAll(entries);
+    if (modes != null) result.modes.addAll(modes);
+    if (activeModeId != null) result.activeModeId = activeModeId;
     return result;
   }
 
@@ -1620,6 +1740,10 @@ class MatrixUpdate extends $pb.GeneratedMessage {
         subBuilder: MatrixCondition.create)
     ..pPM<MatrixEntry>(6, _omitFieldNames ? '' : 'entries',
         subBuilder: MatrixEntry.create)
+    ..pPM<MatrixMode>(7, _omitFieldNames ? '' : 'modes',
+        subBuilder: MatrixMode.create)
+    ..aI(8, _omitFieldNames ? '' : 'activeModeId',
+        fieldType: $pb.PbFieldType.OU3)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1670,6 +1794,18 @@ class MatrixUpdate extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(6)
   $pb.PbList<MatrixEntry> get entries => $_getList(5);
+
+  @$pb.TagNumber(7)
+  $pb.PbList<MatrixMode> get modes => $_getList(6);
+
+  @$pb.TagNumber(8)
+  $core.int get activeModeId => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set activeModeId($core.int value) => $_setUnsignedInt32(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasActiveModeId() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearActiveModeId() => $_clearField(8);
 }
 
 class MatrixInputNode extends $pb.GeneratedMessage {
@@ -2624,12 +2760,14 @@ class AnimationLayer extends $pb.GeneratedMessage {
     MatrixEffect? effect,
     $core.int? priority,
     $core.int? order,
+    $core.bool? opaqueBackground,
   }) {
     final result = create();
     if (entryId != null) result.entryId = entryId;
     if (effect != null) result.effect = effect;
     if (priority != null) result.priority = priority;
     if (order != null) result.order = order;
+    if (opaqueBackground != null) result.opaqueBackground = opaqueBackground;
     return result;
   }
 
@@ -2651,6 +2789,7 @@ class AnimationLayer extends $pb.GeneratedMessage {
         subBuilder: MatrixEffect.create)
     ..aI(4, _omitFieldNames ? '' : 'priority', fieldType: $pb.PbFieldType.OU3)
     ..aI(5, _omitFieldNames ? '' : 'order', fieldType: $pb.PbFieldType.OU3)
+    ..aOB(6, _omitFieldNames ? '' : 'opaqueBackground')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2709,6 +2848,15 @@ class AnimationLayer extends $pb.GeneratedMessage {
   $core.bool hasOrder() => $_has(3);
   @$pb.TagNumber(5)
   void clearOrder() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.bool get opaqueBackground => $_getBF(4);
+  @$pb.TagNumber(6)
+  set opaqueBackground($core.bool value) => $_setBool(4, value);
+  @$pb.TagNumber(6)
+  $core.bool hasOpaqueBackground() => $_has(4);
+  @$pb.TagNumber(6)
+  void clearOpaqueBackground() => $_clearField(6);
 }
 
 class AnimationOutputMapping extends $pb.GeneratedMessage {

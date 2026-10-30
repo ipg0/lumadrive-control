@@ -6,7 +6,7 @@ import 'package:lumadrive_control/repositories/matrix_editor_repository.dart';
 import 'layout_fakes.dart' show layoutMasterMac, layoutSlaveMac;
 
 MatrixConfig editorFixture() => MatrixConfig(
-  schemaVersion: 2,
+  schemaVersion: 0,
   layout: [
     MatrixLayout(
       nodeMac: layoutMasterMac,
@@ -127,6 +127,10 @@ class FakeMatrixEditorRepository implements MatrixEditorRepository {
     config.entries
       ..clear()
       ..addAll(update.entries);
+    config.modes
+      ..clear()
+      ..addAll(update.modes);
+    config.activeModeId = update.activeModeId;
     document
       ..config = config.writeToBuffer()
       ..revision += Int64.ONE;

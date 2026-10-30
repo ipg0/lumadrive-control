@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:lumadrive_control/generated/mesh.pb.dart';
 import 'package:lumadrive_control/repositories/matrix_editor_repository.dart';
+import 'package:lumadrive_control/utils/gradient_palette.dart';
 
 const simpleEffectKinds = [
   MatrixEffect_Kind.STATIC_COLOR,
@@ -12,6 +13,7 @@ const simpleEffectKinds = [
   MatrixEffect_Kind.BREATHE,
   MatrixEffect_Kind.FLOWING_GRADIENT,
   MatrixEffect_Kind.RAINBOW,
+  MatrixEffect_Kind.FILL,
 ];
 String effectKindLabel(MatrixEffect_Kind kind) => switch (kind) {
   MatrixEffect_Kind.STATIC_COLOR => 'Static color',
@@ -19,6 +21,7 @@ String effectKindLabel(MatrixEffect_Kind kind) => switch (kind) {
   MatrixEffect_Kind.BREATHE => 'Breathe',
   MatrixEffect_Kind.FLOWING_GRADIENT => 'Flowing gradient',
   MatrixEffect_Kind.RAINBOW => 'Rainbow',
+  MatrixEffect_Kind.FILL => 'Fill',
   MatrixEffect_Kind.KEYFRAMES => 'Keyframes',
   _ => 'Unsupported animation',
 };
@@ -38,9 +41,17 @@ MatrixUpdate matrixPatch(MatrixConfig config) => MatrixUpdate(
   sources: config.sources,
   conditions: config.conditions,
   entries: config.entries,
+  modes: config.modes,
+  activeModeId: config.activeModeId,
 );
 bool sameMatrix(MatrixConfig a, MatrixConfig b) =>
     listEquals(matrixPatch(a).writeToBuffer(), matrixPatch(b).writeToBuffer());
+bool sameMatrixEntries(MatrixConfig a, MatrixConfig b) {
+  MatrixUpdate entries(MatrixConfig config) => matrixPatch(config)
+    ..modes.clear()
+    ..activeModeId = 0;
+  return listEquals(entries(a).writeToBuffer(), entries(b).writeToBuffer());
+}
 
 class MatrixEditorController extends ChangeNotifier {
   final MatrixEditorRepository repository;
@@ -49,7 +60,7 @@ class MatrixEditorController extends ChangeNotifier {
   MatrixDocument? document;
   MatrixDocument? currentDocument;
   bool readingCurrent = false;
-  MatrixConfig config = MatrixConfig(schemaVersion: 2);
+  MatrixConfig config = MatrixConfig(schemaVersion: 0);
   MatrixStatus? deployment;
   bool loading = true,
       connected = false,
@@ -69,7 +80,7 @@ class MatrixEditorController extends ChangeNotifier {
     this.pollInterval = const Duration(seconds: 3),
   });
   MatrixConfig get saved => document == null
-      ? MatrixConfig(schemaVersion: 2)
+      ? MatrixConfig(schemaVersion: 0)
       : MatrixConfig.fromBuffer(document!.config);
   bool get dirty => document != null && !sameMatrix(config, saved);
   bool get canApply =>
@@ -91,12 +102,13 @@ class MatrixEditorController extends ChangeNotifier {
       config.sources.where((item) => item.id == id).firstOrNull;
   String? get validationError => _validationError(config);
   String? _validationError(MatrixConfig config) {
-    if (config.schemaVersion != 2) return 'Unsupported configuration format.';
+    if (config.schemaVersion != 0) return 'Unsupported configuration format.';
     if ([
       config.effects.length,
       config.sources.length,
       config.conditions.length,
       config.entries.length,
+      config.modes.length,
     ].any((n) => n > 32)) {
       return 'Up to 32 entries and 32 definitions per type are supported.';
     }
@@ -105,6 +117,7 @@ class MatrixEditorController extends ChangeNotifier {
       config.sources.map((e) => e.id),
       config.conditions.map((e) => e.id),
       config.entries.map((e) => e.id),
+      config.modes.map((e) => e.id),
     ]) {
       if (ids.any((id) => id <= 0 || id > 0xffffffff) ||
           ids.toSet().length != ids.length) {
@@ -141,24 +154,39 @@ class MatrixEditorController extends ChangeNotifier {
           ].any((v) => v < 0 || v > 255)) {
         return 'Colors must be between 0 and 255.';
       }
+      if (e.gradientColors.length > maxGradientColors ||
+          e.gradientColors.any(
+            (color) => [
+              color.red,
+              color.green,
+              color.blue,
+              color.alpha,
+            ].any((value) => value < 0 || value > 255),
+          )) {
+        return 'Gradients support up to $maxGradientColors RGBA colors, with channels between 0 and 255.';
+      }
+      if (e.gradientColors.isNotEmpty &&
+          e.kind != MatrixEffect_Kind.FLOWING_GRADIENT) {
+        return 'Gradient colors require a flowing gradient.';
+      }
       if (e.periodMs == 1) return 'Animation periods must be at least 2 ms.';
+      if (e.kind == MatrixEffect_Kind.FILL && !e.loop && e.durationMs < 2) {
+        return 'A one-shot fill needs a duration of at least 2 ms.';
+      }
       if (e.kind == MatrixEffect_Kind.BLINK &&
           (e.dutyPercent < 0 || e.dutyPercent > 100)) {
         return 'Blink duty must be between 1 and 100%.';
       }
       if (e.kind == MatrixEffect_Kind.FLOWING_GRADIENT &&
-          !e.hasSecondaryColor()) {
-        return 'A gradient needs two colors.';
+          (e.gradientColors.length == 1 ||
+              (e.gradientColors.isEmpty && !e.hasSecondaryColor()))) {
+        return 'A gradient needs 2–$maxGradientColors colors.';
       }
     }
     for (final entry in config.entries) {
       if (!config.effects.any((effect) => effect.id == entry.effectId) ||
           !config.sources.any((source) => source.id == entry.sourceId) ||
-          !config.conditions.any(
-            (c) =>
-                c.id == entry.conditionId &&
-                c.kind == MatrixCondition_Kind.ALWAYS,
-          )) {
+          !config.conditions.any((c) => c.id == entry.conditionId)) {
         return 'An entry has an invalid animation, trigger or condition.';
       }
       if (entry.priority < 0 || entry.priority > 255) {
@@ -167,9 +195,21 @@ class MatrixEditorController extends ChangeNotifier {
       if (utf8.encode(entry.name).length > 128) {
         return 'Entry name is too long.';
       }
+      if (entry.opaqueBackground &&
+          config.sources.any(
+            (source) =>
+                source.id == entry.sourceId &&
+                source.kind == MatrixSource_Kind.DEFAULT_STATE,
+          )) {
+        return 'Default-state entries require a transparent background.';
+      }
     }
     for (final s in config.sources) {
-      if (s.kind == MatrixSource_Kind.DEFAULT_STATE) continue;
+      if (s.kind == MatrixSource_Kind.DEFAULT_STATE ||
+          s.kind == MatrixSource_Kind.ON_BOOT ||
+          s.kind == MatrixSource_Kind.ON_MODE_SWITCHED) {
+        continue;
+      }
       if (s.kind != MatrixSource_Kind.GPIO_EDGE ||
           s.nodeMac.length != 6 ||
           s.nodeMac.every((v) => v == 0) ||
@@ -185,7 +225,21 @@ class MatrixEditorController extends ChangeNotifier {
         return 'GPIO ${s.gpio} is reserved on its node.';
       }
     }
-    if (config.conditions.any((c) => c.kind != MatrixCondition_Kind.ALWAYS)) {
+    if (config.activeModeId != 0 &&
+        !config.modes.any((m) => m.id == config.activeModeId)) {
+      return 'Invalid active mode.';
+    }
+    if (config.modes.any(
+      (m) => m.name.trim().isEmpty || utf8.encode(m.name).length > 128,
+    )) {
+      return 'Mode names must be 1–128 bytes.';
+    }
+    if (config.conditions.any(
+      (c) =>
+          c.kind != MatrixCondition_Kind.ALWAYS &&
+          (c.kind != MatrixCondition_Kind.MODE ||
+              !config.modes.any((m) => m.id == c.modeId)),
+    )) {
       return 'Unsupported condition.';
     }
     if (config.writeToBuffer().length > 16384 ||
@@ -243,7 +297,7 @@ class MatrixEditorController extends ChangeNotifier {
       final status = await repository.status();
       if (_disposed) return;
       if (fresh.config.isEmpty ||
-          MatrixConfig.fromBuffer(fresh.config).schemaVersion != 2) {
+          MatrixConfig.fromBuffer(fresh.config).schemaVersion != 0) {
         throw StateError('Unsupported configuration format');
       }
       final previous = document,
@@ -269,11 +323,15 @@ class MatrixEditorController extends ChangeNotifier {
         config = incoming;
         conflict = false;
       } else if (listEquals(previous.masterMac, fresh.masterMac) &&
-          sameMatrix(saved, incoming)) {
+          sameMatrixEntries(saved, incoming)) {
         document = fresh;
         config.layout
           ..clear()
           ..addAll(incoming.layout);
+        config.modes
+          ..clear()
+          ..addAll(incoming.modes.map((mode) => mode.deepCopy()));
+        config.activeModeId = incoming.activeModeId;
         conflict = false;
       } else {
         conflict = true;
@@ -448,6 +506,7 @@ class MatrixEditorController extends ChangeNotifier {
     MatrixEntry value,
     MatrixSource trigger, {
     List<MatrixEffect> newEffects = const [],
+    int modeId = 0,
   }) {
     if (_disposed || applying) return false;
     if (value.id == 0 && config.entries.length >= 32) {
@@ -474,7 +533,11 @@ class MatrixEditorController extends ChangeNotifier {
       return false;
     }
     final condition = config.conditions
-        .where((c) => c.kind == MatrixCondition_Kind.ALWAYS)
+        .where(
+          (c) => modeId == 0
+              ? c.kind == MatrixCondition_Kind.ALWAYS
+              : c.kind == MatrixCondition_Kind.MODE && c.modeId == modeId,
+        )
         .firstOrNull;
     if (condition == null && config.conditions.length >= 32) {
       error = 'Too many condition definitions.';
@@ -503,7 +566,10 @@ class MatrixEditorController extends ChangeNotifier {
       config.conditions.add(
         MatrixCondition(
           id: _id(config.conditions.map((c) => c.id)),
-          kind: MatrixCondition_Kind.ALWAYS,
+          kind: modeId == 0
+              ? MatrixCondition_Kind.ALWAYS
+              : MatrixCondition_Kind.MODE,
+          modeId: modeId,
         ),
       );
     }

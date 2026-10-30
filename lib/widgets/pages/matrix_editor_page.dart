@@ -109,7 +109,16 @@ class _MatrixEditorPageState extends ConsumerState<MatrixEditorPage>
     _editor.editing = true;
     _entry =
         entry?.deepCopy() ??
-        MatrixEntry(effectId: _editor.config.effects.firstOrNull?.id ?? 0);
+        MatrixEntry(
+          effectId: _editor.config.effects.firstOrNull?.id ?? 0,
+          priority:
+              (_editor.config.entries.fold<int>(
+                        0,
+                        (max, e) => e.priority > max ? e.priority : max,
+                      ) +
+                      10)
+                  .clamp(0, 255),
+        );
     _trigger = entry == null
         ? MatrixSource(kind: MatrixSource_Kind.DEFAULT_STATE)
         : _editor.source(entry.sourceId)?.deepCopy() ??
@@ -263,11 +272,12 @@ class _MatrixEditorPageState extends ConsumerState<MatrixEditorPage>
                         trigger: _trigger!,
                         controller: _editor,
                         onCancel: _closeForm,
-                        onSave: (value, trigger, effects) {
+                        onSave: (value, trigger, effects, modeId) {
                           final saved = _editor.saveEntry(
                             value,
                             trigger,
                             newEffects: effects,
+                            modeId: modeId,
                           );
                           if (saved) _closeForm();
                           return saved;
@@ -459,6 +469,10 @@ class _MatrixEditorPageState extends ConsumerState<MatrixEditorPage>
         effect = _editor.effect(entry.effectId);
     final label = trigger?.kind == MatrixSource_Kind.GPIO_EDGE
         ? 'GPIO ${trigger!.gpio} · ${trigger.rising ? 'rising' : 'falling'} · ${nodeSuffix(trigger.nodeMac)}'
+        : trigger?.kind == MatrixSource_Kind.ON_BOOT
+        ? 'On boot'
+        : trigger?.kind == MatrixSource_Kind.ON_MODE_SWITCHED
+        ? 'On mode switched'
         : 'Default state';
     return Card(
       child: Column(

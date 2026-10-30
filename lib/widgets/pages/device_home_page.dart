@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lumadrive_control/controllers/ble_controller.dart';
 import 'package:lumadrive_control/controllers/mesh_controller.dart';
 import 'package:relative_time/relative_time.dart';
+import 'package:lumadrive_control/widgets/matrix/mode_dashboard.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class DeviceHomePage extends ConsumerStatefulWidget {
@@ -126,6 +127,8 @@ class _DeviceHomePageState extends ConsumerState<DeviceHomePage> {
   Widget _buildMeshList(BuildContext context, WidgetRef ref, MeshState mesh) {
     return Column(
       children: [
+        const ModeDashboard(),
+        const SizedBox(height: 12),
         Card(
           clipBehavior: Clip.antiAlias,
           child: ListTile(
@@ -147,26 +150,6 @@ class _DeviceHomePageState extends ConsumerState<DeviceHomePage> {
           ),
         ),
         const SizedBox(height: 12),
-        Card(
-          clipBehavior: Clip.antiAlias,
-          child: ListTile(
-            leading: Icon(
-              Icons.view_timeline_outlined,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            title: const Text('Car layout'),
-            subtitle: const Text(
-              'Arrange strips and modules on one shared canvas',
-            ),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.go(
-              Uri(
-                path: '/device/layout',
-                queryParameters: {'controller': mesh.masterDevice.remoteId},
-              ).toString(),
-            ),
-          ),
-        ),
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 16),
           child: Divider(),
@@ -195,64 +178,67 @@ class _DeviceHomePageState extends ConsumerState<DeviceHomePage> {
 
   Widget _buildErrorState(BuildContext context, WidgetRef ref, Object error) {
     final connected = ref.watch(bleControllerProvider) is BleConnected;
-    return Column(
-      key: const ValueKey('mesh-error'),
-      mainAxisAlignment: MainAxisAlignment.center,
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      spacing: 16,
-      children: [
-        Text(
-          connected
-              ? 'Could not load controller state'
-              : 'Lost connection to device',
-          style: Theme.of(context).textTheme.headlineSmall,
-          textAlign: TextAlign.center,
-        ),
-        SizedBox(
-          width: 200,
-          height: 200,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              SizedBox(
-                width: 130,
-                height: 130,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Theme.of(context).colorScheme.error,
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        key: const ValueKey('mesh-error'),
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        spacing: 16,
+        children: [
+          Text(
+            connected
+                ? 'Could not load controller state'
+                : 'Lost connection to device',
+            style: Theme.of(context).textTheme.headlineSmall,
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(
+            width: 200,
+            height: 200,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                SizedBox(
+                  width: 130,
+                  height: 130,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   ),
                 ),
-              ),
-              Icon(
-                Icons.link_off,
-                size: 48,
-                color: Theme.of(context).colorScheme.onError,
-              ),
-            ],
+                Icon(
+                  Icons.link_off,
+                  size: 48,
+                  color: Theme.of(context).colorScheme.onError,
+                ),
+              ],
+            ),
           ),
-        ),
-        Text(
-          error.toString(),
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        if (connected)
-          FilledButton.icon(
-            onPressed: () => ref.invalidate(meshControllerProvider),
-            icon: const Icon(Icons.refresh),
-            label: const Text('Retry'),
+          Text(
+            error.toString(),
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
           ),
-        ElevatedButton.icon(
-          onPressed: () {
-            ref.read(bleControllerProvider.notifier).disconnect();
-            context.go('/');
-          },
-          icon: const Icon(Icons.arrow_back),
-          label: const Text('Back to controller list'),
-        ),
-      ],
+          if (connected)
+            FilledButton.icon(
+              onPressed: () => ref.invalidate(meshControllerProvider),
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
+            ),
+          ElevatedButton.icon(
+            onPressed: () {
+              ref.read(bleControllerProvider.notifier).disconnect();
+              context.go('/');
+            },
+            icon: const Icon(Icons.arrow_back),
+            label: const Text('Back to controller list'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -289,6 +275,12 @@ class _DeviceHomePageState extends ConsumerState<DeviceHomePage> {
       appBar: AppBar(
         title: Text(bleState.deviceName ?? 'Controller'),
         actions: [
+          if (bleState.device != null)
+            IconButton(
+              tooltip: 'Car layout',
+              icon: const Icon(Icons.directions_car_outlined),
+              onPressed: () => context.go(Uri(path: '/device/layout', queryParameters: {'controller': bleState.device!.remoteId}).toString()),
+            ),
           IconButton(
             tooltip: 'Disconnect controller',
             icon: const Icon(Icons.bluetooth_disabled),
@@ -299,7 +291,12 @@ class _DeviceHomePageState extends ConsumerState<DeviceHomePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(18),
-        child: SingleChildScrollView(child: _buildMeshContent(context, ref)),
+        child: SingleChildScrollView(
+          child: SizedBox(
+            width: double.infinity,
+            child: _buildMeshContent(context, ref),
+          ),
+        ),
       ),
     );
   }

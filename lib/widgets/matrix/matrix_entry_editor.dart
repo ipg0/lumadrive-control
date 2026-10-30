@@ -12,7 +12,8 @@ class MatrixEntryEditor extends StatefulWidget {
   final MatrixEntry initial;
   final MatrixSource trigger;
   final MatrixEditorController controller;
-  final bool Function(MatrixEntry, MatrixSource, List<MatrixEffect>) onSave;
+  final bool Function(MatrixEntry, MatrixSource, List<MatrixEffect>, int)
+  onSave;
   final VoidCallback onCancel;
   const MatrixEntryEditor({
     super.key,
@@ -32,6 +33,8 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
   late MatrixSource _trigger;
   final List<MatrixEffect> _newEffects = [];
   MatrixEffect? _newAnimation;
+  bool _automaticName = false;
+  int _modeId = 0;
   late final TextEditingController _name, _priority;
   @override
   void initState() {
@@ -40,6 +43,29 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
     _trigger = widget.trigger.deepCopy();
     _name = TextEditingController(text: _entry.name);
     _priority = TextEditingController(text: '${_entry.priority}');
+    final condition = widget.controller.config.conditions
+        .where((c) => c.id == _entry.conditionId)
+        .firstOrNull;
+    if (condition?.kind == MatrixCondition_Kind.MODE) {
+      _modeId = condition!.modeId;
+    }
+    _automaticName = _entry.id == 0 && _entry.name.isEmpty;
+    _updateName();
+  }
+
+  void _updateName() {
+    if (!_automaticName) return;
+    final effects = [...widget.controller.config.effects, ..._newEffects];
+    final effect = effects.where((e) => e.id == _entry.effectId).firstOrNull;
+    final trigger = switch (_trigger.kind) {
+      MatrixSource_Kind.DEFAULT_STATE => 'Default state',
+      MatrixSource_Kind.GPIO_EDGE => 'GPIO edge',
+      MatrixSource_Kind.ON_BOOT => 'On boot',
+      MatrixSource_Kind.ON_MODE_SWITCHED => 'Mode switched',
+      _ => 'Trigger',
+    };
+    _name.text =
+        '${effect == null ? 'Animation' : animationTitle(effect)} · $trigger';
   }
 
   @override
@@ -100,6 +126,7 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
               TextFormField(
                 key: const ValueKey('entry-name'),
                 controller: _name,
+                onChanged: (_) => _automaticName = false,
                 maxLength: 32,
                 decoration: const InputDecoration(
                   labelText: 'Name',
@@ -129,6 +156,7 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                 validator: (id) => id == null ? 'Choose an animation' : null,
                 onChanged: (id) => setState(() {
                   _entry.effectId = id!;
+                  _updateName();
                 }),
               ),
               const SizedBox(height: 16),
@@ -169,6 +197,7 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                       _newEffects.add(value.deepCopy()..id = id);
                       _entry.effectId = id;
                       _newAnimation = null;
+                      _updateName();
                     });
                     return true;
                   },
@@ -192,24 +221,55 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                     value: MatrixSource_Kind.GPIO_EDGE,
                     child: Text('GPIO edge'),
                   ),
+                  DropdownMenuItem(
+                    value: MatrixSource_Kind.ON_BOOT,
+                    child: Text('On boot'),
+                  ),
+                  DropdownMenuItem(
+                    value: MatrixSource_Kind.ON_MODE_SWITCHED,
+                    child: Text('On mode switched'),
+                  ),
                 ],
                 onChanged: (kind) => setState(() {
                   if (kind == MatrixSource_Kind.GPIO_EDGE) {
                     _gpioMode();
                   } else {
                     _trigger
-                      ..kind = MatrixSource_Kind.DEFAULT_STATE
+                      ..kind = kind!
                       ..clearNodeMac()
                       ..gpio = 0
                       ..rising = false;
                   }
+                  if (kind == MatrixSource_Kind.DEFAULT_STATE) {
+                    _entry.opaqueBackground = false;
+                  }
+                  _updateName();
                 }),
               ),
+              if (_trigger.kind != MatrixSource_Kind.DEFAULT_STATE)
+                SwitchListTile(
+                  key: const ValueKey('entry-transparency'),
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Transparent background'),
+                  subtitle: const Text(
+                    'When off, lower-priority lighting is blacked out while this entry plays.',
+                  ),
+                  value: !_entry.opaqueBackground,
+                  onChanged: (value) =>
+                      setState(() => _entry.opaqueBackground = !value),
+                ),
               if (_trigger.kind == MatrixSource_Kind.DEFAULT_STATE)
                 const Padding(
                   padding: EdgeInsets.only(top: 10),
                   child: Text(
                     'Starts with the configuration. A finite animation restarts when it ends.',
+                  ),
+                ),
+              if (_trigger.kind == MatrixSource_Kind.ON_BOOT)
+                const Padding(
+                  padding: EdgeInsets.only(top: 10),
+                  child: Text(
+                    'Runs once when the saved matrix starts after a controller reboot. Finite effects do not repeat; saving a configuration does not replay it.',
                   ),
                 ),
               if (_trigger.kind == MatrixSource_Kind.GPIO_EDGE) ...[
@@ -315,11 +375,23 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                 ),
               ),
               const SizedBox(height: 12),
-              const ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Icon(Icons.check_circle_outline),
-                title: Text('Condition: Always'),
-                subtitle: Text('No additional condition is required.'),
+              DropdownButtonFormField<int>(
+                key: const ValueKey('entry-mode'),
+                initialValue: _modeId,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  labelText: 'Condition',
+                  border: OutlineInputBorder(),
+                ),
+                items: [
+                  const DropdownMenuItem(value: 0, child: Text('Always')),
+                  for (final mode in widget.controller.config.modes)
+                    DropdownMenuItem(
+                      value: mode.id,
+                      child: Text('Mode: ${mode.name}'),
+                    ),
+                ],
+                onChanged: (value) => setState(() => _modeId = value ?? 0),
               ),
               const SizedBox(height: 16),
               Wrap(
@@ -347,6 +419,7 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                                       (effect) => effect.id == _entry.effectId,
                                     )
                                     .toList(),
+                                _modeId,
                               );
                             }
                           },

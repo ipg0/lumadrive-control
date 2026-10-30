@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lumadrive_control/controllers/matrix_editor_controller.dart';
 import 'package:lumadrive_control/generated/mesh.pb.dart';
+import 'package:lumadrive_control/utils/gradient_palette.dart';
 
 import 'simple_animation_preview.dart';
 
@@ -41,7 +42,11 @@ class AnimationEditor extends StatefulWidget {
 class _AnimationEditorState extends State<AnimationEditor> {
   final _form = GlobalKey<FormState>();
   late MatrixEffect _effect;
+  late List<MatrixColor> _gradient;
+  late List<int> _gradientIds;
+  int _nextGradientId = 0;
   bool _saving = false;
+  bool _automaticName = false;
   String? _saveError;
   late final TextEditingController _name,
       _duration,
@@ -52,7 +57,17 @@ class _AnimationEditorState extends State<AnimationEditor> {
   void initState() {
     super.initState();
     _effect = widget.initial.deepCopy();
+    _gradient = gradientPalette(_effect)
+        .map((color) => color.deepCopy())
+        .toList();
+    _gradientIds = [
+      for (var i = 0; i < _gradient.length; i++) _nextGradientId++,
+    ];
     _name = TextEditingController(text: _effect.name);
+    if (_effect.id == 0 && _effect.name.isEmpty) {
+      _automaticName = true;
+      _name.text = effectKindLabel(_effect.kind);
+    }
     _duration = TextEditingController(text: '${_effect.durationMs}');
     _period = TextEditingController(
       text: '${_effect.periodMs == 0 ? 1000 : _effect.periodMs}',
@@ -71,20 +86,43 @@ class _AnimationEditorState extends State<AnimationEditor> {
     super.dispose();
   }
 
-  MatrixEffect _value() => _effect.deepCopy()
-    ..name = _name.text.trim()
-    ..durationMs = int.tryParse(_duration.text) ?? 0
-    ..periodMs = _effect.kind == MatrixEffect_Kind.STATIC_COLOR
-        ? 0
-        : int.tryParse(_period.text) ?? 1000
-    ..dutyPercent = _effect.kind == MatrixEffect_Kind.BLINK
-        ? int.tryParse(_duty.text) ?? 50
-        : 0
-    ..wavelengthPixels =
-        (_effect.kind == MatrixEffect_Kind.FLOWING_GRADIENT ||
-            _effect.kind == MatrixEffect_Kind.RAINBOW)
-        ? int.tryParse(_wavelength.text) ?? 0
-        : 0;
+  MatrixEffect _value() {
+    final value = _effect.deepCopy()
+      ..name = _name.text.trim()
+      ..durationMs = int.tryParse(_duration.text) ?? 0
+      ..periodMs = _effect.kind == MatrixEffect_Kind.STATIC_COLOR
+          ? 0
+          : _effect.kind == MatrixEffect_Kind.FILL && !_effect.loop
+          ? int.tryParse(_duration.text) ?? 0
+          : int.tryParse(_period.text) ?? 1000
+      ..dutyPercent = _effect.kind == MatrixEffect_Kind.BLINK
+          ? int.tryParse(_duty.text) ?? 50
+          : 0
+      ..wavelengthPixels =
+          (_effect.kind == MatrixEffect_Kind.FLOWING_GRADIENT ||
+              _effect.kind == MatrixEffect_Kind.RAINBOW)
+          ? int.tryParse(_wavelength.text) ?? 0
+          : 0;
+    value.gradientColors.clear();
+    if (value.kind == MatrixEffect_Kind.FLOWING_GRADIENT) {
+      value.gradientColors.addAll(_gradient.map((color) => color.deepCopy()));
+      final first = _gradient.first;
+      value
+        ..red = first.red
+        ..green = first.green
+        ..blue = first.blue
+        ..alpha = first.alpha
+        ..secondaryColor = _gradient[1].deepCopy();
+    }
+    return value;
+  }
+
+  void _moveColor(int index, int delta) => setState(() {
+    final color = _gradient.removeAt(index), id = _gradientIds.removeAt(index);
+    _gradient.insert(index + delta, color);
+    _gradientIds.insert(index + delta, id);
+  });
+
   Future<void> _save() async {
     if (_saving || !_form.currentState!.validate()) return;
     setState(() {
@@ -166,6 +204,7 @@ class _AnimationEditorState extends State<AnimationEditor> {
               TextFormField(
                 key: const ValueKey('animation-name'),
                 controller: _name,
+                onChanged: (_) => _automaticName = false,
                 maxLength: 32,
                 decoration: const InputDecoration(
                   labelText: 'Name',
@@ -192,6 +231,10 @@ class _AnimationEditorState extends State<AnimationEditor> {
                 ],
                 onChanged: (kind) => setState(() {
                   _effect.kind = kind!;
+                  if (_automaticName) _name.text = effectKindLabel(kind);
+                  if (kind == MatrixEffect_Kind.FILL && _duration.text == '0') {
+                    _duration.text = '1000';
+                  }
                   if (kind == MatrixEffect_Kind.FLOWING_GRADIENT &&
                       !_effect.hasSecondaryColor()) {
                     _effect.secondaryColor = MatrixColor(blue: 255, alpha: 255);
@@ -216,7 +259,7 @@ class _AnimationEditorState extends State<AnimationEditor> {
                     Text('${(_effect.alpha * 100 / 255).round()}%'),
                   ],
                 ),
-              ] else
+              ] else if (_effect.kind != MatrixEffect_Kind.FLOWING_GRADIENT)
                 MatrixColorEditor(
                   key: const ValueKey('primary-color'),
                   label: 'Primary color',
@@ -232,26 +275,102 @@ class _AnimationEditorState extends State<AnimationEditor> {
                       ..green = value.green
                       ..blue = value.blue
                       ..alpha = value.alpha;
+                    _gradient[0] = value.deepCopy();
                   }),
                 ),
               if (_effect.kind == MatrixEffect_Kind.FLOWING_GRADIENT) ...[
-                const SizedBox(height: 16),
-                MatrixColorEditor(
-                  key: const ValueKey('secondary-color'),
-                  label: 'Secondary color',
-                  color: _effect.secondaryColor,
-                  onChanged: (value) => setState(() {
-                    _effect.secondaryColor = value;
-                  }),
+                Text(
+                  'Gradient colors · ${_gradient.length}/$maxGradientColors',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const Text(
+                  'Colors are evenly spaced and flow in this order, wrapping from the last back to the first.',
+                ),
+                for (var i = 0; i < _gradient.length; i++)
+                  Padding(
+                    key: ValueKey('gradient-stop-${_gradientIds[i]}'),
+                    padding: const EdgeInsets.only(top: 14),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            IconButton(
+                              tooltip: 'Move color ${i + 1} earlier',
+                              onPressed: i == 0
+                                  ? null
+                                  : () => _moveColor(i, -1),
+                              icon: const Icon(Icons.arrow_upward),
+                            ),
+                            IconButton(
+                              tooltip: 'Move color ${i + 1} later',
+                              onPressed: i + 1 == _gradient.length
+                                  ? null
+                                  : () => _moveColor(i, 1),
+                              icon: const Icon(Icons.arrow_downward),
+                            ),
+                            IconButton(
+                              tooltip: 'Remove color ${i + 1}',
+                              onPressed: _gradient.length <= 2
+                                  ? null
+                                  : () => setState(() {
+                                      _gradient.removeAt(i);
+                                      _gradientIds.removeAt(i);
+                                    }),
+                              icon: const Icon(Icons.delete_outline),
+                            ),
+                          ],
+                        ),
+                        MatrixColorEditor(
+                          label: 'Color ${i + 1}',
+                          color: _gradient[i],
+                          onChanged: (color) =>
+                              setState(() => _gradient[i] = color),
+                        ),
+                      ],
+                    ),
+                  ),
+                TextButton.icon(
+                  key: const ValueKey('add-gradient-color'),
+                  onPressed: _gradient.length >= maxGradientColors
+                      ? null
+                      : () => setState(() {
+                          _gradient.add(MatrixColor(green: 255, alpha: 255));
+                          _gradientIds.add(_nextGradientId++);
+                        }),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add color'),
                 ),
               ],
+              if (_effect.kind == MatrixEffect_Kind.FILL)
+                SwitchListTile(
+                  key: const ValueKey('fill-once'),
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Fill once'),
+                  subtitle: const Text(
+                    'Fill the entire layout over the animation duration.',
+                  ),
+                  value: !_effect.loop,
+                  onChanged: (value) => setState(() {
+                    _effect.loop = !value;
+                    if (value && (int.tryParse(_duration.text) ?? 0) < 2) {
+                      _duration.text = '1000';
+                    }
+                  }),
+                ),
               _number(
                 'Duration (ms)',
                 'animation-duration',
                 _duration,
-                helper: '0 holds indefinitely. Finite default-state animations restart after ending.',
+                min: _effect.kind == MatrixEffect_Kind.FILL && !_effect.loop
+                    ? 2
+                    : 0,
+                helper: _effect.kind == MatrixEffect_Kind.FILL && !_effect.loop
+                    ? 'The fill reaches the end at this time; speed adjusts to the layout length.'
+                    : '0 holds indefinitely. Finite default-state animations restart after ending.',
               ),
-              if (_effect.kind != MatrixEffect_Kind.STATIC_COLOR)
+              if (_effect.kind != MatrixEffect_Kind.STATIC_COLOR &&
+                  !(_effect.kind == MatrixEffect_Kind.FILL && !_effect.loop))
                 _number(
                   'Period (ms)',
                   'animation-period',
@@ -285,6 +404,14 @@ class _AnimationEditorState extends State<AnimationEditor> {
                   }),
                 ),
               ],
+              if (_effect.kind == MatrixEffect_Kind.FILL)
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Reverse fill'),
+                  subtitle: const Text('Fill toward decreasing canvas indices'),
+                  value: _effect.reverse,
+                  onChanged: (value) => setState(() => _effect.reverse = value),
+                ),
               const SizedBox(height: 18),
               SimpleAnimationPreview(
                 effect: _value(),

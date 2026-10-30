@@ -367,7 +367,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('matrix-animation-2')));
       await tester.pumpAndSettle();
-      expect(find.text('Secondary color'), findsOneWidget);
+      expect(find.text('Color 2'), findsOneWidget);
       await tester.ensureVisible(
         find.byKey(const ValueKey('animation-wavelength')),
       );
@@ -403,6 +403,233 @@ void main() {
       }
     },
   );
+  testWidgets(
+    'gradient palette can add, reorder, remove and save eight colors',
+    (tester) async {
+      final editor = await open(tester);
+      editor.saveEffect(
+        MatrixEffect(
+          id: 2,
+          name: 'Palette',
+          kind: MatrixEffect_Kind.FLOWING_GRADIENT,
+          red: 255,
+          alpha: 255,
+          secondaryColor: MatrixColor(blue: 255, alpha: 128),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Animations (2)'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('matrix-animation-2')));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<IconButton>(
+              find.byWidgetPredicate(
+                (widget) =>
+                    widget is IconButton && widget.tooltip == 'Remove color 1',
+              ),
+            )
+            .onPressed,
+        isNull,
+      );
+      for (var i = 0; i < 6; i++) {
+        await tester.ensureVisible(
+          find.byKey(const ValueKey('add-gradient-color')),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('add-gradient-color')));
+        await tester.pumpAndSettle();
+      }
+      expect(
+        tester
+            .widget<TextButton>(
+              find.byKey(const ValueKey('add-gradient-color')),
+            )
+            .onPressed,
+        isNull,
+      );
+      await tester.ensureVisible(find.byTooltip('Move color 2 earlier'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Move color 2 earlier'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byTooltip('Remove color 3'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Remove color 3'));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const ValueKey('save-animation')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('save-animation')));
+      await tester.pumpAndSettle();
+      final stops = editor.effect(2)!.gradientColors;
+      expect(stops, hasLength(7));
+      expect(stops[0].blue, 255);
+      expect(stops[0].alpha, 128);
+      expect(stops[1].red, 255);
+      expect(stops[2].green, 255);
+      expect(tester.takeException(), isNull);
+    },
+  );
+  testWidgets('on boot saves a trigger without GPIO settings', (tester) async {
+    final editor = await open(tester);
+    await tester.tap(find.byKey(const ValueKey('matrix-entry-1')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('entry-trigger')));
+    await tester.tap(find.byKey(const ValueKey('entry-trigger')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('On boot').last);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('save-entry')));
+    await tester.tap(find.byKey(const ValueKey('save-entry')));
+    await tester.pumpAndSettle();
+    final source = editor.source(editor.config.entries.single.sourceId)!;
+    expect(source.kind, MatrixSource_Kind.ON_BOOT);
+    expect(source.nodeMac, isEmpty);
+    expect(editor.canApply, isTrue);
+    expect(tester.takeException(), isNull);
+  });
+  testWidgets('new entry suggests names and allows an opaque background', (
+    tester,
+  ) async {
+    final config = editorFixture()..modes.add(MatrixMode(id: 1, name: 'Night'));
+    final editor = await open(tester, config: config);
+    await tester.tap(find.byKey(const ValueKey('add-entry')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('entry-transparency')), findsNothing);
+    expect(
+      tester
+          .widget<TextFormField>(find.byKey(const ValueKey('entry-priority')))
+          .controller!
+          .text,
+      '15',
+    );
+    expect(
+      tester
+          .widget<TextFormField>(find.byKey(const ValueKey('entry-name')))
+          .controller!
+          .text,
+      contains('Default state'),
+    );
+    await tester.ensureVisible(find.byKey(const ValueKey('entry-trigger')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('entry-trigger')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('On mode switched').last);
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<SwitchListTile>(
+            find.byKey(const ValueKey('entry-transparency')),
+          )
+          .value,
+      isTrue,
+    );
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('create-entry-animation')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('create-entry-animation')));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<TextFormField>(find.byKey(const ValueKey('animation-name')))
+          .controller!
+          .text,
+      'Static color',
+    );
+    await tester.ensureVisible(find.byKey(const ValueKey('animation-kind')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('animation-kind')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Blink').last);
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<TextFormField>(find.byKey(const ValueKey('animation-name')))
+          .controller!
+          .text,
+      'Blink',
+    );
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('animation-duration')),
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('animation-duration')),
+      '1200',
+    );
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('save-animation')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('save-animation')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('entry-transparency')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('entry-transparency')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('entry-mode')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('entry-mode')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mode: Night').last);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('save-entry')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('save-entry')));
+    await tester.pumpAndSettle();
+    expect(editor.config.entries, hasLength(2));
+    final foreground = editor.config.entries.last;
+    expect(foreground.name, 'Blink · Mode switched');
+    expect(foreground.priority, 15);
+    expect(foreground.opaqueBackground, isTrue);
+    expect(editor.effect(foreground.effectId)!.durationMs, 1200);
+    expect(editor.config.conditions.last.modeId, 1);
+  });
+  testWidgets('one-shot fill derives pass time from duration', (tester) async {
+    final editor = await open(tester);
+    await tester.tap(find.byKey(const ValueKey('matrix-entry-1')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('create-entry-animation')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('create-entry-animation')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('animation-kind')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('animation-kind')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Fill').last);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('fill-once')), findsOneWidget);
+    expect(find.byKey(const ValueKey('animation-period')), findsNothing);
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('animation-duration')),
+    );
+    await tester.enterText(
+      find.byKey(const ValueKey('animation-duration')),
+      '2400',
+    );
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('save-animation')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('save-animation')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('save-entry')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('save-entry')));
+    await tester.pumpAndSettle();
+    final fill = editor.config.effects.singleWhere(
+      (e) => e.kind == MatrixEffect_Kind.FILL,
+    );
+    expect(fill.loop, isFalse);
+    expect(fill.durationMs, 2400);
+    expect(fill.periodMs, 2400);
+    expect(tester.takeException(), isNull);
+  });
   testWidgets(
     'Back closes an unfinished form and disconnect preserves a completed draft',
     (tester) async {
@@ -449,6 +676,34 @@ void main() {
         const Color(0xffff0000),
       );
       final rainbow = MatrixEffect(kind: MatrixEffect_Kind.RAINBOW, alpha: 255);
+      final fill = MatrixEffect(
+        kind: MatrixEffect_Kind.FILL,
+        red: 255,
+        alpha: 255,
+        durationMs: 1000,
+      );
+      expect(sampleSimpleAnimation(fill, 0.5, 29, 60), const Color(0xffff0000));
+      expect(sampleSimpleAnimation(fill, 0.5, 30, 60), Colors.transparent);
+      expect(sampleSimpleAnimation(fill, 1, 59, 60), const Color(0xffff0000));
+      fill.reverse = true;
+      expect(sampleSimpleAnimation(fill, 0.5, 30, 60), const Color(0xffff0000));
+      expect(sampleSimpleAnimation(fill, 0.5, 29, 60), Colors.transparent);
+      flow.gradientColors.addAll([
+        MatrixColor(red: 255, alpha: 255),
+        MatrixColor(green: 255, alpha: 128),
+        MatrixColor(blue: 255, alpha: 0),
+        MatrixColor(red: 255, green: 255, blue: 255, alpha: 255),
+      ]);
+      expect(sampleSimpleAnimation(flow, 0, 15, 60), const Color(0x8000ff00));
+      expect(sampleSimpleAnimation(flow, 0, 30, 60), const Color(0x000000ff));
+      expect(
+        sampleSimpleAnimation(flow, 0.125, 0, 60),
+        const Color(0xffff8080),
+      );
+      expect(
+        sampleSimpleAnimation(flow, 0.125, 15, 60),
+        const Color(0xc0808000),
+      );
       expect(sampleSimpleAnimation(rainbow, 0, 0, 60), const Color(0xffff0000));
       expect(
         sampleSimpleAnimation(rainbow, 0, 30, 60),

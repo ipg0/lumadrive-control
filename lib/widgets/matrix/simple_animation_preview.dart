@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:lumadrive_control/generated/mesh.pb.dart';
+import 'package:lumadrive_control/utils/gradient_palette.dart';
 
 Color sampleSimpleAnimation(
   MatrixEffect effect,
@@ -17,6 +18,15 @@ Color sampleSimpleAnimation(
   );
   final primary = rgba(effect.red, effect.green, effect.blue, effect.alpha);
   final p = phase % 1;
+  if (effect.kind == MatrixEffect_Kind.FILL) {
+    final progress = effect.loop ? p : phase.clamp(0.0, 1.0);
+    final count = math.max(1, canvasSize);
+    final filled = (progress * count).ceil();
+    final pixel = position.floor().clamp(0, count - 1);
+    return (effect.reverse ? pixel >= count - filled : pixel < filled)
+        ? primary
+        : Colors.transparent;
+  }
   double triangle(double value) {
     final v = value % 1;
     return v < 0.5 ? v * 2 : (1 - v) * 2;
@@ -39,15 +49,24 @@ Color sampleSimpleAnimation(
     return HSVColor.fromAHSV(effect.alpha / 255, hue, 1, 1).toColor();
   }
   if (effect.kind == MatrixEffect_Kind.FLOWING_GRADIENT) {
-    final secondary = effect.secondaryColor;
+    final palette = gradientPalette(effect);
     final wavelength = effect.wavelengthPixels == 0
         ? math.max(1, canvasSize)
         : effect.wavelengthPixels;
-    return Color.lerp(
-      primary,
-      rgba(secondary.red, secondary.green, secondary.blue, secondary.alpha),
-      triangle(position / wavelength + (effect.reverse ? p : -p)),
-    )!;
+    final scaled =
+        ((position / wavelength + (effect.reverse ? p : -p)) % 1) *
+        palette.length;
+    final index = scaled.floor();
+    final from = palette[index], to = palette[(index + 1) % palette.length];
+    final fraction = scaled - index;
+    // Match firmware's straight-channel RGBA interpolation, including alpha.
+    int mix(int a, int b) => (a + (b - a) * fraction).round();
+    return rgba(
+      mix(from.red, to.red),
+      mix(from.green, to.green),
+      mix(from.blue, to.blue),
+      mix(from.alpha, to.alpha),
+    );
   }
   return primary;
 }
@@ -74,6 +93,11 @@ class _SimpleAnimationPreviewState extends State<SimpleAnimationPreview>
   void initState() {
     super.initState();
     _phase = AnimationController(vsync: this, duration: _period);
+    _phase.addStatusListener((status) {
+      if (status == AnimationStatus.completed && mounted) {
+        setState(() => _playing = false);
+      }
+    });
   }
 
   Duration get _period => Duration(
@@ -82,9 +106,22 @@ class _SimpleAnimationPreviewState extends State<SimpleAnimationPreview>
   @override
   void didUpdateWidget(covariant SimpleAnimationPreview oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.effect.periodMs != widget.effect.periodMs) {
+    if (oldWidget.effect.periodMs != widget.effect.periodMs ||
+        oldWidget.effect.kind != widget.effect.kind ||
+        oldWidget.effect.loop != widget.effect.loop) {
       _phase.duration = _period;
-      if (_playing) _phase.repeat(period: _period);
+      if (_playing) {
+        _phase.stop();
+        _play();
+      }
+    }
+  }
+
+  void _play() {
+    if (widget.effect.kind == MatrixEffect_Kind.FILL && !widget.effect.loop) {
+      _phase.forward(from: _phase.value >= 1 ? 0 : _phase.value);
+    } else {
+      _phase.repeat(period: _period);
     }
   }
 
@@ -115,7 +152,7 @@ class _SimpleAnimationPreviewState extends State<SimpleAnimationPreview>
                 onPressed: () => setState(() {
                   _playing = !_playing;
                   if (_playing) {
-                    _phase.repeat(period: _period);
+                    _play();
                   } else {
                     _phase.stop();
                   }

@@ -186,6 +186,8 @@ class MatrixEffect_Kind extends $pb.ProtobufEnum {
       MatrixEffect_Kind._(5, _omitEnumNames ? '' : 'FLOWING_GRADIENT');
   static const MatrixEffect_Kind RAINBOW =
       MatrixEffect_Kind._(6, _omitEnumNames ? '' : 'RAINBOW');
+  static const MatrixEffect_Kind FILL =
+      MatrixEffect_Kind._(7, _omitEnumNames ? '' : 'FILL');
 
   static const $core.List<MatrixEffect_Kind> values = <MatrixEffect_Kind>[
     EFFECT_UNSPECIFIED,
@@ -195,10 +197,11 @@ class MatrixEffect_Kind extends $pb.ProtobufEnum {
     BREATHE,
     FLOWING_GRADIENT,
     RAINBOW,
+    FILL,
   ];
 
   static final $core.List<MatrixEffect_Kind?> _byValue =
-      $pb.ProtobufEnum.$_initByValueList(values, 6);
+      $pb.ProtobufEnum.$_initByValueList(values, 7);
   static MatrixEffect_Kind? valueOf($core.int value) =>
       value < 0 || value >= _byValue.length ? null : _byValue[value];
 
@@ -212,15 +215,21 @@ class MatrixSource_Kind extends $pb.ProtobufEnum {
       MatrixSource_Kind._(1, _omitEnumNames ? '' : 'DEFAULT_STATE');
   static const MatrixSource_Kind GPIO_EDGE =
       MatrixSource_Kind._(2, _omitEnumNames ? '' : 'GPIO_EDGE');
+  static const MatrixSource_Kind ON_BOOT =
+      MatrixSource_Kind._(3, _omitEnumNames ? '' : 'ON_BOOT');
+  static const MatrixSource_Kind ON_MODE_SWITCHED =
+      MatrixSource_Kind._(4, _omitEnumNames ? '' : 'ON_MODE_SWITCHED');
 
   static const $core.List<MatrixSource_Kind> values = <MatrixSource_Kind>[
     SOURCE_UNSPECIFIED,
     DEFAULT_STATE,
     GPIO_EDGE,
+    ON_BOOT,
+    ON_MODE_SWITCHED,
   ];
 
   static final $core.List<MatrixSource_Kind?> _byValue =
-      $pb.ProtobufEnum.$_initByValueList(values, 2);
+      $pb.ProtobufEnum.$_initByValueList(values, 4);
   static MatrixSource_Kind? valueOf($core.int value) =>
       value < 0 || value >= _byValue.length ? null : _byValue[value];
 
@@ -232,14 +241,17 @@ class MatrixCondition_Kind extends $pb.ProtobufEnum {
       MatrixCondition_Kind._(0, _omitEnumNames ? '' : 'CONDITION_UNSPECIFIED');
   static const MatrixCondition_Kind ALWAYS =
       MatrixCondition_Kind._(1, _omitEnumNames ? '' : 'ALWAYS');
+  static const MatrixCondition_Kind MODE =
+      MatrixCondition_Kind._(2, _omitEnumNames ? '' : 'MODE');
 
   static const $core.List<MatrixCondition_Kind> values = <MatrixCondition_Kind>[
     CONDITION_UNSPECIFIED,
     ALWAYS,
+    MODE,
   ];
 
   static final $core.List<MatrixCondition_Kind?> _byValue =
-      $pb.ProtobufEnum.$_initByValueList(values, 1);
+      $pb.ProtobufEnum.$_initByValueList(values, 2);
   static MatrixCondition_Kind? valueOf($core.int value) =>
       value < 0 || value >= _byValue.length ? null : _byValue[value];
 

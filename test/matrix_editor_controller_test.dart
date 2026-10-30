@@ -214,6 +214,73 @@ void main() {
     editor.config.effects.single.periodMs = 1;
     expect(editor.validationError, contains('2 ms'));
   });
+  test('gradient palettes validate color count, channels and effect kind', () {
+    final effect = editor.config.effects.single;
+    effect.kind = MatrixEffect_Kind.FLOWING_GRADIENT;
+    expect(editor.validationError, contains('2–8'));
+    effect.gradientColors.add(MatrixColor(red: 255, alpha: 255));
+    expect(editor.validationError, contains('2–8'));
+    effect.gradientColors.add(MatrixColor(green: 255, alpha: 128));
+    expect(editor.validationError, isNull);
+    effect.gradientColors.addAll(
+      List.generate(6, (_) => MatrixColor(blue: 255, alpha: 255)),
+    );
+    expect(editor.validationError, isNull);
+    effect.gradientColors.add(MatrixColor());
+    expect(editor.validationError, contains('up to 8'));
+    effect.gradientColors.removeLast();
+    effect.gradientColors.first.red = 256;
+    expect(editor.validationError, contains('255'));
+    effect.gradientColors.first.red = 255;
+    effect.kind = MatrixEffect_Kind.STATIC_COLOR;
+    expect(editor.validationError, contains('require a flowing gradient'));
+  });
+  test('entry background opacity is saved without creating another entry', () {
+    editor.config.modes.add(MatrixMode(id: 1, name: 'Night'));
+    final effect = MatrixEffect(
+      id: 2,
+      name: 'Signal',
+      kind: MatrixEffect_Kind.BLINK,
+      red: 255,
+      alpha: 255,
+      durationMs: 1200,
+    );
+    expect(
+      editor.saveEntry(
+        MatrixEntry(
+          effectId: 2,
+          priority: 15,
+          name: 'Signal',
+          opaqueBackground: true,
+        ),
+        MatrixSource(kind: MatrixSource_Kind.ON_MODE_SWITCHED),
+        newEffects: [effect],
+        modeId: 1,
+      ),
+      isTrue,
+    );
+    expect(editor.config.entries, hasLength(2));
+    expect(editor.config.entries.last.opaqueBackground, isTrue);
+    expect(editor.config.effects, hasLength(2));
+    expect(editor.config.conditions.last.modeId, 1);
+    expect(editor.validationError, isNull);
+    editor.config.sources.last.kind = MatrixSource_Kind.DEFAULT_STATE;
+    expect(editor.validationError, contains('transparent background'));
+  });
+  test('mode-only refresh preserves and rebases table drafts', () async {
+    editor.config.entries.single.name = 'Local draft';
+    final saved = MatrixConfig.fromBuffer(repository.document.config);
+    saved.modes.add(MatrixMode(id: 1, name: 'Night'));
+    saved.activeModeId = 1;
+    repository.document.config = saved.writeToBuffer();
+    repository.document.revision += Int64.ONE;
+    await editor.refresh();
+    expect(editor.config.entries.single.name, 'Local draft');
+    expect(editor.config.activeModeId, 1);
+    expect(editor.config.modes.single.name, 'Night');
+    expect(editor.conflict, isFalse);
+    expect(editor.dirty, isTrue);
+  });
   test('oversized animation libraries cannot be applied', () {
     editor.config.effects
       ..clear()

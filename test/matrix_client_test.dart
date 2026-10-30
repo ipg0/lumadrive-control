@@ -72,7 +72,7 @@ class FakeTransport implements MatrixTransport {
 }
 
 MatrixConfig config() => MatrixConfig(
-  schemaVersion: 2,
+  schemaVersion: 0,
   effects: [
     MatrixEffect(
       id: 1,
@@ -181,6 +181,14 @@ class LayoutTransport extends FakeTransport {
 }
 
 void main() {
+  test('empty v0 configuration remains transferable at minimum BLE MTU', () async {
+    final transport = FakeTransport(23);
+    addTearDown(transport.notifications.close);
+    final result = await MatrixClient(transport).upload(MatrixConfig()).last;
+    expect(result.status.stage, MatrixStatus_Stage.ACTIVE);
+    expect(transport.received, [8, 0]);
+    expect(MatrixConfig.fromBuffer(transport.received).schemaVersion, 0);
+  });
   test(
     'matrix document can carry a full 16 KiB configuration plus node metadata',
     () async {
@@ -543,7 +551,7 @@ void main() {
         ]);
       await MatrixClient(transport).upload(input).toList();
       final received = MatrixConfig.fromBuffer(transport.received);
-      expect(received.schemaVersion, 2);
+      expect(received.schemaVersion, 0);
       expect(received.layout.length, 2);
       expect(received.layout[0].to, 60);
       expect(received.layout[1].from, 12);
