@@ -180,6 +180,7 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                 AnimationEditor(
                   key: const ValueKey('entry-inline-animation'),
                   initial: _newAnimation!,
+                  layout: widget.controller.config.layout,
                   existingNames: effects.map(animationTitle),
                   canvasSize: widget.controller.canvasSize,
                   saveLabel: 'Use animation',

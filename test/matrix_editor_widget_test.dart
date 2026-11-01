@@ -10,6 +10,7 @@ import 'package:lumadrive_control/controllers/matrix_editor_controller.dart';
 import 'package:lumadrive_control/generated/mesh.pb.dart';
 import 'package:lumadrive_control/widgets/pages/matrix_editor_page.dart';
 import 'package:lumadrive_control/widgets/matrix/simple_animation_preview.dart';
+import 'package:lumadrive_control/widgets/matrix/keyframe_editor.dart';
 
 import 'matrix_editor_fakes.dart';
 
@@ -703,6 +704,31 @@ void main() {
     expect(fill.reverse, isFalse);
     expect(tester.takeException(), isNull);
   });
+  testWidgets(
+    'existing keyframes open for editing from the animation library',
+    (tester) async {
+      final config = editorFixture();
+      config.effects[0]
+        ..kind = MatrixEffect_Kind.KEYFRAMES
+        ..keyframes.addAll(defaultKeyframes(60));
+      await open(tester, config: config);
+      await tester.tap(find.text('Animations (1)'));
+      await tester.pumpAndSettle();
+      final item = find.byKey(const ValueKey('matrix-animation-1'));
+      await tester.ensureVisible(item);
+      await tester.pumpAndSettle();
+      await tester.tap(item);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('keyframe-canvas')), findsOneWidget);
+      expect(
+        find.text(
+          'Keyframe data is preserved and can be assigned to table entries. Keyframe editing is not available here.',
+        ),
+        findsNothing,
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
   testWidgets(
     'Back closes an unfinished form and disconnect preserves a completed draft',
     (tester) async {

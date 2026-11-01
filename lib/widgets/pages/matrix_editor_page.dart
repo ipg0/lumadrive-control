@@ -256,6 +256,7 @@ class _MatrixEditorPageState extends ConsumerState<MatrixEditorPage>
                       AnimationEditor(
                         key: ValueKey('animation-form-${_animation!.id}'),
                         initial: _animation!,
+                        layout: _editor.config.layout,
                         existingNames: _editor.config.effects
                             .where((effect) => effect.id != _animation!.id)
                             .map(animationTitle),
@@ -588,13 +589,6 @@ class _MatrixEditorPageState extends ConsumerState<MatrixEditorPage>
                   ? null
                   : () => _openAnimation(effect),
             ),
-            if (effect.kind == MatrixEffect_Kind.KEYFRAMES)
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'Keyframe data is preserved and can be assigned to table entries. Keyframe editing is not available here.',
-                ),
-              ),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [

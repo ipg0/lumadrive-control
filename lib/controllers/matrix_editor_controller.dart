@@ -14,6 +14,7 @@ const simpleEffectKinds = [
   MatrixEffect_Kind.FLOWING_GRADIENT,
   MatrixEffect_Kind.RAINBOW,
   MatrixEffect_Kind.FILL,
+  MatrixEffect_Kind.KEYFRAMES,
 ];
 String effectKindLabel(MatrixEffect_Kind kind) => switch (kind) {
   MatrixEffect_Kind.STATIC_COLOR => 'Static color',

@@ -7,6 +7,7 @@ import 'package:lumadrive_control/generated/mesh.pb.dart';
 import 'package:lumadrive_control/utils/gradient_palette.dart';
 
 import 'simple_animation_preview.dart';
+import 'keyframe_editor.dart';
 
 String? unsignedNumber(String? value, {int min = 0, int max = 0xffffffff}) {
   final number = int.tryParse(value ?? '');
@@ -24,6 +25,7 @@ class AnimationEditor extends StatefulWidget {
   final String? Function()? failureMessage;
   final bool Function(MatrixEffect)? onSaveDraft;
   final Iterable<String> existingNames;
+  final List<MatrixLayout> layout;
   const AnimationEditor({
     super.key,
     required this.initial,
@@ -36,6 +38,7 @@ class AnimationEditor extends StatefulWidget {
     this.failureMessage,
     this.onSaveDraft,
     this.existingNames = const [],
+    this.layout = const [],
   });
   @override
   State<AnimationEditor> createState() => _AnimationEditorState();
@@ -109,6 +112,7 @@ class _AnimationEditorState extends State<AnimationEditor> {
           ? int.tryParse(_wavelength.text) ?? 0
           : 0;
     value.gradientColors.clear();
+    if (value.kind != MatrixEffect_Kind.KEYFRAMES) value.keyframes.clear();
     if (value.kind == MatrixEffect_Kind.FLOWING_GRADIENT) {
       value.gradientColors.addAll(_gradient.map((color) => color.deepCopy()));
       final first = _gradient.first;
@@ -130,6 +134,11 @@ class _AnimationEditorState extends State<AnimationEditor> {
 
   Future<void> _save() async {
     if (_saving || !_form.currentState!.validate()) return;
+    final validation = validateKeyframes(_value());
+    if (validation != null) {
+      setState(() => _saveError = validation);
+      return;
+    }
     setState(() {
       _saving = true;
       _saveError = null;
@@ -236,6 +245,13 @@ class _AnimationEditorState extends State<AnimationEditor> {
                 ],
                 onChanged: (kind) => setState(() {
                   _effect.kind = kind!;
+                  if (kind == MatrixEffect_Kind.KEYFRAMES &&
+                      _effect.keyframes.isEmpty) {
+                    _effect.keyframes.addAll(
+                      defaultKeyframes(widget.canvasSize),
+                    );
+                    _effect.loop = false;
+                  }
                   if (_automaticName) {
                     _name.text = uniqueSuggestedName(
                       effectKindLabel(kind),
@@ -269,7 +285,8 @@ class _AnimationEditorState extends State<AnimationEditor> {
                     Text('${(_effect.alpha * 100 / 255).round()}%'),
                   ],
                 ),
-              ] else if (_effect.kind != MatrixEffect_Kind.FLOWING_GRADIENT)
+              ] else if (_effect.kind != MatrixEffect_Kind.FLOWING_GRADIENT &&
+                  _effect.kind != MatrixEffect_Kind.KEYFRAMES)
                 MatrixColorEditor(
                   key: const ValueKey('primary-color'),
                   label: 'Primary color',
@@ -380,6 +397,7 @@ class _AnimationEditorState extends State<AnimationEditor> {
                     : '0 holds indefinitely. Finite default-state animations restart after ending.',
               ),
               if (_effect.kind != MatrixEffect_Kind.STATIC_COLOR &&
+                  _effect.kind != MatrixEffect_Kind.KEYFRAMES &&
                   !(_effect.kind == MatrixEffect_Kind.FILL && !_effect.loop))
                 _number(
                   'Period (ms)',
@@ -441,11 +459,24 @@ class _AnimationEditorState extends State<AnimationEditor> {
                   }),
                 ),
               const SizedBox(height: 18),
-              SimpleAnimationPreview(
-                effect: _value(),
-                canvasSize: widget.canvasSize,
-                caption: widget.previewCaption,
-              ),
+              if (_effect.kind == MatrixEffect_Kind.KEYFRAMES)
+                KeyframeEditor(
+                  effect: _effect,
+                  canvasSize: widget.canvasSize,
+                  layout: widget.layout,
+                  onChanged: () => setState(() {}),
+                  colorEditor: (color, onChanged) => MatrixColorEditor(
+                    label: 'Keyframe color',
+                    color: color,
+                    onChanged: onChanged,
+                  ),
+                )
+              else
+                SimpleAnimationPreview(
+                  effect: _value(),
+                  canvasSize: widget.canvasSize,
+                  caption: widget.previewCaption,
+                ),
               const SizedBox(height: 20),
               Wrap(
                 alignment: WrapAlignment.end,
@@ -463,6 +494,11 @@ class _AnimationEditorState extends State<AnimationEditor> {
                           ? null
                           : () {
                               if (!_form.currentState!.validate()) return;
+                              final validation = validateKeyframes(_value());
+                              if (validation != null) {
+                                setState(() => _saveError = validation);
+                                return;
+                              }
                               if (!widget.onSaveDraft!(_value())) {
                                 setState(
                                   () => _saveError =
