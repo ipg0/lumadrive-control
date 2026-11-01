@@ -587,6 +587,71 @@ void main() {
     expect(editor.effect(foreground.effectId)!.durationMs, 1200);
     expect(editor.config.conditions.last.modeId, 1);
   });
+  testWidgets('suggested entry and inline animation names avoid duplicates', (
+    tester,
+  ) async {
+    final config = editorFixture();
+    config.effects[0].name = 'Static color';
+    config.effects.add(
+      MatrixEffect(
+        id: 2,
+        name: 'Blink',
+        kind: MatrixEffect_Kind.BLINK,
+        alpha: 255,
+      ),
+    );
+    config.entries[0].name = 'Static color · Default state';
+    final editor = await open(tester, config: config);
+    await tester.tap(find.byKey(const ValueKey('add-entry')));
+    await tester.pumpAndSettle();
+    final entryName = find.byKey(const ValueKey('entry-name'));
+    expect(
+      tester.widget<TextFormField>(entryName).controller!.text,
+      'Static color · Default state 2',
+    );
+    await tester.tap(entryName);
+    await tester.enterText(entryName, 'Custom entry');
+    await tester.pumpAndSettle();
+    final focus = FocusManager.instance.primaryFocus;
+    expect(focus, isNotNull);
+    editor.connectionChanged(false);
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<TextFormField>(entryName).controller!.text,
+      'Custom entry',
+    );
+    expect(focus!.hasFocus, isTrue);
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('create-entry-animation')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('create-entry-animation')));
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<TextFormField>(find.byKey(const ValueKey('animation-name')))
+          .controller!
+          .text,
+      'Static color 2',
+    );
+    await tester.ensureVisible(find.byKey(const ValueKey('animation-kind')));
+    await tester.tap(find.byKey(const ValueKey('animation-kind')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Blink').last);
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<TextFormField>(find.byKey(const ValueKey('animation-name')))
+          .controller!
+          .text,
+      'Blink 2',
+    );
+    expect(
+      tester.widget<TextFormField>(entryName).controller!.text,
+      'Custom entry',
+    );
+    expect(tester.takeException(), isNull);
+  });
   testWidgets('one-shot fill derives pass time from duration', (tester) async {
     final editor = await open(tester);
     await tester.tap(find.byKey(const ValueKey('matrix-entry-1')));
@@ -605,6 +670,12 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('fill-once')), findsOneWidget);
     expect(find.byKey(const ValueKey('animation-period')), findsNothing);
+    await tester.ensureVisible(find.byKey(const ValueKey('fill-origin')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('fill-origin')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Center · outward').last);
+    await tester.pumpAndSettle();
     await tester.ensureVisible(
       find.byKey(const ValueKey('animation-duration')),
     );
@@ -628,6 +699,8 @@ void main() {
     expect(fill.loop, isFalse);
     expect(fill.durationMs, 2400);
     expect(fill.periodMs, 2400);
+    expect(fill.fillFromCenter, isTrue);
+    expect(fill.reverse, isFalse);
     expect(tester.takeException(), isNull);
   });
   testWidgets(
@@ -688,6 +761,19 @@ void main() {
       fill.reverse = true;
       expect(sampleSimpleAnimation(fill, 0.5, 30, 60), const Color(0xffff0000));
       expect(sampleSimpleAnimation(fill, 0.5, 29, 60), Colors.transparent);
+      fill.fillFromCenter = true;
+      expect(
+        sampleSimpleAnimation(fill, 0.01, 29, 60),
+        const Color(0xffff0000),
+      );
+      expect(
+        sampleSimpleAnimation(fill, 0.01, 30, 60),
+        const Color(0xffff0000),
+      );
+      expect(sampleSimpleAnimation(fill, 0.01, 28, 60), Colors.transparent);
+      expect(sampleSimpleAnimation(fill, 0.25, 2, 5), const Color(0xffff0000));
+      expect(sampleSimpleAnimation(fill, 0.25, 1, 5), Colors.transparent);
+      expect(sampleSimpleAnimation(fill, 1, 0, 5), const Color(0xffff0000));
       flow.gradientColors.addAll([
         MatrixColor(red: 255, alpha: 255),
         MatrixColor(green: 255, alpha: 128),

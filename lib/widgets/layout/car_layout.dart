@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:lumadrive_control/controllers/layout_editor_controller.dart';
 import 'package:lumadrive_control/generated/mesh.pb.dart';
 import 'package:lumadrive_control/utils/car_positions.dart';
+import 'package:lumadrive_control/widgets/layout/layout_output_editor.dart';
 
 class CarLayout extends StatefulWidget {
   final LayoutEditorController controller;
@@ -47,7 +48,7 @@ class _CarLayoutState extends State<CarLayout> {
             ),
             LayoutBuilder(
               builder: (context, constraints) {
-                final width = constraints.maxWidth, height = width * 1.45;
+                final width = constraints.maxWidth, height = width * 1.74;
                 Widget location(
                   CarPosition position,
                   String label,
@@ -80,8 +81,10 @@ class _CarLayoutState extends State<CarLayout> {
                             vertical: 6,
                           ),
                           backgroundColor: selected
-                              ? colors.primaryContainer
-                              : colors.surfaceContainerHigh,
+                              ? colors.primaryContainer.withValues(alpha: .96)
+                              : colors.surfaceContainerHigh.withValues(
+                                  alpha: .92,
+                                ),
                           foregroundColor: selected
                               ? colors.onPrimaryContainer
                               : colors.onSurface,
@@ -175,26 +178,12 @@ class _CarLayoutState extends State<CarLayout> {
                         CarPosition.REAR_LEFT_FOOTWELL,
                         'Rear L\nfootwell',
                         .39,
-                        .76,
+                        .61,
                         size: 60,
                       ),
                       location(
                         CarPosition.REAR_RIGHT_FOOTWELL,
                         'Rear R\nfootwell',
-                        .61,
-                        .76,
-                        size: 60,
-                      ),
-                      location(
-                        CarPosition.CONSOLE_LEFT,
-                        'Console\nL',
-                        .39,
-                        .61,
-                        size: 60,
-                      ),
-                      location(
-                        CarPosition.CONSOLE_RIGHT,
-                        'Console\nR',
                         .61,
                         .61,
                         size: 60,
@@ -255,38 +244,57 @@ class _CarLayoutState extends State<CarLayout> {
                 padding: EdgeInsets.symmetric(vertical: 10),
                 child: Text('No lights assigned here yet.'),
               ),
-            DropdownButtonFormField<String>(
+            KeyedSubtree(
               key: ValueKey(
                 'assign-car-output-${_position.value}-${editor.layout.length}',
               ),
-              isExpanded: true,
-              decoration: const InputDecoration(
-                labelText: 'Assign a light to this location',
-                border: OutlineInputBorder(),
-              ),
-              items: [
-                for (final output in outputs)
-                  DropdownMenuItem(
-                    value: outputKey(output),
-                    child: Text(
-                      '${outputType(output)} · ${nodeSuffix(output.nodeMac)}',
-                      overflow: TextOverflow.ellipsis,
+              child: DropdownButtonFormField<String>(
+                key: ValueKey(
+                  'assign-car-selection-${_position.value}-${editor.selectedKey}',
+                ),
+                initialValue:
+                    outputs.any(
+                      (output) => outputKey(output) == editor.selectedKey,
+                    )
+                    ? editor.selectedKey
+                    : null,
+                isExpanded: true,
+                decoration: const InputDecoration(
+                  labelText: 'Assign a light to this location',
+                  border: OutlineInputBorder(),
+                ),
+                items: [
+                  for (final output in outputs)
+                    DropdownMenuItem(
+                      value: outputKey(output),
+                      child: Text(
+                        '${outputType(output)} · ${nodeSuffix(output.nodeMac)}',
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-              ],
-              onChanged: editor.busy
-                  ? null
-                  : (key) {
-                      if (key == null) return;
-                      final output = outputs.firstWhere(
-                        (output) => outputKey(output) == key,
-                      );
-                      editor.place(output);
-                      editor.assignPosition(key, _position);
-                      editor.select(key);
-                      unawaited(editor.identify(key));
-                    },
+                ],
+                onChanged: editor.busy
+                    ? null
+                    : (key) {
+                        if (key == null) return;
+                        final output = outputs.firstWhere(
+                          (output) => outputKey(output) == key,
+                        );
+                        editor.place(output);
+                        editor.assignPosition(key, _position);
+                        editor.select(key);
+                        unawaited(editor.identify(key));
+                      },
+              ),
             ),
+            if (editor.selected != null) ...[
+              const SizedBox(height: 16),
+              LayoutOutputEditor(
+                key: ValueKey('editor-${editor.selectedKey}'),
+                controller: editor,
+                advanced: false,
+              ),
+            ],
             const SizedBox(height: 12),
             Text(
               'Assigned lights form one continuous line from the rear left, up the left side, across the dash and down the right side to the rear right door.',
@@ -343,20 +351,28 @@ class _CarPainter extends CustomPainter {
       Radius.circular(radius),
     );
     final seam = Paint()
-      ..color = colors.outline.withValues(alpha: .5)
+      ..color = colors.outline.withValues(alpha: .48)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2;
+    // Keep the route outside this transform so it stays aligned with the
+    // location controls.
+    canvas.save();
+    canvas.translate(w * .5, h * .5);
+    canvas.scale(1.08, .92);
+    canvas.translate(-w * .5, -h * .5);
     // Tires sit behind the body, with the front and rear axles clearly visible.
     for (final x in [.195, .745]) {
       for (final y in [.225, .775]) {
         final tire = panel(x, y, x + .06, y + .105);
-        canvas.drawRRect(tire, Paint()..color = const Color(0xff101014));
+        canvas.drawRRect(tire, Paint()..color = const Color(0xff121217));
         canvas.drawRRect(tire, seam);
-        canvas.drawLine(
-          Offset((x + .03) * w, (y + .015) * h),
-          Offset((x + .03) * w, (y + .09) * h),
-          seam,
-        );
+        for (final offset in [.02, .04]) {
+          canvas.drawLine(
+            Offset((x + offset) * w, (y + .015) * h),
+            Offset((x + offset) * w, (y + .09) * h),
+            seam,
+          );
+        }
       }
     }
     // Mirrors protrude ahead of the front doors.
@@ -376,17 +392,21 @@ class _CarPainter extends CustomPainter {
       canvas.drawPath(mirror, seam);
     }
     final body = Path()
-      ..moveTo(.405 * w, .075 * h)
-      ..cubicTo(.30 * w, .075 * h, .265 * w, .13 * h, .25 * w, .235 * h)
-      ..cubicTo(.235 * w, .30 * h, .225 * w, .35 * h, .23 * w, .43 * h)
-      ..lineTo(.23 * w, .79 * h)
-      ..cubicTo(.23 * w, .88 * h, .25 * w, .925 * h, .33 * w, .94 * h)
-      ..quadraticBezierTo(.5 * w, .965 * h, .67 * w, .94 * h)
-      ..cubicTo(.75 * w, .925 * h, .77 * w, .88 * h, .77 * w, .79 * h)
-      ..lineTo(.77 * w, .43 * h)
-      ..cubicTo(.775 * w, .35 * h, .765 * w, .30 * h, .75 * w, .235 * h)
-      ..cubicTo(.735 * w, .13 * h, .70 * w, .075 * h, .595 * w, .075 * h)
-      ..quadraticBezierTo(.5 * w, .06 * h, .405 * w, .075 * h)
+      ..moveTo(.405 * w, .10 * h)
+      ..quadraticBezierTo(.5 * w, .085 * h, .595 * w, .10 * h)
+      // Long tapered bonnet, flowing into a pronounced front wheel arch.
+      ..cubicTo(.67 * w, .105 * h, .71 * w, .15 * h, .74 * w, .225 * h)
+      ..cubicTo(.77 * w, .27 * h, .78 * w, .31 * h, .765 * w, .36 * h)
+      // Narrower waist between the two wider fenders.
+      ..cubicTo(.745 * w, .43 * h, .745 * w, .60 * h, .76 * w, .68 * h)
+      ..cubicTo(.78 * w, .74 * h, .79 * w, .80 * h, .77 * w, .85 * h)
+      ..cubicTo(.75 * w, .905 * h, .71 * w, .935 * h, .655 * w, .94 * h)
+      ..quadraticBezierTo(.5 * w, .953 * h, .345 * w, .94 * h)
+      ..cubicTo(.29 * w, .935 * h, .25 * w, .905 * h, .23 * w, .85 * h)
+      ..cubicTo(.21 * w, .80 * h, .22 * w, .74 * h, .24 * w, .68 * h)
+      ..cubicTo(.255 * w, .60 * h, .255 * w, .43 * h, .235 * w, .36 * h)
+      ..cubicTo(.22 * w, .31 * h, .23 * w, .27 * h, .26 * w, .225 * h)
+      ..cubicTo(.29 * w, .15 * h, .33 * w, .105 * h, .405 * w, .10 * h)
       ..close();
     canvas.drawShadow(body, Colors.black, 5, false);
     canvas.drawPath(
@@ -407,41 +427,79 @@ class _CarPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = 1.8,
     );
-    // Bonnet creases and bumper establish which end of the car is the front.
+    // A fine highlight along the shoulders gives the top-down silhouette depth.
     canvas.drawPath(
       Path()
-        ..moveTo(.34 * w, .13 * h)
-        ..quadraticBezierTo(.31 * w, .17 * h, .30 * w, .235 * h)
-        ..moveTo(.66 * w, .13 * h)
-        ..quadraticBezierTo(.69 * w, .17 * h, .70 * w, .235 * h)
-        ..moveTo(.37 * w, .105 * h)
-        ..quadraticBezierTo(.5 * w, .09 * h, .63 * w, .105 * h),
+        ..moveTo(.275 * w, .23 * h)
+        ..cubicTo(.255 * w, .36 * h, .255 * w, .68 * h, .265 * w, .81 * h)
+        ..moveTo(.725 * w, .23 * h)
+        ..cubicTo(.745 * w, .36 * h, .745 * w, .68 * h, .735 * w, .81 * h),
+      Paint()
+        ..color = colors.onSurface.withValues(alpha: .13)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..strokeCap = StrokeCap.round,
+    );
+    // A wide, low grille and swept-back lamps distinguish the sedan's nose.
+    canvas.drawPath(
+      Path()
+        ..moveTo(.355 * w, .15 * h)
+        ..quadraticBezierTo(.32 * w, .20 * h, .315 * w, .245 * h)
+        ..moveTo(.645 * w, .15 * h)
+        ..quadraticBezierTo(.68 * w, .20 * h, .685 * w, .245 * h)
+        ..moveTo(.35 * w, .135 * h)
+        ..quadraticBezierTo(.5 * w, .12 * h, .65 * w, .135 * h),
       seam,
     );
-    canvas.drawRRect(
-      panel(.405, .115, .595, .13, radius: 3),
-      Paint()..color = colors.outlineVariant,
-    );
+    for (final grille in [
+      panel(.405, .125, .492, .143, radius: 3),
+      panel(.508, .125, .595, .143, radius: 3),
+    ]) {
+      canvas.drawRRect(grille, Paint()..color = colors.outlineVariant);
+    }
     final headlight = Paint()..color = colors.onSurface.withValues(alpha: .75);
     canvas.drawPath(
       Path()
-        ..moveTo(.30 * w, .135 * h)
-        ..lineTo(.365 * w, .12 * h)
-        ..lineTo(.365 * w, .145 * h)
-        ..lineTo(.29 * w, .16 * h)
+        ..moveTo(.30 * w, .165 * h)
+        ..lineTo(.405 * w, .145 * h)
+        ..lineTo(.375 * w, .17 * h)
+        ..lineTo(.28 * w, .19 * h)
         ..close(),
       headlight,
     );
     canvas.drawPath(
       Path()
-        ..moveTo(.70 * w, .135 * h)
-        ..lineTo(.635 * w, .12 * h)
-        ..lineTo(.635 * w, .145 * h)
-        ..lineTo(.71 * w, .16 * h)
+        ..moveTo(.70 * w, .165 * h)
+        ..lineTo(.595 * w, .145 * h)
+        ..lineTo(.625 * w, .17 * h)
+        ..lineTo(.72 * w, .19 * h)
         ..close(),
       headlight,
     );
-    final glass = Paint()..color = colors.primary.withValues(alpha: .16);
+    // Recessed cabin and dashboard, visible through the controls without
+    // competing with their labels.
+    final cabin = Path()
+      ..moveTo(.315 * w, .33 * h)
+      ..quadraticBezierTo(.5 * w, .355 * h, .685 * w, .33 * h)
+      ..lineTo(.70 * w, .835 * h)
+      ..quadraticBezierTo(.5 * w, .86 * h, .30 * w, .835 * h)
+      ..close();
+    canvas.drawPath(
+      cabin,
+      Paint()..color = colors.surface.withValues(alpha: .55),
+    );
+    canvas.drawPath(cabin, seam);
+    canvas.drawPath(
+      Path()
+        ..moveTo(.32 * w, .38 * h)
+        ..quadraticBezierTo(.5 * w, .405 * h, .68 * w, .38 * h),
+      Paint()
+        ..color = colors.outline.withValues(alpha: .65)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2
+        ..strokeCap = StrokeCap.round,
+    );
+    final glass = Paint()..color = colors.primary.withValues(alpha: .14);
     final windshield = Path()
       ..moveTo(.32 * w, .245 * h)
       ..quadraticBezierTo(.5 * w, .225 * h, .68 * w, .245 * h)
@@ -477,16 +535,33 @@ class _CarPainter extends CustomPainter {
     }
     // Front bucket seats with headrests, rear bench, and center tunnel.
     for (final x in [.315, .545]) {
-      canvas.drawRRect(panel(x, .49, x + .14, .645, radius: 9), seam);
-      canvas.drawRRect(panel(x + .025, .475, x + .115, .505, radius: 4), seam);
+      final seat = panel(x, .49, x + .14, .645, radius: 9);
+      canvas.drawRRect(
+        seat,
+        Paint()..color = colors.surfaceContainerHighest.withValues(alpha: .65),
+      );
+      canvas.drawRRect(seat, seam);
+      final headrest = panel(x + .025, .475, x + .115, .505, radius: 4);
+      canvas.drawRRect(
+        headrest,
+        Paint()..color = colors.surfaceContainerHighest,
+      );
+      canvas.drawRRect(headrest, seam);
       canvas.drawLine(
         Offset(x * w, .60 * h),
         Offset((x + .14) * w, .60 * h),
         seam,
       );
     }
-    canvas.drawRRect(panel(.31, .79, .69, .84, radius: 7), seam);
-    canvas.drawRRect(panel(.475, .41, .525, .75, radius: 8), seam);
+    final bench = panel(.31, .79, .69, .84, radius: 7);
+    canvas.drawRRect(
+      bench,
+      Paint()..color = colors.surfaceContainerHighest.withValues(alpha: .6),
+    );
+    canvas.drawRRect(bench, seam);
+    final tunnel = panel(.475, .41, .525, .75, radius: 8);
+    canvas.drawRRect(tunnel, Paint()..color = colors.surfaceContainerHigh);
+    canvas.drawRRect(tunnel, seam);
     final steering = Paint()
       ..color = colors.outline.withValues(alpha: .8)
       ..style = PaintingStyle.stroke
@@ -508,6 +583,7 @@ class _CarPainter extends CustomPainter {
     final tail = Paint()..color = colors.tertiary.withValues(alpha: .8);
     canvas.drawRRect(panel(.28, .905, .35, .92, radius: 3), tail);
     canvas.drawRRect(panel(.65, .905, .72, .92, radius: 3), tail);
+    canvas.restore();
     final route = Path()
       ..moveTo(w * .17, h * .83)
       ..lineTo(w * .17, h * .14)
@@ -518,9 +594,9 @@ class _CarPainter extends CustomPainter {
     canvas.drawPath(
       route,
       Paint()
-        ..color = colors.primary.withValues(alpha: .65)
+        ..color = colors.primary.withValues(alpha: .48)
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 3
+        ..strokeWidth = 2.5
         ..strokeCap = StrokeCap.round,
     );
     final arrow = Paint()

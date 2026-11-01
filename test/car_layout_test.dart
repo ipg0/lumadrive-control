@@ -153,6 +153,31 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('output name keeps focus through status changes and refresh', (
+    tester,
+  ) async {
+    final editor = await open(tester);
+    editor.select(placementKey(editor.layout.single));
+    await tester.pumpAndSettle();
+    final name = find.byKey(const ValueKey('layout-name'));
+    await tester.ensureVisible(name);
+    await tester.pumpAndSettle();
+    await tester.tap(name);
+    await tester.enterText(name, 'Front strip');
+    await tester.pumpAndSettle();
+    final focus = tester.widget<TextField>(name).focusNode!;
+    expect(focus.hasFocus, isTrue);
+    editor.connectionChanged(false);
+    await tester.pumpAndSettle();
+    expect(focus.hasFocus, isTrue);
+    expect(tester.widget<TextField>(name).controller!.text, 'Front strip');
+    editor.connectionChanged(true);
+    await tester.pumpAndSettle();
+    expect(focus.hasFocus, isTrue);
+    expect(tester.widget<TextField>(name).controller!.text, 'Front strip');
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'simple car diagram assigns a light and exposes door handles and pockets',
     (tester) async {
@@ -185,7 +210,21 @@ void main() {
       expect(repository.identifiedIndex, 0);
       expect(repository.identifiedLength, 60);
       expect(repository.identifiedReversed, isFalse);
+      final selector = find.byKey(const ValueKey('assign-car-output-1-1'));
+      final length = find.byKey(const ValueKey('layout-length'));
+      expect(find.text('Selected output'), findsNothing);
+      expect(
+        tester.getTopLeft(length).dy,
+        greaterThan(tester.getBottomLeft(selector).dy),
+      );
+      await tester.ensureVisible(length);
+      await tester.enterText(length, '61');
+      await tester.pumpAndSettle();
+      expect(editor.lengthFor(editor.layout.single), 61);
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
       await tester.ensureVisible(find.text('Handle'));
+      await tester.pumpAndSettle();
       await tester.tap(find.text('Handle'));
       await tester.pumpAndSettle();
       expect(find.text('Rear left door handle'), findsWidgets);

@@ -64,8 +64,10 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
       MatrixSource_Kind.ON_MODE_SWITCHED => 'Mode switched',
       _ => 'Trigger',
     };
-    _name.text =
-        '${effect == null ? 'Animation' : animationTitle(effect)} · $trigger';
+    _name.text = uniqueSuggestedName(
+      '${effect == null ? 'Animation' : animationTitle(effect)} · $trigger',
+      widget.controller.config.entries.map(entryTitle),
+    );
   }
 
   @override
@@ -178,6 +180,7 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                 AnimationEditor(
                   key: const ValueKey('entry-inline-animation'),
                   initial: _newAnimation!,
+                  existingNames: effects.map(animationTitle),
                   canvasSize: widget.controller.canvasSize,
                   saveLabel: 'Use animation',
                   previewCaption: 'Preview on this phone. Use animation selects it for this entry draft.',

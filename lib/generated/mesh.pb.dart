@@ -432,6 +432,7 @@ class MatrixEffect extends $pb.GeneratedMessage {
     $core.bool? reverse,
     $core.String? name,
     $core.Iterable<MatrixColor>? gradientColors,
+    $core.bool? fillFromCenter,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -450,6 +451,7 @@ class MatrixEffect extends $pb.GeneratedMessage {
     if (reverse != null) result.reverse = reverse;
     if (name != null) result.name = name;
     if (gradientColors != null) result.gradientColors.addAll(gradientColors);
+    if (fillFromCenter != null) result.fillFromCenter = fillFromCenter;
     return result;
   }
 
@@ -488,6 +490,7 @@ class MatrixEffect extends $pb.GeneratedMessage {
     ..aOS(15, _omitFieldNames ? '' : 'name')
     ..pPM<MatrixColor>(16, _omitFieldNames ? '' : 'gradientColors',
         subBuilder: MatrixColor.create)
+    ..aOB(17, _omitFieldNames ? '' : 'fillFromCenter')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -642,6 +645,15 @@ class MatrixEffect extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(16)
   $pb.PbList<MatrixColor> get gradientColors => $_getList(15);
+
+  @$pb.TagNumber(17)
+  $core.bool get fillFromCenter => $_getBF(16);
+  @$pb.TagNumber(17)
+  set fillFromCenter($core.bool value) => $_setBool(16, value);
+  @$pb.TagNumber(17)
+  $core.bool hasFillFromCenter() => $_has(16);
+  @$pb.TagNumber(17)
+  void clearFillFromCenter() => $_clearField(17);
 }
 
 class MatrixSource extends $pb.GeneratedMessage {

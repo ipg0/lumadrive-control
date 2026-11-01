@@ -36,6 +36,20 @@ MatrixEffect newSimpleAnimation() => MatrixEffect(
 );
 String entryTitle(MatrixEntry entry) =>
     entry.name.isEmpty ? 'Entry ${entry.id}' : entry.name;
+String uniqueSuggestedName(String base, Iterable<String> existing) {
+  final used = existing.map((name) => name.trim().toLowerCase()).toSet();
+  String candidate(int index) {
+    final suffix = index == 1 ? '' : ' $index';
+    return '${String.fromCharCodes(base.runes.take(32 - suffix.length)).trimRight()}$suffix';
+  }
+
+  var index = 1;
+  while (used.contains(candidate(index).toLowerCase())) {
+    index++;
+  }
+  return candidate(index);
+}
+
 MatrixUpdate matrixPatch(MatrixConfig config) => MatrixUpdate(
   effects: config.effects,
   sources: config.sources,

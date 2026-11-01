@@ -23,6 +23,7 @@ class AnimationEditor extends StatefulWidget {
   final String saveLabel, previewCaption;
   final String? Function()? failureMessage;
   final bool Function(MatrixEffect)? onSaveDraft;
+  final Iterable<String> existingNames;
   const AnimationEditor({
     super.key,
     required this.initial,
@@ -34,6 +35,7 @@ class AnimationEditor extends StatefulWidget {
         'Preview on this phone. Apply animation saves it to the controller.',
     this.failureMessage,
     this.onSaveDraft,
+    this.existingNames = const [],
   });
   @override
   State<AnimationEditor> createState() => _AnimationEditorState();
@@ -66,7 +68,10 @@ class _AnimationEditorState extends State<AnimationEditor> {
     _name = TextEditingController(text: _effect.name);
     if (_effect.id == 0 && _effect.name.isEmpty) {
       _automaticName = true;
-      _name.text = effectKindLabel(_effect.kind);
+      _name.text = uniqueSuggestedName(
+        effectKindLabel(_effect.kind),
+        widget.existingNames,
+      );
     }
     _duration = TextEditingController(text: '${_effect.durationMs}');
     _period = TextEditingController(
@@ -231,7 +236,12 @@ class _AnimationEditorState extends State<AnimationEditor> {
                 ],
                 onChanged: (kind) => setState(() {
                   _effect.kind = kind!;
-                  if (_automaticName) _name.text = effectKindLabel(kind);
+                  if (_automaticName) {
+                    _name.text = uniqueSuggestedName(
+                      effectKindLabel(kind),
+                      widget.existingNames,
+                    );
+                  }
                   if (kind == MatrixEffect_Kind.FILL && _duration.text == '0') {
                     _duration.text = '1000';
                   }
@@ -405,12 +415,30 @@ class _AnimationEditorState extends State<AnimationEditor> {
                 ),
               ],
               if (_effect.kind == MatrixEffect_Kind.FILL)
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Reverse fill'),
-                  subtitle: const Text('Fill toward decreasing canvas indices'),
-                  value: _effect.reverse,
-                  onChanged: (value) => setState(() => _effect.reverse = value),
+                DropdownButtonFormField<String>(
+                  key: const ValueKey('fill-origin'),
+                  isExpanded: true,
+                  initialValue: _effect.fillFromCenter
+                      ? 'center'
+                      : _effect.reverse
+                      ? 'end'
+                      : 'beginning',
+                  decoration: const InputDecoration(labelText: 'Fill from'),
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'beginning',
+                      child: Text('Beginning'),
+                    ),
+                    DropdownMenuItem(value: 'end', child: Text('End')),
+                    DropdownMenuItem(
+                      value: 'center',
+                      child: Text('Center · outward'),
+                    ),
+                  ],
+                  onChanged: (value) => setState(() {
+                    _effect.fillFromCenter = value == 'center';
+                    _effect.reverse = value == 'end';
+                  }),
                 ),
               const SizedBox(height: 18),
               SimpleAnimationPreview(

@@ -210,47 +210,55 @@ class _MatrixEditorPageState extends ConsumerState<MatrixEditorPage>
               : ListView(
                   padding: const EdgeInsets.all(18),
                   children: [
-                    if (_editor.error != null)
-                      _message(_editor.error!, error: true),
-                    if (_editor.conflict)
-                      _message(
-                        'The matrix changed on the controller. Your local draft is kept.',
-                        action: TextButton(
-                          onPressed: _editing
-                              ? null
-                              : () => _editor.refresh(discardDraft: true),
-                          child: const Text('Use saved matrix'),
-                        ),
-                      ),
-                    if (!_editor.connected)
-                      _message(
-                        _editor.document == null
-                            ? 'Controller disconnected. Connect to load its matrix before editing.'
-                            : 'Controller disconnected. Your matrix draft is kept on this phone.',
-                        action: TextButton(
-                          onPressed: () {
-                            if (widget.controller != null || _available()) {
-                              _editor.refresh();
-                            } else if (ref.read(bleControllerProvider)
-                                    is! BleConnecting &&
-                                _owner != null) {
-                              ref
-                                  .read(bleControllerProvider.notifier)
-                                  .connectDevice(_owner!);
-                            }
-                          },
-                          child: Text(
-                            widget.controller != null || _available()
-                                ? 'Retry'
-                                : 'Reconnect',
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (_editor.error != null)
+                          _message(_editor.error!, error: true),
+                        if (_editor.conflict)
+                          _message(
+                            'The matrix changed on the controller. Your local draft is kept.',
+                            action: TextButton(
+                              onPressed: _editing
+                                  ? null
+                                  : () => _editor.refresh(discardDraft: true),
+                              child: const Text('Use saved matrix'),
+                            ),
                           ),
-                        ),
-                      ),
-                    if (_editor.notice != null) _message(_editor.notice!),
+                        if (!_editor.connected)
+                          _message(
+                            _editor.document == null
+                                ? 'Controller disconnected. Connect to load its matrix before editing.'
+                                : 'Controller disconnected. Your matrix draft is kept on this phone.',
+                            action: TextButton(
+                              onPressed: () {
+                                if (widget.controller != null || _available()) {
+                                  _editor.refresh();
+                                } else if (ref.read(bleControllerProvider)
+                                        is! BleConnecting &&
+                                    _owner != null) {
+                                  ref
+                                      .read(bleControllerProvider.notifier)
+                                      .connectDevice(_owner!);
+                                }
+                              },
+                              child: Text(
+                                widget.controller != null || _available()
+                                    ? 'Retry'
+                                    : 'Reconnect',
+                              ),
+                            ),
+                          ),
+                        if (_editor.notice != null) _message(_editor.notice!),
+                      ],
+                    ),
                     if (_editing && _animation != null)
                       AnimationEditor(
                         key: ValueKey('animation-form-${_animation!.id}'),
                         initial: _animation!,
+                        existingNames: _editor.config.effects
+                            .where((effect) => effect.id != _animation!.id)
+                            .map(animationTitle),
                         canvasSize: _editor.canvasSize,
                         onCancel: _closeForm,
                         failureMessage: () => _editor.error,

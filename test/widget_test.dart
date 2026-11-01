@@ -71,6 +71,14 @@ void main() {
     await tester.tap(find.byTooltip('Place LED strip · driver 1'));
     await tester.pumpAndSettle();
     expect(editor.layout.single.to, 60);
+    expect(editor.layout.single.name, 'LED strip · driver 1 · 03:04:05');
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const ValueKey('layout-name')))
+          .controller!
+          .text,
+      editor.layout.single.name,
+    );
     expect(find.text('Selected output'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });

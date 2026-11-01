@@ -23,6 +23,13 @@ Color sampleSimpleAnimation(
     final count = math.max(1, canvasSize);
     final filled = (progress * count).ceil();
     final pixel = position.floor().clamp(0, count - 1);
+    if (effect.fillFromCenter) {
+      final radius = (progress * ((count + 1) ~/ 2)).ceil();
+      final distance = pixel < count ~/ 2
+          ? (count - 1) ~/ 2 - pixel
+          : pixel - count ~/ 2;
+      return distance < radius ? primary : Colors.transparent;
+    }
     return (effect.reverse ? pixel >= count - filled : pixel < filled)
         ? primary
         : Colors.transparent;

@@ -168,110 +168,126 @@ class _LayoutEditorPageState extends ConsumerState<LayoutEditorPage>
                             setState(() => _advanced = value.single),
                       ),
                       const SizedBox(height: 16),
-                      if (_editor.dirty)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.edit_note,
-                                size: 19,
-                                color: colors.primary,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (_editor.dirty)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.edit_note,
+                                    size: 19,
+                                    color: colors.primary,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Draft · changes apply when you save',
+                                      style: theme.textTheme.labelLarge,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
+                            ),
+                          if (_editor.conflict)
+                            _banner(
+                              context,
+                              Icons.sync_problem,
+                              'The configuration changed on the controller. Your draft is kept here.',
+                              action: TextButton(
+                                onPressed: () =>
+                                    _editor.refresh(discardDraft: true),
+                                child: const Text('Use saved layout'),
+                              ),
+                            ),
+                          if (!_editor.connected)
+                            _banner(
+                              context,
+                              Icons.cloud_off_outlined,
+                              'Controller disconnected. Your draft is kept on this phone.',
+                              action: TextButton(
+                                onPressed: () {
+                                  if (widget.controller != null ||
+                                      _isOwnerConnected()) {
+                                    _editor.refresh();
+                                  } else if (ref.read(bleControllerProvider)
+                                          is! BleConnecting &&
+                                      _owner != null) {
+                                    ref
+                                        .read(bleControllerProvider.notifier)
+                                        .connectDevice(_owner!);
+                                  }
+                                },
                                 child: Text(
-                                  'Draft · changes apply when you save',
-                                  style: theme.textTheme.labelLarge,
+                                  widget.controller != null ||
+                                          _isOwnerConnected()
+                                      ? 'Retry'
+                                      : 'Reconnect',
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-                      if (_editor.conflict)
-                        _banner(
-                          context,
-                          Icons.sync_problem,
-                          'The configuration changed on the controller. Your draft is kept here.',
-                          action: TextButton(
-                            onPressed: () =>
-                                _editor.refresh(discardDraft: true),
-                            child: const Text('Use saved layout'),
-                          ),
-                        ),
-                      if (!_editor.connected)
-                        _banner(
-                          context,
-                          Icons.cloud_off_outlined,
-                          'Controller disconnected. Your draft is kept on this phone.',
-                          action: TextButton(
-                            onPressed: () {
-                              if (widget.controller != null ||
-                                  _isOwnerConnected()) {
-                                _editor.refresh();
-                              } else if (ref.read(bleControllerProvider)
-                                      is! BleConnecting &&
-                                  _owner != null) {
-                                ref
-                                    .read(bleControllerProvider.notifier)
-                                    .connectDevice(_owner!);
-                              }
-                            },
-                            child: Text(
-                              widget.controller != null || _isOwnerConnected()
-                                  ? 'Retry'
-                                  : 'Reconnect',
                             ),
-                          ),
-                        ),
-                      if (_editor.error != null)
-                        _banner(
-                          context,
-                          Icons.info_outline,
-                          _editor.error!,
-                          error: true,
-                        ),
-                      if (_editor.validationError != null &&
-                          _editor.fieldError == null)
-                        _banner(
-                          context,
-                          Icons.rule,
-                          _editor.validationError!,
-                          error: true,
-                        ),
-                      if (_editor.notice != null)
-                        _banner(
-                          context,
-                          Icons.check_circle_outline,
-                          _editor.notice!,
-                        ),
-                      if (_editor.deploymentNotice != null)
-                        _banner(context, Icons.sync, _editor.deploymentNotice!),
-                      if (_editor.applying)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              LinearProgressIndicator(
-                                value: _editor.progress == 1
-                                    ? null
-                                    : _editor.progress,
+                          if (_editor.error != null)
+                            _banner(
+                              context,
+                              Icons.info_outline,
+                              _editor.error!,
+                              error: true,
+                            ),
+                          if (_editor.validationError != null &&
+                              _editor.fieldError == null)
+                            _banner(
+                              context,
+                              Icons.rule,
+                              _editor.validationError!,
+                              error: true,
+                            ),
+                          if (_editor.notice != null)
+                            _banner(
+                              context,
+                              Icons.check_circle_outline,
+                              _editor.notice!,
+                            ),
+                          if (_editor.deploymentNotice != null)
+                            _banner(
+                              context,
+                              Icons.sync,
+                              _editor.deploymentNotice!,
+                            ),
+                          if (_editor.applying)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  LinearProgressIndicator(
+                                    value: _editor.progress == 1
+                                        ? null
+                                        : _editor.progress,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    _editor.progress == 1
+                                        ? 'Saving and syncing with nodes…'
+                                        : 'Sending layout…',
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                _editor.progress == 1
-                                    ? 'Saving and syncing with nodes…'
-                                    : 'Sending layout…',
-                              ),
-                            ],
-                          ),
-                        ),
+                            ),
+                        ],
+                      ),
                       if (_advanced)
-                        LayoutCanvas(controller: _editor)
+                        LayoutCanvas(
+                          key: const ValueKey('layout-canvas'),
+                          controller: _editor,
+                        )
                       else
-                        CarLayout(controller: _editor),
-                      if (_editor.selected != null) ...[
+                        CarLayout(
+                          key: const ValueKey('car-layout'),
+                          controller: _editor,
+                        ),
+                      if (_advanced && _editor.selected != null) ...[
                         const SizedBox(height: 12),
                         LayoutOutputEditor(
                           key: ValueKey('editor-${_editor.selectedKey}'),
@@ -288,13 +304,14 @@ class _LayoutEditorPageState extends ConsumerState<LayoutEditorPage>
                               style: theme.textTheme.titleMedium,
                             ),
                           ),
-                          TextButton.icon(
-                            onPressed: _editor.busy
-                                ? null
-                                : () => _showOutputs(context),
-                            icon: const Icon(Icons.add),
-                            label: const Text('Add output'),
-                          ),
+                          if (_advanced)
+                            TextButton.icon(
+                              onPressed: _editor.busy
+                                  ? null
+                                  : () => _showOutputs(context),
+                              icon: const Icon(Icons.add),
+                              label: const Text('Add output'),
+                            ),
                         ],
                       ),
                       const SizedBox(height: 6),

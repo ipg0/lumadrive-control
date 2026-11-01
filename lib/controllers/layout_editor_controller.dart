@@ -37,6 +37,11 @@ String nodeSuffix(List<int> mac) => mac
     .skip(math.max(0, mac.length - 3))
     .map((byte) => byte.toRadixString(16).padLeft(2, '0').toUpperCase())
     .join(':');
+String defaultOutputName(LayoutOutput output) {
+  final suffix = ' · ${nodeSuffix(output.nodeMac)}';
+  return '${String.fromCharCodes(outputType(output).runes.take(32 - suffix.length))}$suffix';
+}
+
 bool _sameLayout(List<MatrixLayout> a, List<MatrixLayout> b) => listEquals(
   LayoutUpdate(layout: a).writeToBuffer(),
   LayoutUpdate(layout: b).writeToBuffer(),
@@ -325,6 +330,7 @@ class LayoutEditorController extends ChangeNotifier {
         sourceIndex: output.sourceIndex,
         from: start,
         to: start + output.pixelCount,
+        name: defaultOutputName(output),
       ),
     ];
     selectedKey = key;
