@@ -19,6 +19,7 @@ String? unsignedNumber(String? value, {int min = 0, int max = 0xffffffff}) {
 class AnimationEditor extends StatefulWidget {
   final MatrixEffect initial;
   final int canvasSize;
+  final int? centerIndex;
   final FutureOr<bool> Function(MatrixEffect) onSave;
   final VoidCallback onCancel;
   final String saveLabel, previewCaption;
@@ -30,6 +31,7 @@ class AnimationEditor extends StatefulWidget {
     super.key,
     required this.initial,
     required this.canvasSize,
+    this.centerIndex,
     required this.onSave,
     required this.onCancel,
     this.saveLabel = 'Apply animation',
@@ -463,6 +465,7 @@ class _AnimationEditorState extends State<AnimationEditor> {
                 KeyframeEditor(
                   effect: _effect,
                   canvasSize: widget.canvasSize,
+                  centerIndex: widget.centerIndex,
                   layout: widget.layout,
                   onChanged: () => setState(() {}),
                   colorEditor: (color, onChanged) => MatrixColorEditor(
@@ -475,6 +478,7 @@ class _AnimationEditorState extends State<AnimationEditor> {
                 SimpleAnimationPreview(
                   effect: _value(),
                   canvasSize: widget.canvasSize,
+                  centerIndex: widget.centerIndex,
                   caption: widget.previewCaption,
                 ),
               const SizedBox(height: 20),

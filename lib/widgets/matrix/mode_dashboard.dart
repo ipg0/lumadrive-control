@@ -215,7 +215,10 @@ class _ModeDashboardState extends ConsumerState<ModeDashboard> {
                 );
               },
             ),
-          if (_busy) const LinearProgressIndicator(),
+          if (_busy) ...[
+            const SizedBox(height: 12),
+            const LinearProgressIndicator(),
+          ],
           if (_error != null)
             TextButton(
               onPressed: _busy ? null : _load,

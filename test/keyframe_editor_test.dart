@@ -77,6 +77,7 @@ void main() {
                   alpha: 255,
                 ),
                 canvasSize: 60,
+        centerIndex: 12,
                 onCancel: () {},
                 onSave: (effect) {
                   saved = effect;
@@ -92,6 +93,8 @@ void main() {
       await tester.tap(find.text('Keyframes').last);
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('keyframe-canvas')), findsOneWidget);
+    expect(find.byKey(const ValueKey('keyframe-center-marker')), findsOneWidget);
+    expect(find.text('Center: 12'), findsOneWidget);
       final add = find.byKey(const ValueKey('add-keyframe'));
       await tester.ensureVisible(add);
       await tester.pumpAndSettle();

@@ -789,6 +789,16 @@ void main() {
       expect(sampleSimpleAnimation(fill, 0.5, 29, 60), Colors.transparent);
       fill.fillFromCenter = true;
       expect(
+        sampleSimpleAnimation(fill, 0.1, 9, 60, 10),
+        const Color(0xffff0000),
+      );
+      expect(
+        sampleSimpleAnimation(fill, 0.1, 10, 60, 10),
+        const Color(0xffff0000),
+      );
+      expect(sampleSimpleAnimation(fill, 0.1, 20, 60, 10), Colors.transparent);
+      fill.fillFromCenter = true;
+      expect(
         sampleSimpleAnimation(fill, 0.01, 29, 60),
         const Color(0xffff0000),
       );

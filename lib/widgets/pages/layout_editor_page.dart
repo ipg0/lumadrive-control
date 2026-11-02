@@ -295,6 +295,73 @@ class _LayoutEditorPageState extends ConsumerState<LayoutEditorPage>
                           advanced: _advanced,
                         ),
                       ],
+                      if (_editor.canvasSize > 0)
+                        Card(
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Layout center',
+                                  style: theme.textTheme.titleMedium,
+                                ),
+                                SwitchListTile(
+                                  contentPadding: EdgeInsets.zero,
+                                  title: const Text('Automatic center'),
+                                  subtitle: const Text(
+                                    'Between the left and right dash; otherwise the layout midpoint.',
+                                  ),
+                                  value: _editor.centerIndex == null,
+                                  onChanged: _editor.busy
+                                      ? null
+                                      : (automatic) => _editor.setCenter(
+                                          automatic
+                                              ? null
+                                              : _editor.resolvedCenter,
+                                        ),
+                                ),
+                                if (_editor.centerIndex != null) ...[
+                                  Text(
+                                    'Center: ${_editor.centerIndex} / ${_editor.canvasSize}',
+                                  ),
+                                  Slider(
+                                    key: const ValueKey('layout-center-slider'),
+                                    min: 0,
+                                    max: _editor.canvasSize.toDouble(),
+                                    value: _editor.centerIndex!
+                                        .clamp(0, _editor.canvasSize)
+                                        .toDouble(),
+                                    onChanged: _editor.busy
+                                        ? null
+                                        : (value) =>
+                                              _editor.setCenter(value.round()),
+                                  ),
+                                  TextFormField(
+                                    key: ValueKey(
+                                      'center-${_editor.centerIndex}',
+                                    ),
+                                    initialValue: '${_editor.centerIndex}',
+                                    keyboardType: TextInputType.number,
+                                    decoration: const InputDecoration(
+                                      labelText: 'Center index',
+                                      helperText: 'Boundary between pixels; press Done to set.',
+                                    ),
+                                    onFieldSubmitted: (text) {
+                                      final value = int.tryParse(text);
+                                      if (value != null &&
+                                          value >= 0 &&
+                                          value <= _editor.canvasSize) {
+                                        _editor.setCenter(value);
+                                      }
+                                    },
+                                  ),
+                                ] else
+                                  Text('Center: ${_editor.resolvedCenter}'),
+                              ],
+                            ),
+                          ),
+                        ),
                       const SizedBox(height: 18),
                       Row(
                         children: [

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lumadrive_control/controllers/matrix_editor_controller.dart';
 import 'package:lumadrive_control/controllers/layout_editor_controller.dart'
-    show nodeSuffix;
+    show nodeSuffix, automaticLayoutCenter;
 import 'package:lumadrive_control/generated/mesh.pb.dart';
 
 import 'animation_editor.dart';
@@ -183,6 +183,9 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                   layout: widget.controller.config.layout,
                   existingNames: effects.map(animationTitle),
                   canvasSize: widget.controller.canvasSize,
+                  centerIndex: widget.controller.config.hasCenterIndex()
+                      ? widget.controller.config.centerIndex
+                      : automaticLayoutCenter(widget.controller.config.layout),
                   saveLabel: 'Use animation',
                   previewCaption: 'Preview on this phone. Use animation selects it for this entry draft.',
                   onCancel: () => setState(() => _newAnimation = null),

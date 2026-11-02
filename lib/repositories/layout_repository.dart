@@ -79,7 +79,8 @@ class ConnectedLayoutRepository implements LayoutRepository {
 class SavedLayoutDraft {
   final LayoutSnapshot snapshot;
   final List<MatrixLayout> layout;
-  SavedLayoutDraft(this.snapshot, this.layout);
+  final int? centerIndex;
+  SavedLayoutDraft(this.snapshot, this.layout, [this.centerIndex]);
 }
 
 abstract interface class LayoutDraftStore {
@@ -106,11 +107,14 @@ class FileLayoutDraftStore implements LayoutDraftStore {
       final data =
           jsonDecode(await file.readAsString()) as Map<String, dynamic>;
       if (data['version'] != 1) return null;
+      final update = LayoutUpdate.fromBuffer(
+        base64Decode(data['layout'] as String),
+      );
       return SavedLayoutDraft(
         LayoutSnapshot.fromBuffer(base64Decode(data['snapshot'] as String))
           ..freeze(),
-        LayoutUpdate.fromBuffer(base64Decode(data['layout'] as String)).layout
-            .toList(),
+        update.layout.toList(),
+        update.hasCenterIndex() ? update.centerIndex : null,
       );
     } on FormatException {
       return null;
@@ -128,7 +132,10 @@ class FileLayoutDraftStore implements LayoutDraftStore {
         'version': 1,
         'snapshot': base64Encode(draft.snapshot.writeToBuffer()),
         'layout': base64Encode(
-          LayoutUpdate(layout: draft.layout).writeToBuffer(),
+          LayoutUpdate(
+            layout: draft.layout,
+            centerIndex: draft.centerIndex,
+          ).writeToBuffer(),
         ),
       }),
       flush: true,

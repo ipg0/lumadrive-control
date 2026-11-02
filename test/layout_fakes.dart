@@ -122,6 +122,11 @@ class FakeLayoutRepository implements LayoutRepository {
     snapshot.layout
       ..clear()
       ..addAll(update.layout);
+    if (update.hasCenterIndex()) {
+      snapshot.centerIndex = update.centerIndex;
+    } else {
+      snapshot.clearCenterIndex();
+    }
     snapshot.revision += Int64.ONE;
     yield MatrixUploadProgress(
       100,

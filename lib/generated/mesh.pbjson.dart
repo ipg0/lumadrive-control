@@ -497,6 +497,18 @@ const MatrixConfig$json = {
       '10': 'modes'
     },
     {'1': 'active_mode_id', '3': 9, '4': 1, '5': 13, '10': 'activeModeId'},
+    {
+      '1': 'center_index',
+      '3': 10,
+      '4': 1,
+      '5': 13,
+      '9': 0,
+      '10': 'centerIndex',
+      '17': true
+    },
+  ],
+  '8': [
+    {'1': '_center_index'},
   ],
 };
 
@@ -510,7 +522,8 @@ final $typed_data.Uint8List matrixConfigDescriptor = $convert.base64Decode(
     'IyCgZsYXlvdXQYBiADKAsyGi5tZXNoX2ludGVyb3AuTWF0cml4TGF5b3V0UgZsYXlvdXQSJwoP'
     'ZmFjdG9yeV9kZWZhdWx0GAcgASgIUg5mYWN0b3J5RGVmYXVsdBIuCgVtb2RlcxgIIAMoCzIYLm'
     '1lc2hfaW50ZXJvcC5NYXRyaXhNb2RlUgVtb2RlcxIkCg5hY3RpdmVfbW9kZV9pZBgJIAEoDVIM'
-    'YWN0aXZlTW9kZUlk');
+    'YWN0aXZlTW9kZUlkEiYKDGNlbnRlcl9pbmRleBgKIAEoDUgAUgtjZW50ZXJJbmRleIgBAUIPCg'
+    '1fY2VudGVyX2luZGV4');
 
 @$core.Deprecated('Use transferBeginDescriptor instead')
 const TransferBegin$json = {
@@ -629,6 +642,18 @@ const LayoutUpdate$json = {
       '6': '.mesh_interop.MatrixLayout',
       '10': 'layout'
     },
+    {
+      '1': 'center_index',
+      '3': 4,
+      '4': 1,
+      '5': 13,
+      '9': 0,
+      '10': 'centerIndex',
+      '17': true
+    },
+  ],
+  '8': [
+    {'1': '_center_index'},
   ],
 };
 
@@ -636,7 +661,8 @@ const LayoutUpdate$json = {
 final $typed_data.Uint8List layoutUpdateDescriptor = $convert.base64Decode(
     'CgxMYXlvdXRVcGRhdGUSKwoRZXhwZWN0ZWRfcmV2aXNpb24YASABKARSEGV4cGVjdGVkUmV2aX'
     'Npb24SJQoObWFzdGVyX3Nlc3Npb24YAiABKARSDW1hc3RlclNlc3Npb24SMgoGbGF5b3V0GAMg'
-    'AygLMhoubWVzaF9pbnRlcm9wLk1hdHJpeExheW91dFIGbGF5b3V0');
+    'AygLMhoubWVzaF9pbnRlcm9wLk1hdHJpeExheW91dFIGbGF5b3V0EiYKDGNlbnRlcl9pbmRleB'
+    'gEIAEoDUgAUgtjZW50ZXJJbmRleIgBAUIPCg1fY2VudGVyX2luZGV4');
 
 @$core.Deprecated('Use matrixUpdateDescriptor instead')
 const MatrixUpdate$json = {
@@ -823,6 +849,18 @@ const LayoutSnapshot$json = {
     },
     {'1': 'pending_nodes', '3': 5, '4': 1, '5': 13, '10': 'pendingNodes'},
     {'1': 'master_mac', '3': 6, '4': 1, '5': 12, '10': 'masterMac'},
+    {
+      '1': 'center_index',
+      '3': 7,
+      '4': 1,
+      '5': 13,
+      '9': 0,
+      '10': 'centerIndex',
+      '17': true
+    },
+  ],
+  '8': [
+    {'1': '_center_index'},
   ],
 };
 
@@ -832,7 +870,8 @@ final $typed_data.Uint8List layoutSnapshotDescriptor = $convert.base64Decode(
     'IaCghyZXZpc2lvbhgCIAEoBFIIcmV2aXNpb24SMgoGbGF5b3V0GAMgAygLMhoubWVzaF9pbnRl'
     'cm9wLk1hdHJpeExheW91dFIGbGF5b3V0EjQKB291dHB1dHMYBCADKAsyGi5tZXNoX2ludGVyb3'
     'AuTGF5b3V0T3V0cHV0UgdvdXRwdXRzEiMKDXBlbmRpbmdfbm9kZXMYBSABKA1SDHBlbmRpbmdO'
-    'b2RlcxIdCgptYXN0ZXJfbWFjGAYgASgMUgltYXN0ZXJNYWM=');
+    'b2RlcxIdCgptYXN0ZXJfbWFjGAYgASgMUgltYXN0ZXJNYWMSJgoMY2VudGVyX2luZGV4GAcgAS'
+    'gNSABSC2NlbnRlckluZGV4iAEBQg8KDV9jZW50ZXJfaW5kZXg=');
 
 @$core.Deprecated('Use layoutRequestDescriptor instead')
 const LayoutRequest$json = {
@@ -1082,6 +1121,18 @@ const AnimationDefinitions$json = {
       '6': '.mesh_interop.AnimationOutputMapping',
       '10': 'outputMappings'
     },
+    {
+      '1': 'center_index',
+      '3': 8,
+      '4': 1,
+      '5': 13,
+      '9': 0,
+      '10': 'centerIndex',
+      '17': true
+    },
+  ],
+  '8': [
+    {'1': '_center_index'},
   ],
 };
 
@@ -1092,7 +1143,8 @@ final $typed_data.Uint8List animationDefinitionsDescriptor = $convert.base64Deco
     'bhgDIAEoBFIIcmV2aXNpb24SNAoGbGF5ZXJzGAQgAygLMhwubWVzaF9pbnRlcm9wLkFuaW1hdG'
     'lvbkxheWVyUgZsYXllcnMSHwoLZ3Bpb19pbnB1dHMYBSADKA1SCmdwaW9JbnB1dHMSHwoLY2Fu'
     'dmFzX3NpemUYBiABKA1SCmNhbnZhc1NpemUSTQoPb3V0cHV0X21hcHBpbmdzGAcgAygLMiQubW'
-    'VzaF9pbnRlcm9wLkFuaW1hdGlvbk91dHB1dE1hcHBpbmdSDm91dHB1dE1hcHBpbmdz');
+    'VzaF9pbnRlcm9wLkFuaW1hdGlvbk91dHB1dE1hcHBpbmdSDm91dHB1dE1hcHBpbmdzEiYKDGNl'
+    'bnRlcl9pbmRleBgIIAEoDUgAUgtjZW50ZXJJbmRleIgBAUIPCg1fY2VudGVyX2luZGV4');
 
 @$core.Deprecated('Use animationCommandDescriptor instead')
 const AnimationCommand$json = {

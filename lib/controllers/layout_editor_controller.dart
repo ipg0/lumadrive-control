@@ -46,12 +46,29 @@ bool _sameLayout(List<MatrixLayout> a, List<MatrixLayout> b) => listEquals(
   LayoutUpdate(layout: a).writeToBuffer(),
   LayoutUpdate(layout: b).writeToBuffer(),
 );
+int automaticLayoutCenter(List<MatrixLayout> layout) {
+  var extent = 0;
+  int? left, right;
+  for (final row in layout) {
+    final low = math.min(row.from, row.to), high = math.max(row.from, row.to);
+    extent = math.max(extent, high);
+    if (row.carPosition == CarPosition.DASH_LEFT) {
+      left = math.max(left ?? 0, high);
+    }
+    if (row.carPosition == CarPosition.DASH_RIGHT) {
+      right = math.min(right ?? high, low);
+    }
+  }
+  if (left != null && right != null) return (left + right) ~/ 2;
+  return left ?? right ?? extent ~/ 2;
+}
 
 class LayoutEditorController extends ChangeNotifier {
   final LayoutRepository repository;
   final LayoutDraftStore store;
   LayoutSnapshot? snapshot;
   List<MatrixLayout> layout = [];
+  int? centerIndex;
   String? selectedKey, error, notice, fieldError, identifyingKey;
   CarPosition selectedCarPosition = CarPosition.REAR_LEFT_DOOR;
   String? lengthError;
@@ -70,7 +87,17 @@ class LayoutEditorController extends ChangeNotifier {
     this.pollInterval = const Duration(seconds: 3),
   });
 
-  bool get dirty => snapshot != null && !_sameLayout(layout, snapshot!.layout);
+  bool get dirty =>
+      snapshot != null &&
+      (!_sameLayout(layout, snapshot!.layout) ||
+          centerIndex !=
+              (snapshot!.hasCenterIndex() ? snapshot!.centerIndex : null));
+  int get resolvedCenter => centerIndex ?? automaticLayoutCenter(layout);
+  void setCenter(int? value) {
+    centerIndex = value;
+    _edited();
+  }
+
   bool get busy => applying || identifyingKey != null;
   bool get refreshing => _refreshing;
   void connectionChanged(bool available) {
@@ -121,6 +148,9 @@ class LayoutEditorController extends ChangeNotifier {
   String? get validationError {
     if (fieldError != null) return fieldError;
     if (lengthError != null) return lengthError;
+    if (centerIndex != null && (centerIndex! < 0 || centerIndex! > canvasSize)) {
+      return 'Center must be within the shared layout.';
+    }
     if (layout.length > 84) {
       return 'A layout can contain up to 84 light sources.';
     }
@@ -196,6 +226,7 @@ class LayoutEditorController extends ChangeNotifier {
       if (saved != null) {
         snapshot = saved.snapshot;
         layout = saved.layout;
+        centerIndex = saved.centerIndex;
         loading = false;
         connectionChanged(false);
       }
@@ -250,17 +281,22 @@ class LayoutEditorController extends ChangeNotifier {
       if (discardDraft ||
           previous == null ||
           !hadDraft ||
-          _sameLayout(layout, fresh.layout)) {
+          (_sameLayout(layout, fresh.layout) &&
+              centerIndex ==
+                  (fresh.hasCenterIndex() ? fresh.centerIndex : null))) {
         snapshot = fresh;
         layout = fresh.layout
             .map((row) => MatrixLayout.fromBuffer(row.writeToBuffer()))
             .toList();
+        centerIndex = fresh.hasCenterIndex() ? fresh.centerIndex : null;
         conflict = false;
         fieldError = null;
         lengthError = null;
       } else if (previous.revision == fresh.revision &&
           listEquals(previous.masterMac, fresh.masterMac) &&
-          _sameLayout(previous.layout, fresh.layout)) {
+          _sameLayout(previous.layout, fresh.layout) &&
+          (previous.hasCenterIndex() ? previous.centerIndex : null) ==
+              (fresh.hasCenterIndex() ? fresh.centerIndex : null)) {
         snapshot = fresh;
         conflict = false;
       } else {
@@ -555,6 +591,7 @@ class LayoutEditorController extends ChangeNotifier {
         masterSession: snapshot!.masterSession,
         expectedRevision: snapshot!.revision,
         layout: layout,
+        centerIndex: centerIndex,
       );
       await for (final value in repository.apply(update)) {
         if (_disposed) return;
@@ -570,6 +607,7 @@ class LayoutEditorController extends ChangeNotifier {
       layout = snapshot!.layout
           .map((row) => MatrixLayout.fromBuffer(row.writeToBuffer()))
           .toList();
+      centerIndex = snapshot!.hasCenterIndex() ? snapshot!.centerIndex : null;
       conflict = false;
       notice = 'Layout saved to controller.';
       _persist();
@@ -607,6 +645,7 @@ class LayoutEditorController extends ChangeNotifier {
       layout
           .map((row) => MatrixLayout.fromBuffer(row.writeToBuffer()))
           .toList(),
+      centerIndex,
     );
     _writes = _writes.then((_) => store.save(saved)).catchError((Object _) {
       notice = 'Local draft could not be saved. Keep this screen open.';

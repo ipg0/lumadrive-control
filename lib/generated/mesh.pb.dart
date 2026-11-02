@@ -1173,6 +1173,7 @@ class MatrixConfig extends $pb.GeneratedMessage {
     $core.bool? factoryDefault,
     $core.Iterable<MatrixMode>? modes,
     $core.int? activeModeId,
+    $core.int? centerIndex,
   }) {
     final result = create();
     if (schemaVersion != null) result.schemaVersion = schemaVersion;
@@ -1184,6 +1185,7 @@ class MatrixConfig extends $pb.GeneratedMessage {
     if (factoryDefault != null) result.factoryDefault = factoryDefault;
     if (modes != null) result.modes.addAll(modes);
     if (activeModeId != null) result.activeModeId = activeModeId;
+    if (centerIndex != null) result.centerIndex = centerIndex;
     return result;
   }
 
@@ -1216,6 +1218,8 @@ class MatrixConfig extends $pb.GeneratedMessage {
     ..pPM<MatrixMode>(8, _omitFieldNames ? '' : 'modes',
         subBuilder: MatrixMode.create)
     ..aI(9, _omitFieldNames ? '' : 'activeModeId',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aI(10, _omitFieldNames ? '' : 'centerIndex',
         fieldType: $pb.PbFieldType.OU3)
     ..hasRequiredFields = false;
 
@@ -1282,6 +1286,15 @@ class MatrixConfig extends $pb.GeneratedMessage {
   $core.bool hasActiveModeId() => $_has(8);
   @$pb.TagNumber(9)
   void clearActiveModeId() => $_clearField(9);
+
+  @$pb.TagNumber(10)
+  $core.int get centerIndex => $_getIZ(9);
+  @$pb.TagNumber(10)
+  set centerIndex($core.int value) => $_setUnsignedInt32(9, value);
+  @$pb.TagNumber(10)
+  $core.bool hasCenterIndex() => $_has(9);
+  @$pb.TagNumber(10)
+  void clearCenterIndex() => $_clearField(10);
 }
 
 class TransferBegin extends $pb.GeneratedMessage {
@@ -1629,11 +1642,13 @@ class LayoutUpdate extends $pb.GeneratedMessage {
     $fixnum.Int64? expectedRevision,
     $fixnum.Int64? masterSession,
     $core.Iterable<MatrixLayout>? layout,
+    $core.int? centerIndex,
   }) {
     final result = create();
     if (expectedRevision != null) result.expectedRevision = expectedRevision;
     if (masterSession != null) result.masterSession = masterSession;
     if (layout != null) result.layout.addAll(layout);
+    if (centerIndex != null) result.centerIndex = centerIndex;
     return result;
   }
 
@@ -1658,6 +1673,8 @@ class LayoutUpdate extends $pb.GeneratedMessage {
         defaultOrMaker: $fixnum.Int64.ZERO)
     ..pPM<MatrixLayout>(3, _omitFieldNames ? '' : 'layout',
         subBuilder: MatrixLayout.create)
+    ..aI(4, _omitFieldNames ? '' : 'centerIndex',
+        fieldType: $pb.PbFieldType.OU3)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1699,6 +1716,15 @@ class LayoutUpdate extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(3)
   $pb.PbList<MatrixLayout> get layout => $_getList(2);
+
+  @$pb.TagNumber(4)
+  $core.int get centerIndex => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set centerIndex($core.int value) => $_setUnsignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasCenterIndex() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCenterIndex() => $_clearField(4);
 }
 
 /// Edits the matrix and animation library, preserving the current physical layout.
@@ -2209,6 +2235,7 @@ class LayoutSnapshot extends $pb.GeneratedMessage {
     $core.Iterable<LayoutOutput>? outputs,
     $core.int? pendingNodes,
     $core.List<$core.int>? masterMac,
+    $core.int? centerIndex,
   }) {
     final result = create();
     if (masterSession != null) result.masterSession = masterSession;
@@ -2217,6 +2244,7 @@ class LayoutSnapshot extends $pb.GeneratedMessage {
     if (outputs != null) result.outputs.addAll(outputs);
     if (pendingNodes != null) result.pendingNodes = pendingNodes;
     if (masterMac != null) result.masterMac = masterMac;
+    if (centerIndex != null) result.centerIndex = centerIndex;
     return result;
   }
 
@@ -2247,6 +2275,8 @@ class LayoutSnapshot extends $pb.GeneratedMessage {
         fieldType: $pb.PbFieldType.OU3)
     ..a<$core.List<$core.int>>(
         6, _omitFieldNames ? '' : 'masterMac', $pb.PbFieldType.OY)
+    ..aI(7, _omitFieldNames ? '' : 'centerIndex',
+        fieldType: $pb.PbFieldType.OU3)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2309,6 +2339,15 @@ class LayoutSnapshot extends $pb.GeneratedMessage {
   $core.bool hasMasterMac() => $_has(5);
   @$pb.TagNumber(6)
   void clearMasterMac() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.int get centerIndex => $_getIZ(6);
+  @$pb.TagNumber(7)
+  set centerIndex($core.int value) => $_setUnsignedInt32(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasCenterIndex() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearCenterIndex() => $_clearField(7);
 }
 
 class LayoutRequest extends $pb.GeneratedMessage {
@@ -2973,6 +3012,7 @@ class AnimationDefinitions extends $pb.GeneratedMessage {
     $core.Iterable<$core.int>? gpioInputs,
     $core.int? canvasSize,
     $core.Iterable<AnimationOutputMapping>? outputMappings,
+    $core.int? centerIndex,
   }) {
     final result = create();
     if (schemaVersion != null) result.schemaVersion = schemaVersion;
@@ -2982,6 +3022,7 @@ class AnimationDefinitions extends $pb.GeneratedMessage {
     if (gpioInputs != null) result.gpioInputs.addAll(gpioInputs);
     if (canvasSize != null) result.canvasSize = canvasSize;
     if (outputMappings != null) result.outputMappings.addAll(outputMappings);
+    if (centerIndex != null) result.centerIndex = centerIndex;
     return result;
   }
 
@@ -3012,6 +3053,8 @@ class AnimationDefinitions extends $pb.GeneratedMessage {
     ..aI(6, _omitFieldNames ? '' : 'canvasSize', fieldType: $pb.PbFieldType.OU3)
     ..pPM<AnimationOutputMapping>(7, _omitFieldNames ? '' : 'outputMappings',
         subBuilder: AnimationOutputMapping.create)
+    ..aI(8, _omitFieldNames ? '' : 'centerIndex',
+        fieldType: $pb.PbFieldType.OU3)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -3077,6 +3120,15 @@ class AnimationDefinitions extends $pb.GeneratedMessage {
 
   @$pb.TagNumber(7)
   $pb.PbList<AnimationOutputMapping> get outputMappings => $_getList(6);
+
+  @$pb.TagNumber(8)
+  $core.int get centerIndex => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set centerIndex($core.int value) => $_setUnsignedInt32(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasCenterIndex() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearCenterIndex() => $_clearField(8);
 }
 
 class AnimationCommand extends $pb.GeneratedMessage {

@@ -177,6 +177,7 @@ Color sampleKeyframes(
 class KeyframeEditor extends StatefulWidget {
   final MatrixEffect effect;
   final int canvasSize;
+  final int? centerIndex;
   final List<MatrixLayout> layout;
   final VoidCallback onChanged;
   final Widget Function(MatrixColor, ValueChanged<MatrixColor>) colorEditor;
@@ -184,6 +185,7 @@ class KeyframeEditor extends StatefulWidget {
     super.key,
     required this.effect,
     required this.canvasSize,
+    this.centerIndex,
     required this.layout,
     required this.onChanged,
     required this.colorEditor,
@@ -408,6 +410,28 @@ class _KeyframeEditorState extends State<KeyframeEditor>
                           ],
                         ),
                       ),
+                      if (widget.canvasSize > 0)
+                        Positioned(
+                          left:
+                              ((widget.centerIndex ?? widget.canvasSize ~/ 2)
+                                              .clamp(0, widget.canvasSize) /
+                                          widget.canvasSize *
+                                          constraints.maxWidth -
+                                      1)
+                                  .clamp(
+                                    0.0,
+                                    math.max(0.0, constraints.maxWidth - 2),
+                                  ),
+                          top: 0,
+                          bottom: 0,
+                          child: IgnorePointer(
+                            child: Container(
+                              key: const ValueKey('keyframe-center-marker'),
+                              width: 2,
+                              color: scheme.primary,
+                            ),
+                          ),
+                        ),
                       if (showHandle)
                         Positioned(
                           left: (edge - 12).clamp(
@@ -450,6 +474,10 @@ class _KeyframeEditorState extends State<KeyframeEditor>
               ),
             ),
           ),
+        ),
+        Text(
+          'Center: ${widget.centerIndex ?? widget.canvasSize ~/ 2}',
+          style: Theme.of(context).textTheme.bodySmall,
         ),
         if (widget.layout.any(
           (row) => row.carPosition != CarPosition.POSITION_UNSPECIFIED,
@@ -666,7 +694,8 @@ class _KeyframeEditorState extends State<KeyframeEditor>
               if (n == null ||
                   n > 0xffffffff ||
                   n <= frames[index - 1].timeMs ||
-                  (index + 1 < frames.length && n >= frames[index + 1].timeMs)) {
+                  (index + 1 < frames.length &&
+                      n >= frames[index + 1].timeMs)) {
                 return 'Use a time between neighbouring keyframes.';
               }
               return null;

@@ -46,6 +46,28 @@ void main() {
   });
   tearDown(() => editor.dispose());
   test(
+    'center defaults to dash boundary and survives drafts and uploads',
+    () async {
+      editor.place(repository.snapshot.outputs[0]);
+      editor.assignPosition(editor.selectedKey!, CarPosition.DASH_LEFT);
+      editor.place(repository.snapshot.outputs[1]);
+      editor.assignPosition(editor.selectedKey!, CarPosition.DASH_RIGHT);
+      expect(editor.resolvedCenter, 60);
+      editor.setCenter(0);
+      expect(editor.dirty, isTrue);
+      await editor.flush();
+      expect(store.value!.centerIndex, 0);
+      await editor.apply();
+      expect(repository.applied!.hasCenterIndex(), isTrue);
+      expect(repository.applied!.centerIndex, 0);
+      expect(editor.centerIndex, 0);
+      editor.setCenter(null);
+      expect(editor.resolvedCenter, 60);
+      await editor.apply();
+      expect(repository.applied!.hasCenterIndex(), isFalse);
+    },
+  );
+  test(
     'background reads keep Apply available and serialize a user save',
     () async {
       editor.place(repository.snapshot.outputs.first);

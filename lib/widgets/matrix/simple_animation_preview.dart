@@ -8,8 +8,9 @@ Color sampleSimpleAnimation(
   MatrixEffect effect,
   double phase,
   double position,
-  int canvasSize,
-) {
+  int canvasSize, [
+  int? centerIndex,
+]) {
   Color rgba(int r, int g, int b, int a) => Color.fromARGB(
     a.clamp(0, 255),
     r.clamp(0, 255),
@@ -24,10 +25,17 @@ Color sampleSimpleAnimation(
     final filled = (progress * count).ceil();
     final pixel = position.floor().clamp(0, count - 1);
     if (effect.fillFromCenter) {
-      final radius = (progress * ((count + 1) ~/ 2)).ceil();
-      final distance = pixel < count ~/ 2
-          ? (count - 1) ~/ 2 - pixel
-          : pixel - count ~/ 2;
+      final center = (centerIndex ?? count ~/ 2).clamp(0, count);
+      final middlePixel = count.isOdd && center == count ~/ 2;
+      final radius =
+          (progress *
+                  (middlePixel ? center + 1 : math.max(center, count - center)))
+              .ceil();
+      final distance = middlePixel
+          ? (pixel - center).abs()
+          : pixel < center
+          ? center - 1 - pixel
+          : pixel - center;
       return distance < radius ? primary : Colors.transparent;
     }
     return (effect.reverse ? pixel >= count - filled : pixel < filled)
@@ -82,11 +90,13 @@ class SimpleAnimationPreview extends StatefulWidget {
   final MatrixEffect effect;
   final String caption;
   final int canvasSize;
+  final int? centerIndex;
   const SimpleAnimationPreview({
     super.key,
     required this.effect,
     this.caption = 'One cycle on your phone. Nothing is sent until Apply.',
     required this.canvasSize,
+    this.centerIndex,
   });
   @override
   State<SimpleAnimationPreview> createState() => _SimpleAnimationPreviewState();
@@ -185,6 +195,7 @@ class _SimpleAnimationPreviewState extends State<SimpleAnimationPreview>
                               _phase.value,
                               i * math.max(1, widget.canvasSize) / count,
                               widget.canvasSize,
+                              widget.centerIndex,
                             ),
                             const Color(0xff25252b),
                           ),

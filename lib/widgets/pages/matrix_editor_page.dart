@@ -8,7 +8,7 @@ import 'package:lumadrive_control/controllers/ble_controller.dart';
 import 'package:lumadrive_control/controllers/mesh_controller.dart';
 import 'package:lumadrive_control/controllers/matrix_editor_controller.dart';
 import 'package:lumadrive_control/controllers/layout_editor_controller.dart'
-    show nodeSuffix;
+    show nodeSuffix, automaticLayoutCenter;
 import 'package:lumadrive_control/generated/mesh.pb.dart';
 import 'package:lumadrive_control/repositories/ble_repository.dart';
 import 'package:lumadrive_control/repositories/matrix_editor_repository.dart';
@@ -261,6 +261,9 @@ class _MatrixEditorPageState extends ConsumerState<MatrixEditorPage>
                             .where((effect) => effect.id != _animation!.id)
                             .map(animationTitle),
                         canvasSize: _editor.canvasSize,
+                        centerIndex: _editor.config.hasCenterIndex()
+                            ? _editor.config.centerIndex
+                            : automaticLayoutCenter(_editor.config.layout),
                         onCancel: _closeForm,
                         failureMessage: () => _editor.error,
                         onSaveDraft: (value) {

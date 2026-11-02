@@ -152,6 +152,24 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
+  testWidgets('manual layout center can be changed and reset', (tester) async {
+    final editor = await open(tester);
+    final toggle = find.widgetWithText(SwitchListTile, 'Automatic center');
+    await tester.scrollUntilVisible(toggle, 250, scrollable: find.byType(Scrollable).first);
+    await tester.pumpAndSettle();
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(editor.centerIndex, 30);
+    final slider = find.byKey(const ValueKey('layout-center-slider'));
+    await tester.ensureVisible(slider);
+    await tester.pumpAndSettle();
+    await tester.tapAt(tester.getTopLeft(slider) + Offset(tester.getSize(slider).width * .25, 20));
+    await tester.pumpAndSettle();
+    expect(editor.centerIndex, lessThan(30));
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(editor.centerIndex, isNull);
+  });
 
   testWidgets('output name keeps focus through status changes and refresh', (
     tester,

@@ -343,6 +343,11 @@ class MatrixEditorController extends ChangeNotifier {
         config.layout
           ..clear()
           ..addAll(incoming.layout);
+        if (incoming.hasCenterIndex()) {
+          config.centerIndex = incoming.centerIndex;
+        } else {
+          config.clearCenterIndex();
+        }
         config.modes
           ..clear()
           ..addAll(incoming.modes.map((mode) => mode.deepCopy()));
