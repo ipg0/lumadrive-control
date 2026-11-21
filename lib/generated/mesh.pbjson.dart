@@ -340,6 +340,9 @@ const MatrixCondition$json = {
       '10': 'kind'
     },
     {'1': 'mode_id', '3': 3, '4': 1, '5': 13, '10': 'modeId'},
+    {'1': 'inverted', '3': 4, '4': 1, '5': 8, '10': 'inverted'},
+    {'1': 'left_id', '3': 5, '4': 1, '5': 13, '10': 'leftId'},
+    {'1': 'right_id', '3': 6, '4': 1, '5': 13, '10': 'rightId'},
   ],
   '4': [MatrixCondition_Kind$json],
 };
@@ -351,6 +354,8 @@ const MatrixCondition_Kind$json = {
     {'1': 'CONDITION_UNSPECIFIED', '2': 0},
     {'1': 'ALWAYS', '2': 1},
     {'1': 'MODE', '2': 2},
+    {'1': 'AND', '2': 3},
+    {'1': 'OR', '2': 4},
   ],
 };
 
@@ -358,8 +363,9 @@ const MatrixCondition_Kind$json = {
 final $typed_data.Uint8List matrixConditionDescriptor = $convert.base64Decode(
     'Cg9NYXRyaXhDb25kaXRpb24SDgoCaWQYASABKA1SAmlkEjYKBGtpbmQYAiABKA4yIi5tZXNoX2'
     'ludGVyb3AuTWF0cml4Q29uZGl0aW9uLktpbmRSBGtpbmQSFwoHbW9kZV9pZBgDIAEoDVIGbW9k'
-    'ZUlkIjcKBEtpbmQSGQoVQ09ORElUSU9OX1VOU1BFQ0lGSUVEEAASCgoGQUxXQVlTEAESCAoETU'
-    '9ERRAC');
+    'ZUlkEhoKCGludmVydGVkGAQgASgIUghpbnZlcnRlZBIXCgdsZWZ0X2lkGAUgASgNUgZsZWZ0SW'
+    'QSGQoIcmlnaHRfaWQYBiABKA1SB3JpZ2h0SWQiSAoES2luZBIZChVDT05ESVRJT05fVU5TUEVD'
+    'SUZJRUQQABIKCgZBTFdBWVMQARIICgRNT0RFEAISBwoDQU5EEAMSBgoCT1IQBA==');
 
 @$core.Deprecated('Use matrixModeDescriptor instead')
 const MatrixMode$json = {
@@ -739,6 +745,7 @@ const MatrixInputNode$json = {
     {'1': 'gpios', '3': 2, '4': 3, '5': 13, '10': 'gpios'},
     {'1': 'known', '3': 3, '4': 1, '5': 8, '10': 'known'},
     {'1': 'online', '3': 4, '4': 1, '5': 8, '10': 'online'},
+    {'1': 'firmware_version', '3': 5, '4': 1, '5': 9, '10': 'firmwareVersion'},
   ],
 };
 
@@ -746,7 +753,7 @@ const MatrixInputNode$json = {
 final $typed_data.Uint8List matrixInputNodeDescriptor = $convert.base64Decode(
     'Cg9NYXRyaXhJbnB1dE5vZGUSGQoIbm9kZV9tYWMYASABKAxSB25vZGVNYWMSFAoFZ3Bpb3MYAi'
     'ADKA1SBWdwaW9zEhQKBWtub3duGAMgASgIUgVrbm93bhIWCgZvbmxpbmUYBCABKAhSBm9ubGlu'
-    'ZQ==');
+    'ZRIpChBmaXJtd2FyZV92ZXJzaW9uGAUgASgJUg9maXJtd2FyZVZlcnNpb24=');
 
 @$core.Deprecated('Use matrixDocumentDescriptor instead')
 const MatrixDocument$json = {
@@ -773,6 +780,13 @@ const MatrixDocument$json = {
       '10': 'activationPending'
     },
     {'1': 'persisted', '3': 8, '4': 1, '5': 8, '10': 'persisted'},
+    {
+      '1': 'master_firmware_version',
+      '3': 9,
+      '4': 1,
+      '5': 9,
+      '10': 'masterFirmwareVersion'
+    },
   ],
 };
 
@@ -783,7 +797,8 @@ final $typed_data.Uint8List matrixDocumentDescriptor = $convert.base64Decode(
     'bWFzdGVyX21hYxgEIAEoDFIJbWFzdGVyTWFjEjMKBW5vZGVzGAUgAygLMh0ubWVzaF9pbnRlcm'
     '9wLk1hdHJpeElucHV0Tm9kZVIFbm9kZXMSJwoPYWN0aXZlX3JldmlzaW9uGAYgASgEUg5hY3Rp'
     'dmVSZXZpc2lvbhItChJhY3RpdmF0aW9uX3BlbmRpbmcYByABKAhSEWFjdGl2YXRpb25QZW5kaW'
-    '5nEhwKCXBlcnNpc3RlZBgIIAEoCFIJcGVyc2lzdGVk');
+    '5nEhwKCXBlcnNpc3RlZBgIIAEoCFIJcGVyc2lzdGVkEjYKF21hc3Rlcl9maXJtd2FyZV92ZXJz'
+    'aW9uGAkgASgJUhVtYXN0ZXJGaXJtd2FyZVZlcnNpb24=');
 
 @$core.Deprecated('Use layoutOutputDescriptor instead')
 const LayoutOutput$json = {

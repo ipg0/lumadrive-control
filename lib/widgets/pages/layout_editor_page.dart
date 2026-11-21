@@ -363,6 +363,7 @@ class _LayoutEditorPageState extends ConsumerState<LayoutEditorPage>
                           ),
                         ),
                       const SizedBox(height: 18),
+                      if (_advanced) ...[
                       Row(
                         children: [
                           Expanded(
@@ -392,6 +393,20 @@ class _LayoutEditorPageState extends ConsumerState<LayoutEditorPage>
                           ),
                         ),
                       ..._outputGroups(context),
+                      ] else
+                        ExpansionTile(
+                          key: const ValueKey('all-outputs'),
+                          title: const Text('All outputs'),
+                          subtitle: const Text('View hardware and connection status'),
+                          children: [
+                            if ((_editor.snapshot?.outputs.length ?? 0) == 0)
+                              const Padding(
+                                padding: EdgeInsets.all(16),
+                                child: Text('Connect to discover strips and modules.'),
+                              ),
+                            ..._outputGroups(context),
+                          ],
+                        ),
                       if ((_editor.snapshot?.pendingNodes ?? 0) > 0)
                         Padding(
                           padding: const EdgeInsets.only(top: 12),

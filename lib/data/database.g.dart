@@ -278,15 +278,285 @@ class SavedDevicesCompanion extends UpdateCompanion<SavedDevice> {
   }
 }
 
+class $NodeNamesTable extends NodeNames
+    with TableInfo<$NodeNamesTable, NodeName> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $NodeNamesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _controllerIdMeta = const VerificationMeta(
+    'controllerId',
+  );
+  @override
+  late final GeneratedColumn<String> controllerId = GeneratedColumn<String>(
+    'controller_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nodeMacMeta = const VerificationMeta(
+    'nodeMac',
+  );
+  @override
+  late final GeneratedColumn<String> nodeMac = GeneratedColumn<String>(
+    'node_mac',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [controllerId, nodeMac, name];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'node_names';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<NodeName> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('controller_id')) {
+      context.handle(
+        _controllerIdMeta,
+        controllerId.isAcceptableOrUnknown(
+          data['controller_id']!,
+          _controllerIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_controllerIdMeta);
+    }
+    if (data.containsKey('node_mac')) {
+      context.handle(
+        _nodeMacMeta,
+        nodeMac.isAcceptableOrUnknown(data['node_mac']!, _nodeMacMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nodeMacMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {controllerId, nodeMac};
+  @override
+  NodeName map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return NodeName(
+      controllerId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}controller_id'],
+      )!,
+      nodeMac: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}node_mac'],
+      )!,
+      name: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}name'],
+      )!,
+    );
+  }
+
+  @override
+  $NodeNamesTable createAlias(String alias) {
+    return $NodeNamesTable(attachedDatabase, alias);
+  }
+}
+
+class NodeName extends DataClass implements Insertable<NodeName> {
+  final String controllerId;
+  final String nodeMac;
+  final String name;
+  const NodeName({
+    required this.controllerId,
+    required this.nodeMac,
+    required this.name,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['controller_id'] = Variable<String>(controllerId);
+    map['node_mac'] = Variable<String>(nodeMac);
+    map['name'] = Variable<String>(name);
+    return map;
+  }
+
+  NodeNamesCompanion toCompanion(bool nullToAbsent) {
+    return NodeNamesCompanion(
+      controllerId: Value(controllerId),
+      nodeMac: Value(nodeMac),
+      name: Value(name),
+    );
+  }
+
+  factory NodeName.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return NodeName(
+      controllerId: serializer.fromJson<String>(json['controllerId']),
+      nodeMac: serializer.fromJson<String>(json['nodeMac']),
+      name: serializer.fromJson<String>(json['name']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'controllerId': serializer.toJson<String>(controllerId),
+      'nodeMac': serializer.toJson<String>(nodeMac),
+      'name': serializer.toJson<String>(name),
+    };
+  }
+
+  NodeName copyWith({String? controllerId, String? nodeMac, String? name}) =>
+      NodeName(
+        controllerId: controllerId ?? this.controllerId,
+        nodeMac: nodeMac ?? this.nodeMac,
+        name: name ?? this.name,
+      );
+  NodeName copyWithCompanion(NodeNamesCompanion data) {
+    return NodeName(
+      controllerId: data.controllerId.present
+          ? data.controllerId.value
+          : this.controllerId,
+      nodeMac: data.nodeMac.present ? data.nodeMac.value : this.nodeMac,
+      name: data.name.present ? data.name.value : this.name,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NodeName(')
+          ..write('controllerId: $controllerId, ')
+          ..write('nodeMac: $nodeMac, ')
+          ..write('name: $name')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(controllerId, nodeMac, name);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is NodeName &&
+          other.controllerId == this.controllerId &&
+          other.nodeMac == this.nodeMac &&
+          other.name == this.name);
+}
+
+class NodeNamesCompanion extends UpdateCompanion<NodeName> {
+  final Value<String> controllerId;
+  final Value<String> nodeMac;
+  final Value<String> name;
+  final Value<int> rowid;
+  const NodeNamesCompanion({
+    this.controllerId = const Value.absent(),
+    this.nodeMac = const Value.absent(),
+    this.name = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  NodeNamesCompanion.insert({
+    required String controllerId,
+    required String nodeMac,
+    required String name,
+    this.rowid = const Value.absent(),
+  }) : controllerId = Value(controllerId),
+       nodeMac = Value(nodeMac),
+       name = Value(name);
+  static Insertable<NodeName> custom({
+    Expression<String>? controllerId,
+    Expression<String>? nodeMac,
+    Expression<String>? name,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (controllerId != null) 'controller_id': controllerId,
+      if (nodeMac != null) 'node_mac': nodeMac,
+      if (name != null) 'name': name,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  NodeNamesCompanion copyWith({
+    Value<String>? controllerId,
+    Value<String>? nodeMac,
+    Value<String>? name,
+    Value<int>? rowid,
+  }) {
+    return NodeNamesCompanion(
+      controllerId: controllerId ?? this.controllerId,
+      nodeMac: nodeMac ?? this.nodeMac,
+      name: name ?? this.name,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (controllerId.present) {
+      map['controller_id'] = Variable<String>(controllerId.value);
+    }
+    if (nodeMac.present) {
+      map['node_mac'] = Variable<String>(nodeMac.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('NodeNamesCompanion(')
+          ..write('controllerId: $controllerId, ')
+          ..write('nodeMac: $nodeMac, ')
+          ..write('name: $name, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $SavedDevicesTable savedDevices = $SavedDevicesTable(this);
+  late final $NodeNamesTable nodeNames = $NodeNamesTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [savedDevices];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [savedDevices, nodeNames];
 }
 
 typedef $$SavedDevicesTableCreateCompanionBuilder =
@@ -453,10 +723,168 @@ typedef $$SavedDevicesTableProcessedTableManager =
       SavedDevice,
       PrefetchHooks Function()
     >;
+typedef $$NodeNamesTableCreateCompanionBuilder = NodeNamesCompanion Function({
+  required String controllerId,
+  required String nodeMac,
+  required String name,
+  Value<int> rowid,
+});
+typedef $$NodeNamesTableUpdateCompanionBuilder = NodeNamesCompanion Function({
+  Value<String> controllerId,
+  Value<String> nodeMac,
+  Value<String> name,
+  Value<int> rowid,
+});
+
+class $$NodeNamesTableFilterComposer
+    extends Composer<_$AppDatabase, $NodeNamesTable> {
+  $$NodeNamesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get controllerId => $composableBuilder(
+    column: $table.controllerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get nodeMac => $composableBuilder(
+    column: $table.nodeMac,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$NodeNamesTableOrderingComposer
+    extends Composer<_$AppDatabase, $NodeNamesTable> {
+  $$NodeNamesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get controllerId => $composableBuilder(
+    column: $table.controllerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get nodeMac => $composableBuilder(
+    column: $table.nodeMac,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$NodeNamesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $NodeNamesTable> {
+  $$NodeNamesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get controllerId => $composableBuilder(
+    column: $table.controllerId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get nodeMac =>
+      $composableBuilder(column: $table.nodeMac, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+}
+
+class $$NodeNamesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $NodeNamesTable,
+          NodeName,
+          $$NodeNamesTableFilterComposer,
+          $$NodeNamesTableOrderingComposer,
+          $$NodeNamesTableAnnotationComposer,
+          $$NodeNamesTableCreateCompanionBuilder,
+          $$NodeNamesTableUpdateCompanionBuilder,
+          (NodeName, BaseReferences<_$AppDatabase, $NodeNamesTable, NodeName>),
+          NodeName,
+          PrefetchHooks Function()
+        > {
+  $$NodeNamesTableTableManager(_$AppDatabase db, $NodeNamesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$NodeNamesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$NodeNamesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$NodeNamesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> controllerId = const Value.absent(),
+                Value<String> nodeMac = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => NodeNamesCompanion(
+                controllerId: controllerId,
+                nodeMac: nodeMac,
+                name: name,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String controllerId,
+                required String nodeMac,
+                required String name,
+                Value<int> rowid = const Value.absent(),
+              }) => NodeNamesCompanion.insert(
+                controllerId: controllerId,
+                nodeMac: nodeMac,
+                name: name,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$NodeNamesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $NodeNamesTable,
+      NodeName,
+      $$NodeNamesTableFilterComposer,
+      $$NodeNamesTableOrderingComposer,
+      $$NodeNamesTableAnnotationComposer,
+      $$NodeNamesTableCreateCompanionBuilder,
+      $$NodeNamesTableUpdateCompanionBuilder,
+      (NodeName, BaseReferences<_$AppDatabase, $NodeNamesTable, NodeName>),
+      NodeName,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
   $$SavedDevicesTableTableManager get savedDevices =>
       $$SavedDevicesTableTableManager(_db, _db.savedDevices);
+  $$NodeNamesTableTableManager get nodeNames =>
+      $$NodeNamesTableTableManager(_db, _db.nodeNames);
 }

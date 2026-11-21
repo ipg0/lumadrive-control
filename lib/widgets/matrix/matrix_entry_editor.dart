@@ -12,7 +12,7 @@ class MatrixEntryEditor extends StatefulWidget {
   final MatrixEntry initial;
   final MatrixSource trigger;
   final MatrixEditorController controller;
-  final bool Function(MatrixEntry, MatrixSource, List<MatrixEffect>, int)
+  final bool Function(MatrixEntry, MatrixSource, List<MatrixEffect>, int, int, int)
   onSave;
   final VoidCallback onCancel;
   const MatrixEntryEditor({
@@ -35,6 +35,8 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
   MatrixEffect? _newAnimation;
   bool _automaticName = false;
   int _modeId = 0;
+  int _secondModeId = 0, _conditionOperator = 0;
+  bool _unsupportedCondition = false;
   late final TextEditingController _name, _priority;
   @override
   void initState() {
@@ -46,8 +48,20 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
     final condition = widget.controller.config.conditions
         .where((c) => c.id == _entry.conditionId)
         .firstOrNull;
-    if (condition?.kind == MatrixCondition_Kind.MODE) {
-      _modeId = condition!.modeId;
+    int? leaf(MatrixCondition? c) => c?.kind == MatrixCondition_Kind.ALWAYS ? 0 :
+        c?.kind == MatrixCondition_Kind.MODE ? (c!.inverted ? -c.modeId : c.modeId) : null;
+    if (condition != null && (condition.kind == MatrixCondition_Kind.AND || condition.kind == MatrixCondition_Kind.OR)) {
+      final first = leaf(widget.controller.config.conditions.where((c) => c.id == condition.leftId).firstOrNull);
+      final second = leaf(widget.controller.config.conditions.where((c) => c.id == condition.rightId).firstOrNull);
+      if (first == null || second == null) {
+        _unsupportedCondition = true;
+      } else {
+        _modeId = first; _secondModeId = second;
+        _conditionOperator = condition.kind == MatrixCondition_Kind.AND ? 1 : 2;
+      }
+    } else if (condition != null) {
+      final value = leaf(condition);
+      if (value == null) { _unsupportedCondition = true; } else { _modeId = value; }
     }
     _automaticName = _entry.id == 0 && _entry.name.isEmpty;
     _updateName();
@@ -304,7 +318,7 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                       ),
                   ],
                   validator: (value) => value == null
-                      ? 'Connect a node to discover its GPIO inputs'
+                      ? 'Connect a node to discover its provisioned inputs'
                       : null,
                   onChanged: (value) => setState(() {
                     final selected = nodes.firstWhere(
@@ -330,12 +344,16 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                   ),
                   items: [
                     for (final pin in pins)
-                      DropdownMenuItem(value: pin, child: Text('GPIO $pin')),
+                      DropdownMenuItem(
+                        value: pin,
+                        enabled: node?.known != true || node!.gpios.contains(pin),
+                        child: Text('GPIO $pin${node?.known == true && !node!.gpios.contains(pin) ? ' · not provisioned' : ''}'),
+                      ),
                   ],
                   validator: (pin) => pin == null
-                      ? 'Choose a GPIO input'
+                      ? 'Choose a provisioned GPIO input'
                       : node?.known == true && !node!.gpios.contains(pin)
-                      ? 'Pin is reserved by firmware'
+                      ? 'Pin is not provisioned on this node'
                       : null,
                   onChanged: node?.known != true
                       ? null
@@ -397,9 +415,43 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                       value: mode.id,
                       child: Text('Mode: ${mode.name}'),
                     ),
+                  for (final mode in widget.controller.config.modes)
+                    DropdownMenuItem(value: -mode.id, child: Text('Not in mode: ${mode.name}')),
                 ],
                 onChanged: (value) => setState(() => _modeId = value ?? 0),
               ),
+              const SizedBox(height: 12),
+              DropdownButtonFormField<int>(
+                key: const ValueKey('entry-condition-operator'),
+                initialValue: _conditionOperator,
+                isExpanded: true,
+                decoration: const InputDecoration(labelText: 'Combine conditions', border: OutlineInputBorder()),
+                items: const [
+                  DropdownMenuItem(value: 0, child: Text('Single condition')),
+                  DropdownMenuItem(value: 1, child: Text('AND')),
+                  DropdownMenuItem(value: 2, child: Text('OR')),
+                ],
+                onChanged: (value) => setState(() => _conditionOperator = value ?? 0),
+              ),
+              if (_conditionOperator != 0) ...[
+                const SizedBox(height: 12),
+                DropdownButtonFormField<int>(
+                  key: const ValueKey('entry-condition-second'),
+                  initialValue: _secondModeId,
+                  isExpanded: true,
+                  decoration: const InputDecoration(labelText: 'Second condition', border: OutlineInputBorder()),
+                  items: [
+                    const DropdownMenuItem(value: 0, child: Text('Always')),
+                    for (final mode in widget.controller.config.modes)
+                      DropdownMenuItem(value: mode.id, child: Text('Mode: ${mode.name}')),
+                    for (final mode in widget.controller.config.modes)
+                      DropdownMenuItem(value: -mode.id, child: Text('Not in mode: ${mode.name}')),
+                  ],
+                  onChanged: (value) => setState(() => _secondModeId = value ?? 0),
+                ),
+              ],
+              if (_unsupportedCondition)
+                const Text('This nested condition cannot be edited here.'),
               const SizedBox(height: 16),
               Wrap(
                 alignment: WrapAlignment.end,
@@ -412,7 +464,7 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                   ),
                   FilledButton(
                     key: const ValueKey('save-entry'),
-                    onPressed: _newAnimation != null
+                    onPressed: _newAnimation != null || _unsupportedCondition
                         ? null
                         : () {
                             if (_form.currentState!.validate()) {
@@ -427,6 +479,8 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                                     )
                                     .toList(),
                                 _modeId,
+                                _secondModeId,
+                                _conditionOperator,
                               );
                             }
                           },

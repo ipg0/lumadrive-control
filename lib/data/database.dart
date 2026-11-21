@@ -12,12 +12,29 @@ class SavedDevices extends Table {
   Set<Column> get primaryKey => {remoteId};
 }
 
-@DriftDatabase(tables: [SavedDevices])
+class NodeNames extends Table {
+  TextColumn get controllerId => text()();
+  TextColumn get nodeMac => text()();
+  TextColumn get name => text()();
+
+  @override
+  Set<Column> get primaryKey => {controllerId, nodeMac};
+}
+
+@DriftDatabase(tables: [SavedDevices, NodeNames])
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      if (from < 2) await m.createTable(nodeNames);
+    },
+  );
 
   static QueryExecutor _openConnection() {
     return driftDatabase(
@@ -36,4 +53,19 @@ class AppDatabase extends _$AppDatabase {
 
   Stream<List<SavedDevice>> watchAllSavedDevices() =>
       select(savedDevices).watch();
+
+  Stream<List<NodeName>> watchNodeNames(String controllerId) =>
+      (select(nodeNames)..where((row) => row.controllerId.equals(controllerId)))
+          .watch();
+
+  Future<void> setNodeName(String controllerId, String nodeMac, String name) {
+    if (name.isEmpty) {
+      return (delete(nodeNames)..where(
+        (row) => row.controllerId.equals(controllerId) & row.nodeMac.equals(nodeMac),
+      )).go().then((_) {});
+    }
+    return into(nodeNames).insertOnConflictUpdate(NodeNamesCompanion.insert(
+      controllerId: controllerId, nodeMac: nodeMac, name: name,
+    ));
+  }
 }

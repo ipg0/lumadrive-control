@@ -87,7 +87,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(editor.layout.single.carPosition, CarPosition.FRONT_RIGHT_DOOR);
       expect(editor.layout.single.to, 60);
-      expect(tester.widget<FilledButton>(assign).onPressed, isNull);
+      expect(assign, findsNothing);
       expect((editor.repository as FakeLayoutRepository).applied, isNull);
       await tester.drag(find.byType(ListView).first, const Offset(0, 3000));
       await tester.pumpAndSettle();
@@ -249,6 +249,20 @@ void main() {
       await tester.tap(find.text('Pocket'));
       await tester.pumpAndSettle();
       expect(find.text('Rear left door pocket'), findsWidgets);
+      final menuCapture = Platform.environment['CAR_LAYOUT_MENU_SCREENSHOT'];
+      if (menuCapture != null) {
+        await tester.ensureVisible(find.text('Light settings'));
+        await tester.pumpAndSettle();
+        await tester.runAsync(() async {
+          final boundary = tester.renderObject<RenderRepaintBoundary>(
+            find.byKey(const ValueKey('car-capture')),
+          );
+          final image = await boundary.toImage(pixelRatio: 2);
+          final data = await image.toByteData(format: ui.ImageByteFormat.png);
+          await File(menuCapture).writeAsBytes(data!.buffer.asUint8List());
+          image.dispose();
+        });
+      }
       expect(tester.takeException(), isNull);
     },
   );

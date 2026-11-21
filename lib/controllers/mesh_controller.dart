@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumadrive_control/controllers/ble_controller.dart';
 import 'package:lumadrive_control/generated/mesh.pb.dart';
@@ -23,7 +22,7 @@ class MeshController extends AsyncNotifier<MeshState> {
     final connection = ref.read(bleControllerProvider);
     final client = _matrixClient;
     if (client == null || !identical(connection, _clientConnection)) {
-      throw StateError('No connected master');
+      throw StateError('No connected controller');
     }
     return client;
   }
@@ -143,11 +142,12 @@ class MeshController extends AsyncNotifier<MeshState> {
     }
 
     final nodeLastSyncedAt = state.value!.stateUpdatedAt.subtract(
-      lastSyncedAt.microseconds,
+      Duration(microseconds: lastSyncedAt),
     );
     final referenceTime = DateTime.now();
 
-    return referenceTime.difference(nodeLastSyncedAt) < 4.seconds;
+    return referenceTime.difference(nodeLastSyncedAt) <
+        const Duration(seconds: 5);
   }
 
   DateTime? getNodeLastSyncedAt(MeshInteropNode node) {
@@ -162,7 +162,9 @@ class MeshController extends AsyncNotifier<MeshState> {
       return null;
     }
 
-    return state.value!.stateUpdatedAt.subtract(lastSyncedAt.microseconds);
+    return state.value!.stateUpdatedAt.subtract(
+      Duration(microseconds: lastSyncedAt),
+    );
   }
 }
 

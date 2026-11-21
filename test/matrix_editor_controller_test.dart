@@ -209,7 +209,7 @@ void main() {
     expect(editor.validationError, contains('Priorities'));
     expect(editor.canApply, isFalse);
     editor.config.entries.single.priority = 1;
-    expect(editor.validationError, contains('reserved'));
+    expect(editor.validationError, contains('not provisioned'));
     editor.config.sources.single.gpio = 12;
     editor.config.effects.single.periodMs = 1;
     expect(editor.validationError, contains('2 ms'));
@@ -266,6 +266,22 @@ void main() {
     expect(editor.validationError, isNull);
     editor.config.sources.last.kind = MatrixSource_Kind.DEFAULT_STATE;
     expect(editor.validationError, contains('transparent background'));
+  });
+  test('saves mode negation and a combined condition', () {
+    editor.config.modes.addAll([MatrixMode(id: 1, name: 'Day'), MatrixMode(id: 2, name: 'Night')]);
+    final entry = editor.config.entries.single.deepCopy();
+    final source = editor.config.sources.single.deepCopy();
+    expect(editor.saveEntry(entry, source, modeId: 1, secondModeId: -2, conditionOperator: 1), isTrue);
+    final group = editor.config.conditions.firstWhere((c) => c.id == editor.config.entries.single.conditionId);
+    expect(group.kind, MatrixCondition_Kind.AND);
+    final left = editor.config.conditions.firstWhere((c) => c.id == group.leftId);
+    final right = editor.config.conditions.firstWhere((c) => c.id == group.rightId);
+    expect(left.modeId, 1);
+    expect(right.modeId, 2);
+    expect(right.inverted, isTrue);
+    expect(editor.validationError, isNull);
+    group.rightId = group.id;
+    expect(editor.validationError, contains('cyclic'));
   });
   test('mode-only refresh preserves and rebases table drafts', () async {
     editor.config.entries.single.name = 'Local draft';

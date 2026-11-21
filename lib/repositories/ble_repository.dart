@@ -8,6 +8,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumadrive_control/generated/mesh.pb.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:lumadrive_control/repositories/matrix_client.dart';
+import 'package:lumadrive_control/repositories/ota_client.dart';
+
+class _BleOtaTransport implements OtaTransport {
+  _BleOtaTransport(this.upload, this.status);
+  final BluetoothCharacteristic upload, status;
+  @override
+  int get mtu => upload.device.mtuNow;
+  @override
+  Future<void> write(List<int> bytes) => upload.write(bytes, withoutResponse: false);
+  @override
+  Future<List<int>> readStatus() => status.read();
+}
 
 class _BleMatrixTransport implements MatrixTransport {
   final BluetoothCharacteristic upload;
@@ -64,6 +76,10 @@ class BleService {
 }
 
 class BleRepository {
+  OtaClient otaClient(BleService service) => OtaClient(_BleOtaTransport(
+    _getCharacteristic(service, Guid('294b8b31-57d2-bf85-dc41-5c612c9d1539')),
+    _getCharacteristic(service, Guid('294b8b32-57d2-bf85-dc41-5c612c9d1539')),
+  ));
   MatrixClient matrixClient(BleService service) => MatrixClient(
     _BleMatrixTransport(
       _getCharacteristic(service, Guid('294b8b2e-57d2-bf85-dc41-5c612c9d1539')),

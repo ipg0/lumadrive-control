@@ -348,6 +348,27 @@ void main() {
     expect(editor.config.entries.single.priority, 10);
     expect(tester.takeException(), isNull);
   });
+  testWidgets('edits an AND condition with an inverted mode', (tester) async {
+    final editor = await open(tester);
+    editor.config.modes.addAll([MatrixMode(id: 1, name: 'Day'), MatrixMode(id: 2, name: 'Night')]);
+    await tester.tap(find.byKey(const ValueKey('matrix-entry-1')));
+    await tester.pumpAndSettle();
+    final first = find.byKey(const ValueKey('entry-mode'));
+    await tester.ensureVisible(first); await tester.tap(first); await tester.pumpAndSettle();
+    await tester.tap(find.text('Mode: Day').last); await tester.pumpAndSettle();
+    final operator = find.byKey(const ValueKey('entry-condition-operator'));
+    await tester.ensureVisible(operator); await tester.tap(operator); await tester.pumpAndSettle();
+    await tester.tap(find.text('AND').last); await tester.pumpAndSettle();
+    final second = find.byKey(const ValueKey('entry-condition-second'));
+    await tester.ensureVisible(second); await tester.tap(second); await tester.pumpAndSettle();
+    await tester.tap(find.text('Not in mode: Night').last); await tester.pumpAndSettle();
+    final save = find.byKey(const ValueKey('save-entry'));
+    await tester.ensureVisible(save); await tester.tap(save); await tester.pumpAndSettle();
+    final group = editor.config.conditions.firstWhere((c) => c.id == editor.config.entries.single.conditionId);
+    expect(group.kind, MatrixCondition_Kind.AND);
+    expect(editor.config.conditions.firstWhere((c) => c.id == group.rightId).inverted, isTrue);
+    expect(tester.takeException(), isNull);
+  });
   testWidgets(
     'flowing gradient exposes geometry, colors and preview with no overflow',
     (tester) async {

@@ -3,8 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lumadrive_control/controllers/layout_editor_controller.dart';
-import 'package:lumadrive_control/generated/mesh.pb.dart';
-import 'package:lumadrive_control/utils/car_positions.dart';
 
 class LayoutOutputEditor extends StatefulWidget {
   final LayoutEditorController controller;
@@ -80,22 +78,28 @@ class _LayoutOutputEditorState extends State<LayoutOutputEditor> {
       children: [
         Row(
           children: [
-            Icon(Icons.tune, color: colors.primary),
-            const SizedBox(width: 10),
+            if (widget.advanced) ...[
+              Icon(Icons.tune, color: colors.primary),
+              const SizedBox(width: 10),
+            ],
             Expanded(
               child: Text(
                 widget.advanced
                     ? (point ? 'Selected light' : 'Selected output')
-                    : editor.titleFor(row),
+                    : 'Light settings',
                 style: theme.textTheme.titleMedium,
               ),
             ),
-            IconButton(
+            if (widget.advanced) IconButton(
               tooltip: 'Remove from layout',
               onPressed: editor.busy
                   ? null
                   : () => editor.remove(key, continuous: !widget.advanced),
               icon: const Icon(Icons.delete_outline),
+            ) else TextButton.icon(
+              onPressed: editor.busy ? null : () => editor.remove(key, continuous: true),
+              icon: const Icon(Icons.delete_outline),
+              label: const Text('Remove'),
             ),
           ],
         ),
@@ -114,48 +118,6 @@ class _LayoutOutputEditorState extends State<LayoutOutputEditor> {
           onChanged: (value) => editor.rename(key, value),
         ),
         const SizedBox(height: 4),
-        if (!widget.advanced) ...[
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.tonalIcon(
-              key: const ValueKey('assign-selected-segment'),
-              onPressed:
-                  editor.busy || row.carPosition == editor.selectedCarPosition
-                  ? null
-                  : () =>
-                        editor.assignPosition(key, editor.selectedCarPosition),
-              icon: const Icon(Icons.add_location_alt_outlined),
-              label: Text(
-                '${row.carPosition == editor.selectedCarPosition ? 'Assigned' : 'Assign'} to ${carPositionLabels[editor.selectedCarPosition]}',
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-          DropdownButtonFormField<CarPosition>(
-            key: ValueKey('car-position-${row.carPosition.value}'),
-            initialValue: row.carPosition,
-            isExpanded: true,
-            decoration: const InputDecoration(
-              labelText: 'Car location',
-              border: OutlineInputBorder(),
-            ),
-            items: [
-              const DropdownMenuItem(
-                value: CarPosition.POSITION_UNSPECIFIED,
-                child: Text('Not assigned'),
-              ),
-              for (final entry in carPositionLabels.entries)
-                DropdownMenuItem(value: entry.key, child: Text(entry.value)),
-            ],
-            onChanged: editor.busy
-                ? null
-                : (value) {
-                    if (value != null) editor.assignPosition(key, value);
-                  },
-          ),
-          const SizedBox(height: 14),
-        ],
         if (!point) ...[
           TextField(
             key: const ValueKey('layout-length'),
@@ -171,6 +133,7 @@ class _LayoutOutputEditorState extends State<LayoutOutputEditor> {
               helperText: output == null
                   ? 'Connect the node to set its length.'
                   : '1–${editor.maximumFor(output)} LEDs · Identify tests the draft before saving.',
+              helperMaxLines: 2,
             ),
             onChanged: (value) =>
                 editor.resize(key, value, continuous: !widget.advanced),
@@ -214,7 +177,7 @@ class _LayoutOutputEditorState extends State<LayoutOutputEditor> {
             ],
           ),
         const SizedBox(height: 10),
-        Row(
+        if (widget.advanced || point) Row(
           children: [
             Icon(
               point ? Icons.lightbulb_outline : Icons.straighten,
@@ -238,7 +201,9 @@ class _LayoutOutputEditorState extends State<LayoutOutputEditor> {
           SwitchListTile.adaptive(
             contentPadding: EdgeInsets.zero,
             title: const Text('Reverse direction'),
-            subtitle: Text('Mapping ${row.from} → ${row.to}'),
+            subtitle: Text(widget.advanced
+                ? 'Mapping ${row.from} → ${row.to}'
+                : 'Reverse the animation direction along this strip.'),
             value: row.from > row.to,
             onChanged: editable ? (_) => editor.reverse(key) : null,
           ),

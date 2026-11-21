@@ -237,7 +237,7 @@ class MatrixEditorController extends ChangeNotifier {
           .where((n) => listEquals(n.nodeMac, s.nodeMac))
           .firstOrNull;
       if (node?.known == true && !node!.gpios.contains(s.gpio)) {
-        return 'GPIO ${s.gpio} is reserved on its node.';
+        return 'GPIO ${s.gpio} is not provisioned on its node.';
       }
     }
     if (config.activeModeId != 0 &&
@@ -249,13 +249,23 @@ class MatrixEditorController extends ChangeNotifier {
     )) {
       return 'Mode names must be 1–128 bytes.';
     }
-    if (config.conditions.any(
-      (c) =>
-          c.kind != MatrixCondition_Kind.ALWAYS &&
-          (c.kind != MatrixCondition_Kind.MODE ||
-              !config.modes.any((m) => m.id == c.modeId)),
-    )) {
-      return 'Unsupported condition.';
+    final conditions = {for (final c in config.conditions) c.id: c};
+    final visiting = <int>{}, visited = <int>{};
+    bool validCondition(int id) {
+      final c = conditions[id];
+      if (c == null || visiting.contains(id)) return false;
+      if (visited.contains(id)) return true;
+      visiting.add(id);
+      final valid = c.kind == MatrixCondition_Kind.ALWAYS ||
+          (c.kind == MatrixCondition_Kind.MODE && config.modes.any((m) => m.id == c.modeId)) ||
+          ((c.kind == MatrixCondition_Kind.AND || c.kind == MatrixCondition_Kind.OR) &&
+              validCondition(c.leftId) && validCondition(c.rightId));
+      visiting.remove(id);
+      if (valid) visited.add(id);
+      return valid;
+    }
+    if (conditions.length != config.conditions.length || conditions.keys.any((id) => !validCondition(id))) {
+      return 'Invalid or cyclic condition.';
     }
     if (config.writeToBuffer().length > 16384 ||
         matrixPatch(config).writeToBuffer().length + 24 > 16384) {
@@ -527,6 +537,8 @@ class MatrixEditorController extends ChangeNotifier {
     MatrixSource trigger, {
     List<MatrixEffect> newEffects = const [],
     int modeId = 0,
+    int secondModeId = 0,
+    int conditionOperator = 0,
   }) {
     if (_disposed || applying) return false;
     if (value.id == 0 && config.entries.length >= 32) {
@@ -552,14 +564,16 @@ class MatrixEditorController extends ChangeNotifier {
       _changed();
       return false;
     }
-    final condition = config.conditions
-        .where(
-          (c) => modeId == 0
-              ? c.kind == MatrixCondition_Kind.ALWAYS
-              : c.kind == MatrixCondition_Kind.MODE && c.modeId == modeId,
-        )
-        .firstOrNull;
-    if (condition == null && config.conditions.length >= 32) {
+    MatrixCondition? leaf(int id) => config.conditions.where((c) => id == 0
+        ? c.kind == MatrixCondition_Kind.ALWAYS
+        : c.kind == MatrixCondition_Kind.MODE && c.modeId == id.abs() && c.inverted == (id < 0)).firstOrNull;
+    final missing = <int>{if (leaf(modeId) == null) modeId,
+      if (conditionOperator != 0 && leaf(secondModeId) == null) secondModeId};
+    final firstExisting = leaf(modeId), secondExisting = leaf(secondModeId);
+    final groupKind = conditionOperator == 1 ? MatrixCondition_Kind.AND : MatrixCondition_Kind.OR;
+    final existingGroup = conditionOperator == 0 || firstExisting == null || secondExisting == null ? null :
+        config.conditions.where((c) => c.kind == groupKind && c.leftId == firstExisting.id && c.rightId == secondExisting.id).firstOrNull;
+    if (config.conditions.length + missing.length + (conditionOperator != 0 && existingGroup == null ? 1 : 0) > 32) {
       error = 'Too many condition definitions.';
       _changed();
       return false;
@@ -582,20 +596,29 @@ class MatrixEditorController extends ChangeNotifier {
     } else {
       config.sources[sourceIndex] = input;
     }
-    if (condition == null) {
-      config.conditions.add(
-        MatrixCondition(
-          id: _id(config.conditions.map((c) => c.id)),
-          kind: modeId == 0
-              ? MatrixCondition_Kind.ALWAYS
-              : MatrixCondition_Kind.MODE,
-          modeId: modeId,
-        ),
-      );
+    MatrixCondition ensureLeaf(int id) {
+      final existing = leaf(id);
+      if (existing != null) return existing;
+      final created = MatrixCondition(id: _id(config.conditions.map((c) => c.id)),
+        kind: id == 0 ? MatrixCondition_Kind.ALWAYS : MatrixCondition_Kind.MODE,
+        modeId: id.abs(), inverted: id < 0);
+      config.conditions.add(created); return created;
+    }
+    final first = ensureLeaf(modeId);
+    MatrixCondition condition = first;
+    if (conditionOperator != 0) {
+      final second = ensureLeaf(secondModeId);
+      final existing = config.conditions.where((c) => c.kind == groupKind && c.leftId == first.id && c.rightId == second.id).firstOrNull;
+      if (existing != null) {
+        condition = existing;
+      } else {
+        condition = MatrixCondition(id: _id(config.conditions.map((c) => c.id)), kind: groupKind, leftId: first.id, rightId: second.id);
+        config.conditions.add(condition);
+      }
     }
     next
       ..sourceId = input.id
-      ..conditionId = condition?.id ?? config.conditions.last.id;
+      ..conditionId = condition.id;
     final index = config.entries.indexWhere((e) => e.id == next.id);
     if (index < 0) {
       config.entries.add(next);

@@ -765,11 +765,17 @@ class MatrixCondition extends $pb.GeneratedMessage {
     $core.int? id,
     MatrixCondition_Kind? kind,
     $core.int? modeId,
+    $core.bool? inverted,
+    $core.int? leftId,
+    $core.int? rightId,
   }) {
     final result = create();
     if (id != null) result.id = id;
     if (kind != null) result.kind = kind;
     if (modeId != null) result.modeId = modeId;
+    if (inverted != null) result.inverted = inverted;
+    if (leftId != null) result.leftId = leftId;
+    if (rightId != null) result.rightId = rightId;
     return result;
   }
 
@@ -790,6 +796,9 @@ class MatrixCondition extends $pb.GeneratedMessage {
     ..aE<MatrixCondition_Kind>(2, _omitFieldNames ? '' : 'kind',
         enumValues: MatrixCondition_Kind.values)
     ..aI(3, _omitFieldNames ? '' : 'modeId', fieldType: $pb.PbFieldType.OU3)
+    ..aOB(4, _omitFieldNames ? '' : 'inverted')
+    ..aI(5, _omitFieldNames ? '' : 'leftId', fieldType: $pb.PbFieldType.OU3)
+    ..aI(6, _omitFieldNames ? '' : 'rightId', fieldType: $pb.PbFieldType.OU3)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -837,6 +846,33 @@ class MatrixCondition extends $pb.GeneratedMessage {
   $core.bool hasModeId() => $_has(2);
   @$pb.TagNumber(3)
   void clearModeId() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.bool get inverted => $_getBF(3);
+  @$pb.TagNumber(4)
+  set inverted($core.bool value) => $_setBool(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasInverted() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearInverted() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.int get leftId => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set leftId($core.int value) => $_setUnsignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasLeftId() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearLeftId() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.int get rightId => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set rightId($core.int value) => $_setUnsignedInt32(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasRightId() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearRightId() => $_clearField(6);
 }
 
 class MatrixMode extends $pb.GeneratedMessage {
@@ -1852,12 +1888,14 @@ class MatrixInputNode extends $pb.GeneratedMessage {
     $core.Iterable<$core.int>? gpios,
     $core.bool? known,
     $core.bool? online,
+    $core.String? firmwareVersion,
   }) {
     final result = create();
     if (nodeMac != null) result.nodeMac = nodeMac;
     if (gpios != null) result.gpios.addAll(gpios);
     if (known != null) result.known = known;
     if (online != null) result.online = online;
+    if (firmwareVersion != null) result.firmwareVersion = firmwareVersion;
     return result;
   }
 
@@ -1879,6 +1917,7 @@ class MatrixInputNode extends $pb.GeneratedMessage {
     ..p<$core.int>(2, _omitFieldNames ? '' : 'gpios', $pb.PbFieldType.KU3)
     ..aOB(3, _omitFieldNames ? '' : 'known')
     ..aOB(4, _omitFieldNames ? '' : 'online')
+    ..aOS(5, _omitFieldNames ? '' : 'firmwareVersion')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1929,6 +1968,15 @@ class MatrixInputNode extends $pb.GeneratedMessage {
   $core.bool hasOnline() => $_has(3);
   @$pb.TagNumber(4)
   void clearOnline() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.String get firmwareVersion => $_getSZ(4);
+  @$pb.TagNumber(5)
+  set firmwareVersion($core.String value) => $_setString(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasFirmwareVersion() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearFirmwareVersion() => $_clearField(5);
 }
 
 class MatrixDocument extends $pb.GeneratedMessage {
@@ -1941,6 +1989,7 @@ class MatrixDocument extends $pb.GeneratedMessage {
     $fixnum.Int64? activeRevision,
     $core.bool? activationPending,
     $core.bool? persisted,
+    $core.String? masterFirmwareVersion,
   }) {
     final result = create();
     if (config != null) result.config = config;
@@ -1951,6 +2000,8 @@ class MatrixDocument extends $pb.GeneratedMessage {
     if (activeRevision != null) result.activeRevision = activeRevision;
     if (activationPending != null) result.activationPending = activationPending;
     if (persisted != null) result.persisted = persisted;
+    if (masterFirmwareVersion != null)
+      result.masterFirmwareVersion = masterFirmwareVersion;
     return result;
   }
 
@@ -1984,6 +2035,7 @@ class MatrixDocument extends $pb.GeneratedMessage {
         defaultOrMaker: $fixnum.Int64.ZERO)
     ..aOB(7, _omitFieldNames ? '' : 'activationPending')
     ..aOB(8, _omitFieldNames ? '' : 'persisted')
+    ..aOS(9, _omitFieldNames ? '' : 'masterFirmwareVersion')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -2070,6 +2122,15 @@ class MatrixDocument extends $pb.GeneratedMessage {
   $core.bool hasPersisted() => $_has(7);
   @$pb.TagNumber(8)
   void clearPersisted() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get masterFirmwareVersion => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set masterFirmwareVersion($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasMasterFirmwareVersion() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearMasterFirmwareVersion() => $_clearField(9);
 }
 
 class LayoutOutput extends $pb.GeneratedMessage {

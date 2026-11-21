@@ -243,15 +243,21 @@ class MatrixCondition_Kind extends $pb.ProtobufEnum {
       MatrixCondition_Kind._(1, _omitEnumNames ? '' : 'ALWAYS');
   static const MatrixCondition_Kind MODE =
       MatrixCondition_Kind._(2, _omitEnumNames ? '' : 'MODE');
+  static const MatrixCondition_Kind AND =
+      MatrixCondition_Kind._(3, _omitEnumNames ? '' : 'AND');
+  static const MatrixCondition_Kind OR =
+      MatrixCondition_Kind._(4, _omitEnumNames ? '' : 'OR');
 
   static const $core.List<MatrixCondition_Kind> values = <MatrixCondition_Kind>[
     CONDITION_UNSPECIFIED,
     ALWAYS,
     MODE,
+    AND,
+    OR,
   ];
 
   static final $core.List<MatrixCondition_Kind?> _byValue =
-      $pb.ProtobufEnum.$_initByValueList(values, 2);
+      $pb.ProtobufEnum.$_initByValueList(values, 4);
   static MatrixCondition_Kind? valueOf($core.int value) =>
       value < 0 || value >= _byValue.length ? null : _byValue[value];
 

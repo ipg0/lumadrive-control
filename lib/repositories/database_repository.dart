@@ -28,7 +28,19 @@ class DatabaseRepository {
   Stream<List<SavedDevice>> watchAllSavedDevices() {
     return _database.watchAllSavedDevices();
   }
+
+  Stream<Map<String, String>> watchNodeNames(String controllerId) =>
+      _database.watchNodeNames(controllerId).map(
+        (rows) => {for (final row in rows) row.nodeMac: row.name},
+      );
+
+  Future<void> setNodeName(String controllerId, String nodeMac, String name) =>
+      _database.setNodeName(controllerId, nodeMac, name);
 }
+
+final nodeNamesProvider = StreamProvider.family<Map<String, String>, String>(
+  (ref, controllerId) => ref.watch(databaseRepositoryProvider).watchNodeNames(controllerId),
+);
 
 final databaseProvider = Provider<AppDatabase>((ref) {
   final db = AppDatabase();

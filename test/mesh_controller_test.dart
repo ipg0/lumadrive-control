@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fixnum/fixnum.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lumadrive_control/controllers/ble_controller.dart';
@@ -82,4 +83,22 @@ void main() {
     await flush();
     expect(container.read(meshControllerProvider).hasError, isTrue);
   });
+  test(
+    'node is online only when its last sync is less than five seconds old',
+    () async {
+      final service = TestBleService(repository.lumadriveServiceUuid);
+      connection.emit(BleConnected(firstController, lumadriveService: service));
+      await flush();
+      final mesh = container.read(meshControllerProvider.notifier);
+      expect(
+        mesh.getNodeOnlineStatus(MeshInteropNode(lastSyncedAt: Int64(4500000))),
+        isTrue,
+      );
+      expect(
+        mesh.getNodeOnlineStatus(MeshInteropNode(lastSyncedAt: Int64(5000000))),
+        isFalse,
+      );
+      expect(mesh.getNodeOnlineStatus(MeshInteropNode()), isFalse);
+    },
+  );
 }

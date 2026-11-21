@@ -14,6 +14,7 @@ class CarLayout extends StatefulWidget {
 }
 
 class _CarLayoutState extends State<CarLayout> {
+  int _pickerGeneration = 0;
   CarPosition get _position => widget.controller.selectedCarPosition;
   @override
   Widget build(BuildContext context) {
@@ -227,6 +228,11 @@ class _CarLayoutState extends State<CarLayout> {
                   ],
                 ),
               ),
+            const SizedBox(height: 8),
+            Text(
+              'Lights at this location',
+              style: theme.textTheme.titleSmall,
+            ),
             for (final row in rows)
               ListTile(
                 contentPadding: EdgeInsets.zero,
@@ -234,42 +240,57 @@ class _CarLayoutState extends State<CarLayout> {
                 leading: const Icon(Icons.lightbulb_outline),
                 title: Text(editor.titleFor(row)),
                 subtitle: Text(
-                  '${editor.lengthFor(row)} LEDs · ${row.from > row.to ? 'reversed' : 'forward'}',
+                  isPointSource(editor.outputFor(placementKey(row)))
+                      ? 'RGB light'
+                      : '${editor.lengthFor(row)} LEDs · ${row.from > row.to ? 'reversed' : 'forward'}',
                 ),
-                trailing: const Icon(Icons.tune),
+                trailing: Icon(editor.selectedKey == placementKey(row)
+                    ? Icons.check_circle_outline
+                    : Icons.chevron_right),
                 onTap: () => editor.select(placementKey(row)),
               ),
             if (rows.isEmpty)
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 10),
-                child: Text('No lights assigned here yet.'),
+                child: Text('No lights assigned here yet. Choose one below.'),
               ),
+            const SizedBox(height: 8),
             KeyedSubtree(
               key: ValueKey(
                 'assign-car-output-${_position.value}-${editor.layout.length}',
               ),
               child: DropdownButtonFormField<String>(
                 key: ValueKey(
-                  'assign-car-selection-${_position.value}-${editor.selectedKey}',
+                  'assign-car-selection-${_position.value}-$_pickerGeneration',
                 ),
-                initialValue:
-                    outputs.any(
-                      (output) => outputKey(output) == editor.selectedKey,
-                    )
-                    ? editor.selectedKey
-                    : null,
                 isExpanded: true,
                 decoration: const InputDecoration(
-                  labelText: 'Assign a light to this location',
+                  labelText: 'Add or move a light here',
                   border: OutlineInputBorder(),
                 ),
                 items: [
                   for (final output in outputs)
                     DropdownMenuItem(
                       value: outputKey(output),
-                      child: Text(
-                        '${outputType(output)} · ${nodeSuffix(output.nodeMac)}',
-                        overflow: TextOverflow.ellipsis,
+                      child: Row(
+                        children: [
+                          Expanded(child: Text(
+                            '${outputType(output)} · ${nodeSuffix(output.nodeMac)}',
+                            overflow: TextOverflow.ellipsis,
+                          )),
+                          if (editor.layout.where((row) => placementKey(row) == outputKey(output)).firstOrNull case final placed?) ...[
+                            const SizedBox(width: 8),
+                            Flexible(child: Text(
+                              placed.carPosition == _position
+                                  ? 'Here'
+                                  : placed.carPosition == CarPosition.POSITION_UNSPECIFIED
+                                      ? 'Unassigned'
+                                      : 'In ${carPositionLabels[placed.carPosition]}',
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+                            )),
+                          ],
+                        ],
                       ),
                     ),
                 ],
@@ -284,45 +305,56 @@ class _CarLayoutState extends State<CarLayout> {
                         editor.assignPosition(key, _position);
                         editor.select(key);
                         unawaited(editor.identify(key));
+                        setState(() => _pickerGeneration++);
                       },
               ),
             ),
             if (editor.selected != null) ...[
-              const SizedBox(height: 16),
+              const Divider(height: 32),
+              Text(
+                editor.titleFor(editor.selected!),
+                style: theme.textTheme.titleSmall,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                editor.selected!.carPosition == _position
+                    ? 'Editing a light at this location'
+                    : editor.selected!.carPosition == CarPosition.POSITION_UNSPECIFIED
+                        ? 'Selected light has no car location'
+                        : 'Selected light is at ${carPositionLabels[editor.selected!.carPosition]}',
+                style: theme.textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+              ),
+              if (editor.selected!.carPosition != _position) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.tonalIcon(
+                    key: const ValueKey('assign-selected-segment'),
+                    onPressed: editor.busy ? null : () => editor.assignPosition(editor.selectedKey!, _position),
+                    icon: const Icon(Icons.add_location_alt_outlined),
+                    label: Text('Assign to ${carPositionLabels[_position]}', textAlign: TextAlign.center),
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
               LayoutOutputEditor(
                 key: ValueKey('editor-${editor.selectedKey}'),
                 controller: editor,
                 advanced: false,
               ),
             ],
-            const SizedBox(height: 12),
-            Text(
-              'Assigned lights form one continuous line from the rear left, up the left side, across the dash and down the right side to the rear right door.',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: colors.onSurfaceVariant,
-              ),
-            ),
             if (unassigned.isNotEmpty) ...[
-              const Divider(height: 28),
-              Text(
-                '${unassigned.length} ${unassigned.length == 1 ? 'light needs a location' : 'lights need locations'}',
-                style: theme.textTheme.titleSmall,
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Existing positions are kept until you assign a location. Advanced shows all positions and overlaps.',
-                style: theme.textTheme.bodySmall,
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 6,
+              const SizedBox(height: 12),
+              ExpansionTile(
+                tilePadding: EdgeInsets.zero,
+                title: Text('${unassigned.length} ${unassigned.length == 1 ? 'light needs' : 'lights need'} a location'),
                 children: [
                   for (final row in unassigned)
-                    ActionChip(
-                      label: Text(editor.titleFor(row)),
-                      avatar: const Icon(Icons.place_outlined, size: 18),
-                      onPressed: () => editor.select(placementKey(row)),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(editor.titleFor(row)),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => editor.select(placementKey(row)),
                     ),
                 ],
               ),
