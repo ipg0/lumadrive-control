@@ -28,7 +28,24 @@ class MyApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'Lumadrive Control',
       theme: ThemeData(
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple, brightness: .dark),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xff0be6f0),
+          brightness: Brightness.dark,
+        ).copyWith(
+          primary: const Color(0xff60e8f1),
+          onPrimary: const Color(0xff00363b),
+          primaryContainer: const Color(0xff004e57),
+          onPrimaryContainer: const Color(0xffa6f6fb),
+          secondary: const Color(0xffb8c2ff),
+          onSecondary: const Color(0xff18286d),
+          secondaryContainer: const Color(0xff303f86),
+          onSecondaryContainer: const Color(0xffdee1ff),
+          tertiary: const Color(0xffefaaff),
+          onTertiary: const Color(0xff4b125b),
+          tertiaryContainer: const Color(0xff652974),
+          onTertiaryContainer: const Color(0xfff8d9ff),
+          surface: const Color(0xff101720),
+        ),
         useMaterial3: true,
       ),
       routerConfig: ref.watch(appRouterProvider),

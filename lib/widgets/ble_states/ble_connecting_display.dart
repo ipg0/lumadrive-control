@@ -20,7 +20,7 @@ class BleConnectingDisplay extends StatelessWidget {
           textAlign: TextAlign.center,
         ),
         PulseIcon(
-          pulseColor: Colors.greenAccent.withAlpha(200),
+          pulseColor: Theme.of(context).colorScheme.primary.withAlpha(200),
           pulseDuration: 2.5.seconds,
           pulseCount: 4,
           pulseSize: 200,

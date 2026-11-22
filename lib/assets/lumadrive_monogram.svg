@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1170 645" role="img" aria-label="LumaDrive LD monogram">
+ <defs>
+  <linearGradient id="l" x1="0%" y1="0%" x2="90%" y2="95%"><stop offset="0" stop-color="#86ffff"/><stop offset=".40" stop-color="#0be6f0"/><stop offset=".67" stop-color="#069ff5"/><stop offset=".85" stop-color="#08ccee"/><stop offset="1" stop-color="#3456ec"/></linearGradient>
+  <linearGradient id="d" x1="0%" y1="5%" x2="100%" y2="95%"><stop offset="0" stop-color="#143ac8"/><stop offset=".34" stop-color="#3958f5"/><stop offset=".66" stop-color="#e05af2"/><stop offset="1" stop-color="#8e11e9"/></linearGradient>
+  <linearGradient id="word" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0" stop-color="#00dce9"/><stop offset=".45" stop-color="#3565fc"/><stop offset="1" stop-color="#de50e9"/></linearGradient>
+ </defs>
+ <path fill="url(#l)" d="M 378,105 H 514 L 345,497 H 866 C 804,565 731,610 660,619 H 151 Z"/>
+<path fill="url(#d)" d="M 557,185 H 887 C 998,185 1081,257 1081,367 C 1081,506 983,620 850,620 H 714 C 839,566 952,469 952,363 C 952,311 915,281 858,281 H 516 Z"/>
+</svg>

@@ -117,7 +117,7 @@ void main() {
       await tester.drag(find.byType(ListView).first, const Offset(0, -350));
       await tester.pumpAndSettle();
       expect(find.text('Selected light'), findsOneWidget);
-      expect(find.byType(SwitchListTile), findsNothing);
+      expect(find.widgetWithText(SwitchListTile, 'Reverse direction'), findsNothing);
       expect(editor.layout.map((row) => row.sourceIndex), [0, 1]);
       expect(tester.takeException(), isNull);
     },
@@ -134,8 +134,9 @@ void main() {
         '10',
       );
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.byType(SwitchListTile));
-      await tester.tap(find.byType(SwitchListTile));
+      final reverse = find.widgetWithText(SwitchListTile, 'Reverse direction');
+      await tester.ensureVisible(reverse);
+      await tester.tap(reverse);
       await tester.pumpAndSettle();
       expect(editor.selected!.from, 12);
       expect(editor.selected!.to, 10);

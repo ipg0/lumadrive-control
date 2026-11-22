@@ -26,7 +26,7 @@ class BleScanningDisplay extends ConsumerWidget {
         ),
         if (state.active)
           PulseIcon(
-            pulseColor: Colors.blueAccent,
+            pulseColor: Theme.of(context).colorScheme.primary,
             pulseDuration: 2.5.seconds,
             pulseCount: 4,
             icon: Icons.bluetooth_searching,
