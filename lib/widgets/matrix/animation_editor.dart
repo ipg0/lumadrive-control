@@ -3,8 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lumadrive_control/controllers/matrix_editor_controller.dart';
+import 'package:lumadrive_control/controllers/layout_editor_controller.dart'
+    show defaultOutputName, outputKey, placementKey;
 import 'package:lumadrive_control/generated/mesh.pb.dart';
 import 'package:lumadrive_control/utils/gradient_palette.dart';
+import 'package:lumadrive_control/utils/stringify_mac.dart';
 
 import 'simple_animation_preview.dart';
 import 'keyframe_editor.dart';
@@ -28,6 +31,8 @@ class AnimationEditor extends StatefulWidget {
   final bool Function(MatrixEffect)? onSaveDraft;
   final Iterable<String> existingNames;
   final List<MatrixLayout> layout;
+  final List<LayoutOutput> outputCatalog;
+  final Map<String, String> nodeNames;
   const AnimationEditor({
     super.key,
     required this.initial,
@@ -43,6 +48,8 @@ class AnimationEditor extends StatefulWidget {
     this.onSaveDraft,
     this.existingNames = const [],
     this.layout = const [],
+    this.outputCatalog = const [],
+    this.nodeNames = const {},
   });
   @override
   State<AnimationEditor> createState() => _AnimationEditorState();
@@ -56,16 +63,22 @@ class _AnimationEditorState extends State<AnimationEditor> {
   int _nextGradientId = 0;
   bool _saving = false;
   bool _automaticName = false;
+  late bool _breatheColors;
   String? _saveError;
   late final TextEditingController _name,
       _duration,
       _period,
       _duty,
-      _wavelength;
+      _wavelength,
+      _regionStart,
+      _regionEnd;
   @override
   void initState() {
     super.initState();
     _effect = widget.initial.deepCopy();
+    _breatheColors =
+        _effect.kind == MatrixEffect_Kind.BREATHE &&
+        _effect.gradientColors.isNotEmpty;
     _gradient = gradientPalette(_effect)
         .map((color) => color.deepCopy())
         .toList();
@@ -88,11 +101,25 @@ class _AnimationEditorState extends State<AnimationEditor> {
       text: '${_effect.dutyPercent == 0 ? 50 : _effect.dutyPercent}',
     );
     _wavelength = TextEditingController(text: '${_effect.wavelengthPixels}');
+    _regionStart = TextEditingController(
+      text: _effect.hasRegionStart() ? '${_effect.regionStart}' : '',
+    );
+    _regionEnd = TextEditingController(
+      text: _effect.hasRegionEnd() ? '${_effect.regionEnd}' : '',
+    );
   }
 
   @override
   void dispose() {
-    for (final field in [_name, _duration, _period, _duty, _wavelength]) {
+    for (final field in [
+      _name,
+      _duration,
+      _period,
+      _duty,
+      _wavelength,
+      _regionStart,
+      _regionEnd,
+    ]) {
       field.dispose();
     }
     super.dispose();
@@ -117,6 +144,18 @@ class _AnimationEditorState extends State<AnimationEditor> {
               _effect.kind == MatrixEffect_Kind.RAINBOW)
           ? int.tryParse(_wavelength.text) ?? 0
           : 0;
+    if (value.kind == MatrixEffect_Kind.KEYFRAMES ||
+        _regionStart.text.trim().isEmpty) {
+      value.clearRegionStart();
+    } else {
+      value.regionStart = int.tryParse(_regionStart.text) ?? 0;
+    }
+    if (value.kind == MatrixEffect_Kind.KEYFRAMES ||
+        _regionEnd.text.trim().isEmpty) {
+      value.clearRegionEnd();
+    } else {
+      value.regionEnd = int.tryParse(_regionEnd.text) ?? 0;
+    }
     value.gradientColors.clear();
     if (value.kind == MatrixEffect_Kind.DIMMING) {
       value
@@ -125,15 +164,17 @@ class _AnimationEditorState extends State<AnimationEditor> {
         ..blue = 0;
     }
     if (value.kind != MatrixEffect_Kind.KEYFRAMES) value.keyframes.clear();
-    if (value.kind == MatrixEffect_Kind.FLOWING_GRADIENT) {
+    if (value.kind == MatrixEffect_Kind.FLOWING_GRADIENT ||
+        (value.kind == MatrixEffect_Kind.BREATHE && _breatheColors)) {
       value.gradientColors.addAll(_gradient.map((color) => color.deepCopy()));
       final first = _gradient.first;
       value
         ..red = first.red
         ..green = first.green
         ..blue = first.blue
-        ..alpha = first.alpha
-        ..secondaryColor = _gradient[1].deepCopy();
+        ..alpha = first.alpha;
+      if (value.kind == MatrixEffect_Kind.FLOWING_GRADIENT)
+        value.secondaryColor = _gradient[1].deepCopy();
     }
     return value;
   }
@@ -143,6 +184,96 @@ class _AnimationEditorState extends State<AnimationEditor> {
     _gradient.insert(index + delta, color);
     _gradientIds.insert(index + delta, id);
   });
+
+  Widget _regionField(bool start) {
+    final field = start ? _regionStart : _regionEnd;
+    final max = widget.canvasSize > 0 ? widget.canvasSize : 65536;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextFormField(
+          key: ValueKey(
+            start ? 'animation-region-start' : 'animation-region-end',
+          ),
+          controller: field,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          decoration: InputDecoration(
+            labelText: start ? 'From index' : 'To index',
+            hintText: start ? 'Beginning of layout' : 'End of layout',
+            helperText: start
+                ? 'Inclusive; leave blank for the beginning'
+                : 'Exclusive; leave blank for the end',
+            border: const OutlineInputBorder(),
+          ),
+          validator: (text) {
+            if (text == null || text.isEmpty) return null;
+            final number = int.tryParse(text);
+            if (number == null ||
+                number < (start ? 0 : 1) ||
+                number > max ||
+                (start && number == max)) {
+              return 'Enter a boundary within the layout';
+            }
+            final other = int.tryParse(
+              (start ? _regionEnd : _regionStart).text,
+            );
+            if (other != null && (start ? number >= other : number <= other)) {
+              return 'From must be before To';
+            }
+            return null;
+          },
+          onChanged: (_) => setState(() {}),
+        ),
+        if (widget.layout.isNotEmpty)
+          DropdownButton<int>(
+            key: ValueKey(
+              start
+                  ? 'animation-region-from-source'
+                  : 'animation-region-to-source',
+            ),
+            isExpanded: true,
+            hint: Text(
+              start
+                  ? 'Choose starting light source'
+                  : 'Choose ending light source',
+            ),
+            items: [
+              for (var i = 0; i < widget.layout.length; i++)
+                DropdownMenuItem(
+                  value: i,
+                  child: Text(
+                    _layoutSourceName(widget.layout[i]),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+            ],
+            onChanged: (index) {
+              if (index == null) return;
+              final row = widget.layout[index];
+              setState(
+                () => field.text =
+                    '${start ? (row.from < row.to ? row.from : row.to) : (row.from > row.to ? row.from : row.to)}',
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  String _layoutSourceName(MatrixLayout row) => row.name.isNotEmpty
+      ? row.name
+      : defaultOutputName(
+          widget.outputCatalog
+                  .where((output) => outputKey(output) == placementKey(row))
+                  .firstOrNull ??
+              LayoutOutput(
+                nodeMac: row.nodeMac,
+                driver: row.driver,
+                sourceIndex: row.sourceIndex,
+              ),
+          nodeName: widget.nodeNames[macBytesToString(row.nodeMac)],
+        );
 
   Future<void> _save() async {
     if (_saving || !_form.currentState!.validate()) return;
@@ -284,6 +415,30 @@ class _AnimationEditorState extends State<AnimationEditor> {
                 }),
               ),
               const SizedBox(height: 18),
+              if (_effect.kind != MatrixEffect_Kind.KEYFRAMES) ...[
+                Text(
+                  'Animation region',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 6),
+                const Text('Leave both blank to animate the entire layout.'),
+                const SizedBox(height: 12),
+                _regionField(true),
+                const SizedBox(height: 12),
+                _regionField(false),
+                const SizedBox(height: 18),
+              ],
+              if (_effect.kind == MatrixEffect_Kind.BREATHE)
+                SwitchListTile(
+                  key: const ValueKey('breathe-cycle-colors'),
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Cycle colors'),
+                  subtitle: const Text(
+                    'Blend through multiple colors instead of fading one color.',
+                  ),
+                  value: _breatheColors,
+                  onChanged: (value) => setState(() => _breatheColors = value),
+                ),
               if (_effect.kind == MatrixEffect_Kind.DIMMING) ...[
                 const Text(
                   'Dim lower-priority lighting across the layout. Use a transparent entry background to show the lighting underneath.',
@@ -323,6 +478,8 @@ class _AnimationEditorState extends State<AnimationEditor> {
                   ],
                 ),
               ] else if (_effect.kind != MatrixEffect_Kind.FLOWING_GRADIENT &&
+                  !(_effect.kind == MatrixEffect_Kind.BREATHE &&
+                      _breatheColors) &&
                   _effect.kind != MatrixEffect_Kind.KEYFRAMES)
                 MatrixColorEditor(
                   key: const ValueKey('primary-color'),
@@ -342,13 +499,17 @@ class _AnimationEditorState extends State<AnimationEditor> {
                     _gradient[0] = value.deepCopy();
                   }),
                 ),
-              if (_effect.kind == MatrixEffect_Kind.FLOWING_GRADIENT) ...[
+              if (_effect.kind == MatrixEffect_Kind.FLOWING_GRADIENT ||
+                  (_effect.kind == MatrixEffect_Kind.BREATHE &&
+                      _breatheColors)) ...[
                 Text(
-                  'Gradient colors · ${_gradient.length}/$maxGradientColors',
+                  '${_effect.kind == MatrixEffect_Kind.BREATHE ? 'Cycle' : 'Gradient'} colors · ${_gradient.length}/$maxGradientColors',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
-                const Text(
-                  'Colors are evenly spaced and flow in this order, wrapping from the last back to the first.',
+                Text(
+                  _effect.kind == MatrixEffect_Kind.BREATHE
+                      ? 'Colors blend smoothly in order, from the last back to the first.'
+                      : 'Colors are evenly spaced and flow in this order, wrapping from the last back to the first.',
                 ),
                 for (var i = 0; i < _gradient.length; i++)
                   Padding(

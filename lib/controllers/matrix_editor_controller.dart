@@ -146,6 +146,24 @@ class MatrixEditorController extends ChangeNotifier {
       return 'Configure the car layout before adding playback entries.';
     }
     for (final e in config.effects) {
+      final extent = config.layout.fold<int>(
+        0,
+        (n, row) => math.max(n, math.max(row.from, row.to)),
+      );
+      if ((e.kind == MatrixEffect_Kind.KEYFRAMES &&
+              (e.hasRegionStart() || e.hasRegionEnd())) ||
+          (e.hasRegionStart() &&
+              (e.regionStart >= 65536 ||
+                  (extent > 0 && e.regionStart >= extent))) ||
+          (e.hasRegionEnd() &&
+              (e.regionEnd == 0 ||
+                  e.regionEnd > 65536 ||
+                  (extent > 0 && e.regionEnd > extent))) ||
+          (e.hasRegionStart() &&
+              e.hasRegionEnd() &&
+              e.regionStart >= e.regionEnd)) {
+        return 'Invalid animation region.';
+      }
       if (utf8.encode(e.name).length > 128) {
         return 'Animation name is too long.';
       }
@@ -188,8 +206,12 @@ class MatrixEditorController extends ChangeNotifier {
         return 'Gradients support up to $maxGradientColors RGBA colors, with channels between 0 and 255.';
       }
       if (e.gradientColors.isNotEmpty &&
-          e.kind != MatrixEffect_Kind.FLOWING_GRADIENT) {
-        return 'Gradient colors require a flowing gradient.';
+          e.kind != MatrixEffect_Kind.FLOWING_GRADIENT &&
+          e.kind != MatrixEffect_Kind.BREATHE) {
+        return 'Palette colors require a gradient or breathe animation.';
+      }
+      if (e.kind == MatrixEffect_Kind.BREATHE && e.gradientColors.length == 1) {
+        return 'A color cycle needs at least two colors.';
       }
       if (e.periodMs == 1) return 'Animation periods must be at least 2 ms.';
       if (e.kind == MatrixEffect_Kind.FILL && !e.loop && e.durationMs < 2) {

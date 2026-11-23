@@ -11,6 +11,14 @@ Color sampleSimpleAnimation(
   int canvasSize, [
   int? centerIndex,
 ]) {
+  final start = effect.hasRegionStart() ? effect.regionStart : 0;
+  final end = effect.hasRegionEnd() ? effect.regionEnd : canvasSize;
+  if (start >= end || position < start || position >= end) {
+    return Colors.transparent;
+  }
+  position -= start;
+  canvasSize = end - start;
+  if (centerIndex != null) centerIndex = centerIndex.clamp(start, end) - start;
   Color rgba(int r, int g, int b, int a) => Color.fromARGB(
     a.clamp(0, 255),
     r.clamp(0, 255),
@@ -53,6 +61,21 @@ Color sampleSimpleAnimation(
         : Colors.transparent;
   }
   if (effect.kind == MatrixEffect_Kind.BREATHE) {
+    if (effect.gradientColors.length >= 2) {
+      final colors = effect.gradientColors;
+      final scaled = p * colors.length;
+      final index = scaled.floor();
+      final t = scaled - index;
+      final fraction = t * t * (3 - 2 * t);
+      final from = colors[index], to = colors[(index + 1) % colors.length];
+      int mix(int a, int b) => (a + (b - a) * fraction).round();
+      return rgba(
+        mix(from.red, to.red),
+        mix(from.green, to.green),
+        mix(from.blue, to.blue),
+        mix(from.alpha, to.alpha),
+      );
+    }
     final t = triangle(p), alpha = t * t * (3 - 2 * t);
     return primary.withValues(alpha: primary.a * alpha);
   }

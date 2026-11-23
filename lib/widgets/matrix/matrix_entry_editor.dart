@@ -12,6 +12,8 @@ class MatrixEntryEditor extends StatefulWidget {
   final MatrixEntry initial;
   final MatrixSource trigger;
   final MatrixEditorController controller;
+  final Map<String, String> nodeNames;
+  final List<LayoutOutput> outputCatalog;
   final bool Function(
     MatrixEntry,
     MatrixSource,
@@ -26,6 +28,8 @@ class MatrixEntryEditor extends StatefulWidget {
     required this.initial,
     required this.trigger,
     required this.controller,
+    this.nodeNames = const {},
+    this.outputCatalog = const [],
     required this.onSave,
     required this.onCancel,
   });
@@ -349,6 +353,8 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                   key: const ValueKey('entry-inline-animation'),
                   initial: _newAnimation!,
                   layout: widget.controller.config.layout,
+                  nodeNames: widget.nodeNames,
+                  outputCatalog: widget.outputCatalog,
                   existingNames: effects.map(animationTitle),
                   canvasSize: widget.controller.canvasSize,
                   centerIndex: widget.controller.config.hasCenterIndex()

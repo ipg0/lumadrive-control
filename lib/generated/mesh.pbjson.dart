@@ -250,8 +250,30 @@ const MatrixEffect$json = {
       '10': 'gradientColors'
     },
     {'1': 'fill_from_center', '3': 17, '4': 1, '5': 8, '10': 'fillFromCenter'},
+    {
+      '1': 'region_start',
+      '3': 18,
+      '4': 1,
+      '5': 13,
+      '9': 0,
+      '10': 'regionStart',
+      '17': true
+    },
+    {
+      '1': 'region_end',
+      '3': 19,
+      '4': 1,
+      '5': 13,
+      '9': 1,
+      '10': 'regionEnd',
+      '17': true
+    },
   ],
   '4': [MatrixEffect_Kind$json],
+  '8': [
+    {'1': '_region_start'},
+    {'1': '_region_end'},
+  ],
 };
 
 @$core.Deprecated('Use matrixEffectDescriptor instead')
@@ -283,9 +305,11 @@ final $typed_data.Uint8List matrixEffectDescriptor = $convert.base64Decode(
     'ZW5ndGhQaXhlbHMSGAoHcmV2ZXJzZRgOIAEoCFIHcmV2ZXJzZRISCgRuYW1lGA8gASgJUgRuYW'
     '1lEkIKD2dyYWRpZW50X2NvbG9ycxgQIAMoCzIZLm1lc2hfaW50ZXJvcC5NYXRyaXhDb2xvclIO'
     'Z3JhZGllbnRDb2xvcnMSKAoQZmlsbF9mcm9tX2NlbnRlchgRIAEoCFIOZmlsbEZyb21DZW50ZX'
-    'IikQEKBEtpbmQSFgoSRUZGRUNUX1VOU1BFQ0lGSUVEEAASEAoMU1RBVElDX0NPTE9SEAESDQoJ'
-    'S0VZRlJBTUVTEAISCQoFQkxJTksQAxILCgdCUkVBVEhFEAQSFAoQRkxPV0lOR19HUkFESUVOVB'
-    'AFEgsKB1JBSU5CT1cQBhIICgRGSUxMEAcSCwoHRElNTUlORxAI');
+    'ISJgoMcmVnaW9uX3N0YXJ0GBIgASgNSABSC3JlZ2lvblN0YXJ0iAEBEiIKCnJlZ2lvbl9lbmQY'
+    'EyABKA1IAVIJcmVnaW9uRW5kiAEBIpEBCgRLaW5kEhYKEkVGRkVDVF9VTlNQRUNJRklFRBAAEh'
+    'AKDFNUQVRJQ19DT0xPUhABEg0KCUtFWUZSQU1FUxACEgkKBUJMSU5LEAMSCwoHQlJFQVRIRRAE'
+    'EhQKEEZMT1dJTkdfR1JBRElFTlQQBRILCgdSQUlOQk9XEAYSCAoERklMTBAHEgsKB0RJTU1JTk'
+    'cQCEIPCg1fcmVnaW9uX3N0YXJ0Qg0KC19yZWdpb25fZW5k');
 
 @$core.Deprecated('Use matrixSourceDescriptor instead')
 const MatrixSource$json = {

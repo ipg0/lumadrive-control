@@ -12,6 +12,8 @@ import 'package:lumadrive_control/controllers/layout_editor_controller.dart'
 import 'package:lumadrive_control/generated/mesh.pb.dart';
 import 'package:lumadrive_control/repositories/ble_repository.dart';
 import 'package:lumadrive_control/repositories/matrix_editor_repository.dart';
+import 'package:lumadrive_control/repositories/database_repository.dart';
+import 'package:lumadrive_control/repositories/layout_repository.dart';
 import 'package:lumadrive_control/widgets/matrix/animation_editor.dart';
 import 'package:lumadrive_control/widgets/matrix/matrix_entry_editor.dart';
 
@@ -33,6 +35,7 @@ class _MatrixEditorPageState extends ConsumerState<MatrixEditorPage>
   MatrixEffect? _animation;
   MatrixEntry? _entry;
   MatrixSource? _trigger;
+  List<LayoutOutput> _layoutOutputs = const [];
   bool get _editing => _animation != null || _entry != null;
   bool _available() {
     if (!mounted) return false;
@@ -75,6 +78,22 @@ class _MatrixEditorPageState extends ConsumerState<MatrixEditorPage>
       );
     }
     unawaited(_editor.initialize());
+    final ownerId = widget.controllerId ?? _owner?.remoteId;
+    if (ownerId != null) {
+      unawaited(
+        ref
+            .read(layoutDraftStoreProvider(ownerId))
+            .read()
+            .then((draft) {
+              if (mounted && draft != null) {
+                setState(
+                  () => _layoutOutputs = draft.snapshot.outputs.toList(),
+                );
+              }
+            })
+            .catchError((_) {}),
+      );
+    }
   }
 
   @override
@@ -155,6 +174,10 @@ class _MatrixEditorPageState extends ConsumerState<MatrixEditorPage>
 
   @override
   Widget build(BuildContext context) {
+    final ownerId = widget.controllerId ?? _owner?.remoteId;
+    final nodeNames = ownerId == null
+        ? <String, String>{}
+        : ref.watch(nodeNamesProvider(ownerId)).value ?? <String, String>{};
     if (widget.controller == null) {
       ref.listen(
         bleControllerProvider,
@@ -259,6 +282,8 @@ class _MatrixEditorPageState extends ConsumerState<MatrixEditorPage>
                         key: ValueKey('animation-form-${_animation!.id}'),
                         initial: _animation!,
                         layout: _editor.config.layout,
+                        nodeNames: nodeNames,
+                        outputCatalog: _layoutOutputs,
                         existingNames: _editor.config.effects
                             .where((effect) => effect.id != _animation!.id)
                             .map(animationTitle),
@@ -286,6 +311,8 @@ class _MatrixEditorPageState extends ConsumerState<MatrixEditorPage>
                         initial: _entry!,
                         trigger: _trigger!,
                         controller: _editor,
+                        nodeNames: nodeNames,
+                        outputCatalog: _layoutOutputs,
                         onCancel: _closeForm,
                         onSave:
                             (

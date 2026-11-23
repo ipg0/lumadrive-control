@@ -433,6 +433,8 @@ class MatrixEffect extends $pb.GeneratedMessage {
     $core.String? name,
     $core.Iterable<MatrixColor>? gradientColors,
     $core.bool? fillFromCenter,
+    $core.int? regionStart,
+    $core.int? regionEnd,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -452,6 +454,8 @@ class MatrixEffect extends $pb.GeneratedMessage {
     if (name != null) result.name = name;
     if (gradientColors != null) result.gradientColors.addAll(gradientColors);
     if (fillFromCenter != null) result.fillFromCenter = fillFromCenter;
+    if (regionStart != null) result.regionStart = regionStart;
+    if (regionEnd != null) result.regionEnd = regionEnd;
     return result;
   }
 
@@ -491,6 +495,9 @@ class MatrixEffect extends $pb.GeneratedMessage {
     ..pPM<MatrixColor>(16, _omitFieldNames ? '' : 'gradientColors',
         subBuilder: MatrixColor.create)
     ..aOB(17, _omitFieldNames ? '' : 'fillFromCenter')
+    ..aI(18, _omitFieldNames ? '' : 'regionStart',
+        fieldType: $pb.PbFieldType.OU3)
+    ..aI(19, _omitFieldNames ? '' : 'regionEnd', fieldType: $pb.PbFieldType.OU3)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -654,6 +661,24 @@ class MatrixEffect extends $pb.GeneratedMessage {
   $core.bool hasFillFromCenter() => $_has(16);
   @$pb.TagNumber(17)
   void clearFillFromCenter() => $_clearField(17);
+
+  @$pb.TagNumber(18)
+  $core.int get regionStart => $_getIZ(17);
+  @$pb.TagNumber(18)
+  set regionStart($core.int value) => $_setUnsignedInt32(17, value);
+  @$pb.TagNumber(18)
+  $core.bool hasRegionStart() => $_has(17);
+  @$pb.TagNumber(18)
+  void clearRegionStart() => $_clearField(18);
+
+  @$pb.TagNumber(19)
+  $core.int get regionEnd => $_getIZ(18);
+  @$pb.TagNumber(19)
+  set regionEnd($core.int value) => $_setUnsignedInt32(18, value);
+  @$pb.TagNumber(19)
+  $core.bool hasRegionEnd() => $_has(18);
+  @$pb.TagNumber(19)
+  void clearRegionEnd() => $_clearField(19);
 }
 
 class MatrixSource extends $pb.GeneratedMessage {
