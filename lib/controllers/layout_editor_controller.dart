@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:lumadrive_control/generated/mesh.pb.dart';
 import 'package:lumadrive_control/repositories/layout_repository.dart';
+import 'package:lumadrive_control/utils/stringify_mac.dart';
 
 String layoutOutputKey(
   List<int> mac,
@@ -37,9 +38,16 @@ String nodeSuffix(List<int> mac) => mac
     .skip(math.max(0, mac.length - 3))
     .map((byte) => byte.toRadixString(16).padLeft(2, '0').toUpperCase())
     .join(':');
-String defaultOutputName(LayoutOutput output) {
-  final suffix = ' · ${nodeSuffix(output.nodeMac)}';
-  return '${String.fromCharCodes(outputType(output).runes.take(32 - suffix.length))}$suffix';
+String defaultOutputName(LayoutOutput output, {String? nodeName}) {
+  final kind = output.driverKind;
+  final point = kind == MatrixDriverKind.RGB_LED_MODULE ||
+      (kind == MatrixDriverKind.KIND_UNSPECIFIED && output.driver == MatrixDriver.HC595);
+  final strip = kind == MatrixDriverKind.LED_STRIP ||
+      (kind == MatrixDriverKind.KIND_UNSPECIFIED && output.driver == MatrixDriver.WS2812);
+  final type = point ? 'LED' : strip ? 'Strip' : 'Output';
+  final index = '${output.driver.value}${point ? ':${output.sourceIndex + 1}' : ''}';
+  final node = nodeName == null || nodeName.trim().isEmpty ? nodeSuffix(output.nodeMac) : nodeName;
+  return '$type ($index) - $node';
 }
 
 bool _sameLayout(List<MatrixLayout> a, List<MatrixLayout> b) => listEquals(
@@ -68,6 +76,7 @@ class LayoutEditorController extends ChangeNotifier {
   final LayoutDraftStore store;
   LayoutSnapshot? snapshot;
   List<MatrixLayout> layout = [];
+  Map<String, String> nodeNames = const {};
   int? centerIndex;
   String? selectedKey, error, notice, fieldError, identifyingKey;
   CarPosition selectedCarPosition = CarPosition.REAR_LEFT_DOOR;
@@ -135,9 +144,17 @@ class LayoutEditorController extends ChangeNotifier {
     return null;
   }
 
+  String outputTitle(LayoutOutput output) => defaultOutputName(
+        output, nodeName: nodeNames[macBytesToString(output.nodeMac)],
+      );
+  String displayOutputTitle(LayoutOutput output) {
+    final row = layout.where((row) => placementKey(row) == outputKey(output)).firstOrNull;
+    return row == null ? outputTitle(output) : titleFor(row);
+  }
   String titleFor(MatrixLayout row) => row.name.isNotEmpty
       ? row.name
-      : '${outputType(outputFor(placementKey(row)) ?? LayoutOutput(driver: row.driver, sourceIndex: row.sourceIndex))} · ${nodeSuffix(row.nodeMac)}';
+      : outputTitle(outputFor(placementKey(row)) ?? LayoutOutput(
+          nodeMac: row.nodeMac, driver: row.driver, sourceIndex: row.sourceIndex));
   int lengthFor(MatrixLayout row) {
     return (row.to - row.from).abs();
   }
@@ -366,7 +383,6 @@ class LayoutEditorController extends ChangeNotifier {
         sourceIndex: output.sourceIndex,
         from: start,
         to: start + output.pixelCount,
-        name: defaultOutputName(output),
       ),
     ];
     selectedKey = key;

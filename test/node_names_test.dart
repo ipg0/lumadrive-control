@@ -10,11 +10,14 @@ import 'package:lumadrive_control/controllers/mesh_controller.dart';
 import 'package:lumadrive_control/data/database.dart';
 import 'package:lumadrive_control/generated/mesh.pb.dart';
 import 'package:lumadrive_control/repositories/database_repository.dart';
+import 'package:lumadrive_control/repositories/matrix_client.dart';
 import 'package:lumadrive_control/widgets/pages/device_home_page.dart';
 
 import 'connection_fakes.dart';
 
 class NamedNodesMeshController extends MeshController {
+  static bool identifiedWholeNode = false;
+  static int? identifiedIndex;
   @override
   Future<MeshState> build() async => MeshState(
     interopState: MeshInteropState(nodes: [
@@ -22,6 +25,19 @@ class NamedNodesMeshController extends MeshController {
     ]),
     masterDevice: firstController,
   );
+  @override
+  Future<MatrixStatus> getMatrixStatus() async => MatrixStatus(masterMac: [4, 0, 0, 0, 0, 1]);
+  @override
+  Future<LayoutReadResult> readLayout() async => LayoutReadResult(LayoutSnapshot(
+    masterMac: [4, 0, 0, 0, 0, 1],
+    outputs: [LayoutOutput(nodeMac: [2, 0, 0, 0, 0, 1], known: true, ready: true, online: true)],
+  ), 123);
+  @override
+  Future<void> identifyOutput(int snapshotId, int outputIndex, {int pixelCount = 0, bool reversed = false, bool wholeNode = false}) async {
+    expect(snapshotId, 123);
+    identifiedIndex = outputIndex;
+    identifiedWholeNode = wholeNode;
+  }
 }
 
 class NamesRepository extends Fake implements DatabaseRepository {
@@ -79,6 +95,10 @@ void main() {
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('Node 02:00:00:00:00:01'));
     await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Identify node'));
+    await tester.pumpAndSettle();
+    expect(NamedNodesMeshController.identifiedIndex, 0);
+    expect(NamedNodesMeshController.identifiedWholeNode, isTrue);
     await tester.tap(find.text('Node 02:00:00:00:00:01'));
     await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const ValueKey('node-name-input')), '  Front doors  ');

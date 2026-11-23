@@ -4,6 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lumadrive_control/controllers/mesh_controller.dart';
 import 'package:lumadrive_control/generated/mesh.pb.dart';
 import 'package:lumadrive_control/utils/stringify_mac.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+
+final appVersionProvider = FutureProvider<String>((ref) async {
+  final info = await PackageInfo.fromPlatform();
+  if (info.version.isEmpty) return 'Unknown';
+  return info.buildNumber.isEmpty ? info.version : '${info.version}+${info.buildNumber}';
+});
 
 class FirmwareVersionsDialog extends ConsumerStatefulWidget {
   const FirmwareVersionsDialog({super.key});
@@ -27,10 +34,20 @@ class _FirmwareVersionsDialogState extends ConsumerState<FirmwareVersionsDialog>
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-    title: const Text('Firmware versions'),
+    title: const Text('Versions'),
     content: SizedBox(
       width: 380,
-      child: FutureBuilder<MatrixDocument>(
+      child: SingleChildScrollView(child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _versionRow('App', ref.watch(appVersionProvider).when(
+            data: (version) => version,
+            loading: () => 'Loading…',
+            error: (_, _) => 'Unknown',
+          ), true),
+          const Divider(),
+          FutureBuilder<MatrixDocument>(
         future: _document,
         builder: (context, snapshot) {
           if (snapshot.connectionState != ConnectionState.done) {
@@ -45,8 +62,7 @@ class _FirmwareVersionsDialogState extends ConsumerState<FirmwareVersionsDialog>
           final document = snapshot.requireData;
           final nodes = document.nodes.where((node) =>
               !listEquals(node.nodeMac, document.masterMac));
-          return SingleChildScrollView(
-            child: Column(
+          return Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -56,10 +72,11 @@ class _FirmwareVersionsDialogState extends ConsumerState<FirmwareVersionsDialog>
                   _versionRow('Node ${macBytesToString(node.nodeMac)}', node.firmwareVersion, node.online),
                 ],
               ],
-            ),
           );
         },
       ),
+        ],
+      )),
     ),
     actions: [
       TextButton(onPressed: () => setState(_load), child: const Text('Refresh')),

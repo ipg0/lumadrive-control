@@ -25,7 +25,7 @@ class _LayoutOutputEditorState extends State<LayoutOutputEditor> {
   void initState() {
     super.initState();
     final row = widget.controller.selected!;
-    _name = TextEditingController(text: widget.controller.titleFor(row));
+    _name = TextEditingController(text: row.name);
     _position = TextEditingController(text: '${math.min(row.from, row.to)}');
     _length = TextEditingController(
       text: '${widget.controller.lengthFor(row)}',
@@ -39,8 +39,8 @@ class _LayoutOutputEditorState extends State<LayoutOutputEditor> {
     if (!_positionFocus.hasFocus) {
       _position.text = '${math.min(row.from, row.to)}';
     }
-    if (!_nameFocus.hasFocus && _name.text != widget.controller.titleFor(row)) {
-      _name.text = widget.controller.titleFor(row);
+    if (!_nameFocus.hasFocus && _name.text != row.name) {
+      _name.text = row.name;
     }
     if (!_lengthFocus.hasFocus) {
       _length.text = '${widget.controller.lengthFor(row)}';
@@ -203,7 +203,7 @@ class _LayoutOutputEditorState extends State<LayoutOutputEditor> {
             title: const Text('Reverse direction'),
             subtitle: Text(widget.advanced
                 ? 'Mapping ${row.from} → ${row.to}'
-                : 'Reverse the animation direction along this strip.'),
+                : 'Directions should flow continuously around the car from rear left to rear right, following the arrows above.'),
             value: row.from > row.to,
             onChanged: editable ? (_) => editor.reverse(key) : null,
           ),

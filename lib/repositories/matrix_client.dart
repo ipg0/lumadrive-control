@@ -139,11 +139,13 @@ class MatrixClient {
     int outputIndex, {
     int pixelCount = 0,
     bool reversed = false,
+    bool wholeNode = false,
   }) async {
     if (outputIndex < 0 ||
         outputIndex > 203 ||
         pixelCount < 0 ||
-        pixelCount > 2048) {
+        pixelCount > 2048 ||
+        (wholeNode && (pixelCount != 0 || reversed))) {
       throw ArgumentError('Unsupported identify output or LED count');
     }
     if (_uploading) throw StateError('Controller is busy');
@@ -154,7 +156,7 @@ class MatrixClient {
           operation: LayoutRequest_Operation.IDENTIFY,
           snapshotId: snapshotId,
           identifyOptions:
-              outputIndex | (pixelCount << 8) | (reversed ? 1 << 20 : 0),
+              outputIndex | (pixelCount << 8) | (reversed ? 1 << 20 : 0) | (wholeNode ? 1 << 21 : 0),
         ),
       );
       if (!response.complete) {

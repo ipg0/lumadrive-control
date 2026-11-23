@@ -318,6 +318,12 @@ void main() {
         transport.frames.last.layoutRequest.operation,
         LayoutRequest_Operation.IDENTIFY,
       );
+      await client.identifyOutput(result.snapshotId, 5, wholeNode: true);
+      expect(transport.frames.last.layoutRequest.identifyOptions, 5 | (1 << 21));
+      await expectLater(
+        client.identifyOutput(result.snapshotId, 5, wholeNode: true, pixelCount: 8),
+        throwsArgumentError,
+      );
     });
     test('uploads only layout and optimistic revision at MTU $mtu', () async {
       final transport = FakeTransport(mtu);

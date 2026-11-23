@@ -23,6 +23,21 @@ const carPositionLabels = <CarPosition, String>{
   CarPosition.REAR_RIGHT_DOOR: 'Rear right door',
 };
 
+String suggestedNodeName(CarPosition position) {
+  for (final entry in carDoorParts.entries) {
+    if (entry.value.contains(position)) {
+      return carPositionLabels[entry.key]!
+          .replaceAll(' left ', ' L ')
+          .replaceAll(' right ', ' R ');
+    }
+  }
+  return (carPositionLabels[position] ?? 'Node')
+      .replaceAll(' · left', ' L')
+      .replaceAll(' · right', ' R')
+      .replaceAll(' left ', ' L ')
+      .replaceAll(' right ', ' R ');
+}
+
 const carDoorParts = <CarPosition, List<CarPosition>>{
   CarPosition.REAR_LEFT_DOOR: [
     CarPosition.REAR_LEFT_DOOR,

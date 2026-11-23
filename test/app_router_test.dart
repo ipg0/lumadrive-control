@@ -7,6 +7,7 @@ import 'package:lumadrive_control/providers/saved_devices_provider.dart';
 import 'package:lumadrive_control/repositories/ble_repository.dart';
 import 'package:lumadrive_control/routing/app_router.dart';
 import 'package:lumadrive_control/repositories/layout_repository.dart';
+import 'package:lumadrive_control/repositories/database_repository.dart';
 
 import 'connection_fakes.dart';
 import 'layout_fakes.dart';
@@ -81,6 +82,7 @@ void main() {
           bleRepositoryProvider.overrideWithValue(repository),
           bleControllerProvider.overrideWith(TestConnectionController.new),
           savedDevicesProvider.overrideWith((ref) => Stream.value([])),
+          nodeNamesProvider.overrideWith((ref, id) => Stream.value(const {})),
         ],
       );
       final connection = container.read(
@@ -161,6 +163,7 @@ void main() {
             (ref, id) => MemoryLayoutStore(),
           ),
           savedDevicesProvider.overrideWith((ref) => Stream.value([])),
+          nodeNamesProvider.overrideWith((ref, id) => Stream.value(const {})),
         ],
       );
       addTearDown(() async {

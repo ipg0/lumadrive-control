@@ -9,9 +9,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:lumadrive_control/controllers/layout_editor_controller.dart';
 import 'package:lumadrive_control/generated/mesh.pb.dart';
+import 'package:lumadrive_control/repositories/database_repository.dart';
+import 'package:lumadrive_control/utils/car_positions.dart';
 import 'package:lumadrive_control/widgets/pages/layout_editor_page.dart';
 
 import 'layout_fakes.dart';
+
+class RecordingNodeNames extends Fake implements DatabaseRepository {
+  String? controller, mac, name;
+  final changes = StreamController<Map<String, String>>.broadcast(sync: true);
+  @override
+  Stream<Map<String, String>> watchNodeNames(String controllerId) async* {
+    yield const {};
+    yield* changes.stream;
+  }
+  @override
+  Future<void> setNodeName(String controllerId, String nodeMac, String value) async {
+    controller = controllerId; mac = nodeMac; name = value;
+    changes.add({nodeMac: value});
+  }
+}
 
 void main() {
   setUpAll(() async {
@@ -29,6 +46,7 @@ void main() {
   Future<LayoutEditorController> open(
     WidgetTester tester, {
     double width = 390,
+    RecordingNodeNames? names,
   }) async {
     tester.view.physicalSize = Size(width, 1000);
     tester.view.devicePixelRatio = 1;
@@ -44,6 +62,7 @@ void main() {
     addTearDown(editor.dispose);
     await tester.pumpWidget(
       ProviderScope(
+        overrides: [if (names != null) databaseRepositoryProvider.overrideWithValue(names)],
         child: MaterialApp(
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
@@ -54,7 +73,7 @@ void main() {
           ),
           home: RepaintBoundary(
             key: const ValueKey('car-capture'),
-            child: LayoutEditorPage(controller: editor),
+            child: LayoutEditorPage(controller: editor, controllerId: names == null ? null : 'controller-a'),
           ),
         ),
       ),
@@ -62,6 +81,33 @@ void main() {
     await tester.pumpAndSettle();
     return editor;
   }
+
+  testWidgets('renames the selected node with its location as the suggested name', (tester) async {
+    final names = RecordingNodeNames();
+    addTearDown(names.changes.close);
+    final editor = await open(tester, names: names);
+    final key = placementKey(editor.layout.single);
+    editor.rename(key, '');
+    editor.selectCarPosition(CarPosition.FRONT_LEFT_HANDLE);
+    editor.assignPosition(key, CarPosition.FRONT_LEFT_HANDLE);
+    editor.select(key);
+    await tester.pumpAndSettle();
+    final rename = find.byKey(const ValueKey('rename-layout-node'));
+    await tester.ensureVisible(rename);
+    await tester.pumpAndSettle();
+    await tester.tap(rename);
+    await tester.pumpAndSettle();
+    expect(tester.widget<TextField>(find.byKey(const ValueKey('node-name-input'))).controller!.text, 'Front L door');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    expect(names.controller, 'controller-a');
+    expect(names.mac, '02:01:02:03:04:05');
+    expect(names.name, 'Front L door');
+    expect(editor.selected!.name, isEmpty);
+    expect(find.text('Strip (1) - Front L door'), findsWidgets);
+    expect(suggestedNodeName(CarPosition.DASH_LEFT), 'Dash L');
+    expect(suggestedNodeName(CarPosition.REAR_RIGHT_POCKET), 'Rear R door');
+  });
 
   testWidgets(
     'selected output assigns to the selected car segment after scrolling',
@@ -115,6 +161,35 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('removed lights still need a location and can be selected again', (tester) async {
+    final editor = await open(tester);
+    expect(find.text('2 lights need a location'), findsOneWidget);
+    final key = placementKey(editor.layout.single);
+    editor.assignPosition(key, CarPosition.REAR_LEFT_DOOR);
+    editor.select(key);
+    await tester.pumpAndSettle();
+    expect(find.text('1 light needs a location'), findsOneWidget);
+
+    final remove = find.widgetWithText(TextButton, 'Remove');
+    await tester.ensureVisible(remove);
+    await tester.pumpAndSettle();
+    await tester.tap(remove);
+    await tester.pumpAndSettle();
+    expect(editor.layout, isEmpty);
+    expect(find.text('2 lights need a location'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('2 lights need a location'));
+    await tester.tap(find.text('2 lights need a location'));
+    await tester.pumpAndSettle();
+    final removed = find.text('Strip (1) - 03:04:05');
+    await tester.ensureVisible(removed);
+    await tester.tap(removed);
+    await tester.pumpAndSettle();
+    expect(editor.selectedKey, key);
+    expect(editor.selected!.carPosition, CarPosition.POSITION_UNSPECIFIED);
+    expect(find.text('2 lights need a location'), findsOneWidget);
+  });
 
   testWidgets('background refresh keeps Identify and Apply enabled', (
     tester,
@@ -219,7 +294,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(assign);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('LED strip · driver 1 · 03:04:05').last);
+      await tester.tap(find.text('Left footwell').last);
       await tester.pumpAndSettle();
       expect(editor.layout.single.carPosition, CarPosition.REAR_LEFT_DOOR);
       expect(editor.layout.single.from, 0);

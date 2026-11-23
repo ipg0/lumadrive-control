@@ -23,6 +23,8 @@ void main() {
     await git(['init', '-q']);
     await git(['config', 'user.name', 'Version test']);
     await git(['config', 'user.email', 'test@example.invalid']);
+    await git(['config', 'tag.gpgSign', 'false']);
+    await git(['config', 'commit.gpgSign', 'false']);
     await File('${repository.path}/tracked').writeAsString('one');
     await git(['add', 'tracked']);
     await git(['commit', '-qm', 'Initial commit']);

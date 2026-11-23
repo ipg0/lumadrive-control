@@ -45,6 +45,23 @@ void main() {
     await editor.initialize();
   });
   tearDown(() => editor.dispose());
+  test('fallback names follow node names without being saved as output names', () async {
+    editor.place(repository.snapshot.outputs.first);
+    final row = editor.selected!;
+    expect(row.name, isEmpty);
+    expect(editor.titleFor(row), 'Strip (1) - 03:04:05');
+    editor.nodeNames = {'02:01:02:03:04:05': 'Dash L'};
+    expect(editor.titleFor(row), 'Strip (1) - Dash L');
+    await editor.flush();
+    expect(store.value!.layout.single.name, isEmpty);
+    await editor.apply();
+    expect(repository.applied!.layout.single.name, isEmpty);
+    editor.rename(editor.selectedKey!, 'My strip');
+    editor.nodeNames = {'02:01:02:03:04:05': 'Front L door'};
+    expect(editor.titleFor(editor.selected!), 'My strip');
+    editor.rename(editor.selectedKey!, '');
+    expect(editor.titleFor(editor.selected!), 'Strip (1) - Front L door');
+  });
   test(
     'center defaults to dash boundary and survives drafts and uploads',
     () async {
@@ -164,7 +181,7 @@ void main() {
       expect(editor.layout.map((row) => row.from), [10, 70]);
       expect(editor.layout.map((row) => row.to), [11, 71]);
       expect(editor.layout.map((row) => row.sourceIndex), [0, 1]);
-      expect(editor.titleFor(editor.layout.last), contains('RGB LED 2'));
+      expect(editor.titleFor(editor.layout.last), 'LED (6:2) - 03:04:05');
       await editor.identify(second);
       expect(repository.identifiedIndex, 1);
       await editor.apply();

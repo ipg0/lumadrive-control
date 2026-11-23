@@ -11,6 +11,10 @@ import 'package:lumadrive_control/repositories/ble_repository.dart';
 import 'package:lumadrive_control/widgets/layout/layout_canvas.dart';
 import 'package:lumadrive_control/widgets/layout/layout_output_editor.dart';
 import 'package:lumadrive_control/widgets/layout/car_layout.dart';
+import 'package:lumadrive_control/repositories/database_repository.dart';
+import 'package:lumadrive_control/utils/car_positions.dart';
+import 'package:lumadrive_control/utils/stringify_mac.dart';
+import 'package:lumadrive_control/widgets/node_name_dialog.dart';
 
 class LayoutEditorPage extends ConsumerStatefulWidget {
   final LayoutEditorController? controller;
@@ -36,6 +40,23 @@ class _LayoutEditorPageState extends ConsumerState<LayoutEditorPage>
     final connection = ref.read(bleControllerProvider);
     return connection is BleConnected &&
         connection.device.remoteId == _owner?.remoteId;
+  }
+
+  Future<void> _renameNode(List<int> mac, CarPosition position) async {
+    final owner = widget.controllerId ?? _owner?.remoteId;
+    if (owner == null) return;
+    final address = macBytesToString(mac);
+    final name = await showDialog<String>(context: context, builder: (_) =>
+        NodeNameDialog(address: address, current: suggestedNodeName(position)));
+    if (name == null || !mounted) return;
+    try {
+      await ref.read(databaseRepositoryProvider).setNodeName(owner, address, name);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not save the node name. Try again.')));
+      }
+    }
   }
 
   @override
@@ -98,6 +119,10 @@ class _LayoutEditorPageState extends ConsumerState<LayoutEditorPage>
 
   @override
   Widget build(BuildContext context) {
+    final ownerId = widget.controllerId ?? _owner?.remoteId;
+    _editor.nodeNames = ownerId == null
+        ? const {}
+        : ref.watch(nodeNamesProvider(ownerId)).value ?? const {};
     if (widget.controller == null) {
       ref.listen(
         bleControllerProvider,
@@ -286,6 +311,7 @@ class _LayoutEditorPageState extends ConsumerState<LayoutEditorPage>
                         CarLayout(
                           key: const ValueKey('car-layout'),
                           controller: _editor,
+                          renameNode: widget.controllerId != null || _owner != null ? _renameNode : null,
                         ),
                       if (_advanced && _editor.selected != null) ...[
                         const SizedBox(height: 12),
@@ -486,7 +512,7 @@ class _LayoutEditorPageState extends ConsumerState<LayoutEditorPage>
         Padding(
           padding: const EdgeInsets.fromLTRB(4, 12, 4, 6),
           child: Text(
-            '${_sameMac(outputs.first.nodeMac, _editor.snapshot?.masterMac ?? []) ? 'Controller' : 'Node'} · ${nodeSuffix(outputs.first.nodeMac)}',
+            '${_sameMac(outputs.first.nodeMac, _editor.snapshot?.masterMac ?? []) ? 'Controller' : 'Node'} · ${_editor.nodeNames[macBytesToString(outputs.first.nodeMac)] ?? nodeSuffix(outputs.first.nodeMac)}',
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -562,7 +588,7 @@ class _LayoutEditorPageState extends ConsumerState<LayoutEditorPage>
             : Icons.lightbulb_outline,
         color: output.online ? colors.primary : colors.onSurfaceVariant,
       ),
-      title: Text(label == null ? outputType(output) : _editor.titleFor(label)),
+      title: Text(label == null ? _editor.outputTitle(output) : _editor.titleFor(label)),
       subtitle: Text(
         '${output.known ? '${label == null ? output.pixelCount : _editor.lengthFor(label)} ${isPointSource(output) ? 'LED' : 'LEDs'} · ' : ''}$status',
       ),

@@ -43,6 +43,7 @@ class MeshController extends AsyncNotifier<MeshState> {
     int outputIndex, {
     int pixelCount = 0,
     bool reversed = false,
+    bool wholeNode = false,
   }) {
     final client = _connectedClient;
     return client.identifyOutput(
@@ -50,6 +51,7 @@ class MeshController extends AsyncNotifier<MeshState> {
       outputIndex,
       pixelCount: pixelCount,
       reversed: reversed,
+      wholeNode: wholeNode,
     );
   }
 

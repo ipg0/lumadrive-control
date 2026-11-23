@@ -8,7 +8,8 @@ import 'package:lumadrive_control/widgets/layout/layout_output_editor.dart';
 
 class CarLayout extends StatefulWidget {
   final LayoutEditorController controller;
-  const CarLayout({super.key, required this.controller});
+  final void Function(List<int>, CarPosition)? renameNode;
+  const CarLayout({super.key, required this.controller, this.renameNode});
   @override
   State<CarLayout> createState() => _CarLayoutState();
 }
@@ -32,6 +33,11 @@ class _CarLayoutState extends State<CarLayout> {
     final outputs =
         editor.snapshot?.outputs.where((o) => o.known && o.ready).toList() ??
         <LayoutOutput>[];
+    final placedKeys = editor.layout.map(placementKey).toSet();
+    final unplaced = outputs
+        .where((output) => !placedKeys.contains(outputKey(output)))
+        .toList();
+    final needsLocation = unassigned.length + unplaced.length;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -275,7 +281,7 @@ class _CarLayoutState extends State<CarLayout> {
                       child: Row(
                         children: [
                           Expanded(child: Text(
-                            '${outputType(output)} · ${nodeSuffix(output.nodeMac)}',
+                            editor.displayOutputTitle(output),
                             overflow: TextOverflow.ellipsis,
                           )),
                           if (editor.layout.where((row) => placementKey(row) == outputKey(output)).firstOrNull case final placed?) ...[
@@ -324,6 +330,13 @@ class _CarLayoutState extends State<CarLayout> {
                         : 'Selected light is at ${carPositionLabels[editor.selected!.carPosition]}',
                 style: theme.textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
               ),
+              if (editor.selected!.carPosition == _position && widget.renameNode != null)
+                TextButton.icon(
+                  key: const ValueKey('rename-layout-node'),
+                  onPressed: () => widget.renameNode!(editor.selected!.nodeMac, _position),
+                  icon: const Icon(Icons.edit_outlined),
+                  label: const Text('Rename node'),
+                ),
               if (editor.selected!.carPosition != _position) ...[
                 const SizedBox(height: 12),
                 SizedBox(
@@ -343,11 +356,11 @@ class _CarLayoutState extends State<CarLayout> {
                 advanced: false,
               ),
             ],
-            if (unassigned.isNotEmpty) ...[
+            if (needsLocation > 0) ...[
               const SizedBox(height: 12),
               ExpansionTile(
                 tilePadding: EdgeInsets.zero,
-                title: Text('${unassigned.length} ${unassigned.length == 1 ? 'light needs' : 'lights need'} a location'),
+                title: Text('$needsLocation ${needsLocation == 1 ? 'light needs' : 'lights need'} a location'),
                 children: [
                   for (final row in unassigned)
                     ListTile(
@@ -355,6 +368,18 @@ class _CarLayoutState extends State<CarLayout> {
                       title: Text(editor.titleFor(row)),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () => editor.select(placementKey(row)),
+                    ),
+                  for (final output in unplaced)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(editor.outputTitle(output)),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: editor.busy ? null : () {
+                        editor.place(output);
+                        if (editor.selectedKey == outputKey(output)) {
+                          unawaited(editor.identify(outputKey(output)));
+                        }
+                      },
                     ),
                 ],
               ),

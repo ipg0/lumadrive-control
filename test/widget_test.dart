@@ -71,7 +71,7 @@ void main() {
     await tester.tap(find.byTooltip('Place LED strip · driver 1'));
     await tester.pumpAndSettle();
     expect(editor.layout.single.to, 60);
-    expect(editor.layout.single.name, 'LED strip · driver 1 · 03:04:05');
+    expect(editor.layout.single.name, isEmpty);
     expect(
       tester
           .widget<TextField>(find.byKey(const ValueKey('layout-name')))
@@ -110,8 +110,8 @@ void main() {
       expect(editor.selected, isNotNull);
       expect(isPointSource(editor.outputFor(editor.selectedKey!)), isTrue);
       await tester.pumpAndSettle();
-      expect(find.textContaining('RGB LED 1'), findsWidgets);
-      expect(find.textContaining('RGB LED 2'), findsWidgets);
+      expect(find.textContaining('LED (6:1)'), findsWidgets);
+      expect(find.textContaining('LED (6:2)'), findsWidgets);
       expect(find.text('at 10'), findsOneWidget);
       expect(find.text('at 70'), findsOneWidget);
       await tester.drag(find.byType(ListView).first, const Offset(0, -350));
