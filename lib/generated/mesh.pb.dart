@@ -2519,7 +2519,8 @@ class LayoutRequest extends $pb.GeneratedMessage {
   void clearOutputIndex() => $_clearField(5);
 
   /// MTU-23 identify preview: inventory output index in bits 0..7, LED count in 8..19
-  /// (zero uses current capacity), reversed in bit 20; remaining bits reserved.
+  /// (zero uses current capacity), reversed in bit 20, whole node in bit 21;
+  /// remaining bits reserved. Whole-node identification uses zero length/direction.
   @$pb.TagNumber(6)
   $core.int get identifyOptions => $_getIZ(5);
   @$pb.TagNumber(6)

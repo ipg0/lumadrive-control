@@ -266,6 +266,7 @@ const MatrixEffect_Kind$json = {
     {'1': 'FLOWING_GRADIENT', '2': 5},
     {'1': 'RAINBOW', '2': 6},
     {'1': 'FILL', '2': 7},
+    {'1': 'DIMMING', '2': 8},
   ],
 };
 
@@ -282,9 +283,9 @@ final $typed_data.Uint8List matrixEffectDescriptor = $convert.base64Decode(
     'ZW5ndGhQaXhlbHMSGAoHcmV2ZXJzZRgOIAEoCFIHcmV2ZXJzZRISCgRuYW1lGA8gASgJUgRuYW'
     '1lEkIKD2dyYWRpZW50X2NvbG9ycxgQIAMoCzIZLm1lc2hfaW50ZXJvcC5NYXRyaXhDb2xvclIO'
     'Z3JhZGllbnRDb2xvcnMSKAoQZmlsbF9mcm9tX2NlbnRlchgRIAEoCFIOZmlsbEZyb21DZW50ZX'
-    'IihAEKBEtpbmQSFgoSRUZGRUNUX1VOU1BFQ0lGSUVEEAASEAoMU1RBVElDX0NPTE9SEAESDQoJ'
+    'IikQEKBEtpbmQSFgoSRUZGRUNUX1VOU1BFQ0lGSUVEEAASEAoMU1RBVElDX0NPTE9SEAESDQoJ'
     'S0VZRlJBTUVTEAISCQoFQkxJTksQAxILCgdCUkVBVEhFEAQSFAoQRkxPV0lOR19HUkFESUVOVB'
-    'AFEgsKB1JBSU5CT1cQBhIICgRGSUxMEAc=');
+    'AFEgsKB1JBSU5CT1cQBhIICgRGSUxMEAcSCwoHRElNTUlORxAI');
 
 @$core.Deprecated('Use matrixSourceDescriptor instead')
 const MatrixSource$json = {
@@ -356,6 +357,7 @@ const MatrixCondition_Kind$json = {
     {'1': 'MODE', '2': 2},
     {'1': 'AND', '2': 3},
     {'1': 'OR', '2': 4},
+    {'1': 'NEVER', '2': 5},
   ],
 };
 
@@ -364,8 +366,9 @@ final $typed_data.Uint8List matrixConditionDescriptor = $convert.base64Decode(
     'Cg9NYXRyaXhDb25kaXRpb24SDgoCaWQYASABKA1SAmlkEjYKBGtpbmQYAiABKA4yIi5tZXNoX2'
     'ludGVyb3AuTWF0cml4Q29uZGl0aW9uLktpbmRSBGtpbmQSFwoHbW9kZV9pZBgDIAEoDVIGbW9k'
     'ZUlkEhoKCGludmVydGVkGAQgASgIUghpbnZlcnRlZBIXCgdsZWZ0X2lkGAUgASgNUgZsZWZ0SW'
-    'QSGQoIcmlnaHRfaWQYBiABKA1SB3JpZ2h0SWQiSAoES2luZBIZChVDT05ESVRJT05fVU5TUEVD'
-    'SUZJRUQQABIKCgZBTFdBWVMQARIICgRNT0RFEAISBwoDQU5EEAMSBgoCT1IQBA==');
+    'QSGQoIcmlnaHRfaWQYBiABKA1SB3JpZ2h0SWQiUwoES2luZBIZChVDT05ESVRJT05fVU5TUEVD'
+    'SUZJRUQQABIKCgZBTFdBWVMQARIICgRNT0RFEAISBwoDQU5EEAMSBgoCT1IQBBIJCgVORVZFUh'
+    'AF');
 
 @$core.Deprecated('Use matrixModeDescriptor instead')
 const MatrixMode$json = {

@@ -12,7 +12,13 @@ class MatrixEntryEditor extends StatefulWidget {
   final MatrixEntry initial;
   final MatrixSource trigger;
   final MatrixEditorController controller;
-  final bool Function(MatrixEntry, MatrixSource, List<MatrixEffect>, int, int, int)
+  final bool Function(
+    MatrixEntry,
+    MatrixSource,
+    List<MatrixEffect>,
+    List<int>,
+    int,
+  )
   onSave;
   final VoidCallback onCancel;
   const MatrixEntryEditor({
@@ -35,7 +41,9 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
   MatrixEffect? _newAnimation;
   bool _automaticName = false;
   int _modeId = 0;
-  int _secondModeId = 0, _conditionOperator = 0;
+  static const _combinedValue = -4294967297;
+  final List<int> _combinedConditions = [0, 0];
+  int _conditionOperator = 0;
   bool _unsupportedCondition = false;
   late final TextEditingController _name, _priority;
   @override
@@ -48,20 +56,55 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
     final condition = widget.controller.config.conditions
         .where((c) => c.id == _entry.conditionId)
         .firstOrNull;
-    int? leaf(MatrixCondition? c) => c?.kind == MatrixCondition_Kind.ALWAYS ? 0 :
-        c?.kind == MatrixCondition_Kind.MODE ? (c!.inverted ? -c.modeId : c.modeId) : null;
-    if (condition != null && (condition.kind == MatrixCondition_Kind.AND || condition.kind == MatrixCondition_Kind.OR)) {
-      final first = leaf(widget.controller.config.conditions.where((c) => c.id == condition.leftId).firstOrNull);
-      final second = leaf(widget.controller.config.conditions.where((c) => c.id == condition.rightId).firstOrNull);
-      if (first == null || second == null) {
-        _unsupportedCondition = true;
-      } else {
-        _modeId = first; _secondModeId = second;
-        _conditionOperator = condition.kind == MatrixCondition_Kind.AND ? 1 : 2;
+    int? leaf(MatrixCondition? c) => c?.kind == MatrixCondition_Kind.ALWAYS
+        ? 0
+        : c?.kind == MatrixCondition_Kind.NEVER
+        ? neverConditionValue
+        : c?.kind == MatrixCondition_Kind.MODE
+        ? (c!.inverted ? -c.modeId : c.modeId)
+        : null;
+    if (condition != null &&
+        (condition.kind == MatrixCondition_Kind.AND ||
+            condition.kind == MatrixCondition_Kind.OR)) {
+      _conditionOperator = condition.kind == MatrixCondition_Kind.AND ? 1 : 2;
+      _modeId = _combinedValue;
+      _combinedConditions.clear();
+      final seen = <int>{};
+      void collect(MatrixCondition? node) {
+        if (node == null || !seen.add(node.id)) {
+          _unsupportedCondition = true;
+          return;
+        }
+        if (node.kind == condition.kind) {
+          collect(
+            widget.controller.config.conditions
+                .where((c) => c.id == node.leftId)
+                .firstOrNull,
+          );
+          collect(
+            widget.controller.config.conditions
+                .where((c) => c.id == node.rightId)
+                .firstOrNull,
+          );
+        } else {
+          final value = leaf(node);
+          if (value == null) {
+            _unsupportedCondition = true;
+          } else {
+            _combinedConditions.add(value);
+          }
+        }
+        seen.remove(node.id);
       }
+
+      collect(condition);
     } else if (condition != null) {
       final value = leaf(condition);
-      if (value == null) { _unsupportedCondition = true; } else { _modeId = value; }
+      if (value == null) {
+        _unsupportedCondition = true;
+      } else {
+        _modeId = value;
+      }
     }
     _automaticName = _entry.id == 0 && _entry.name.isEmpty;
     _updateName();
@@ -267,18 +310,23 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                   _updateName();
                 }),
               ),
-              if (_trigger.kind != MatrixSource_Kind.DEFAULT_STATE)
-                SwitchListTile(
-                  key: const ValueKey('entry-transparency'),
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Transparent background'),
-                  subtitle: const Text(
-                    'When off, lower-priority lighting is blacked out while this entry plays.',
-                  ),
-                  value: !_entry.opaqueBackground,
-                  onChanged: (value) =>
-                      setState(() => _entry.opaqueBackground = !value),
+              SwitchListTile(
+                key: const ValueKey('entry-transparency'),
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Transparent background'),
+                subtitle: Text(
+                  _trigger.kind == MatrixSource_Kind.DEFAULT_STATE
+                      ? 'Default-state entries always have a transparent background.'
+                      : 'When off, lower-priority lighting is blacked out while this entry plays.',
                 ),
+                value:
+                    _trigger.kind == MatrixSource_Kind.DEFAULT_STATE ||
+                    !_entry.opaqueBackground,
+                onChanged: _trigger.kind == MatrixSource_Kind.DEFAULT_STATE
+                    ? null
+                    : (value) =>
+                          setState(() => _entry.opaqueBackground = !value),
+              ),
               if (_trigger.kind == MatrixSource_Kind.DEFAULT_STATE)
                 const Padding(
                   padding: EdgeInsets.only(top: 10),
@@ -346,8 +394,11 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                     for (final pin in pins)
                       DropdownMenuItem(
                         value: pin,
-                        enabled: node?.known != true || node!.gpios.contains(pin),
-                        child: Text('GPIO $pin${node?.known == true && !node!.gpios.contains(pin) ? ' · not provisioned' : ''}'),
+                        enabled:
+                            node?.known != true || node!.gpios.contains(pin),
+                        child: Text(
+                          'GPIO $pin${node?.known == true && !node!.gpios.contains(pin) ? ' · not provisioned' : ''}',
+                        ),
                       ),
                   ],
                   validator: (pin) => pin == null
@@ -410,44 +461,104 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                 ),
                 items: [
                   const DropdownMenuItem(value: 0, child: Text('Always')),
+                  const DropdownMenuItem(
+                    value: neverConditionValue,
+                    child: Text('Never (disabled)'),
+                  ),
+                  const DropdownMenuItem(
+                    value: _combinedValue,
+                    child: Text('Combined'),
+                  ),
                   for (final mode in widget.controller.config.modes)
                     DropdownMenuItem(
                       value: mode.id,
                       child: Text('Mode: ${mode.name}'),
                     ),
                   for (final mode in widget.controller.config.modes)
-                    DropdownMenuItem(value: -mode.id, child: Text('Not in mode: ${mode.name}')),
+                    DropdownMenuItem(
+                      value: -mode.id,
+                      child: Text('Not in mode: ${mode.name}'),
+                    ),
                 ],
-                onChanged: (value) => setState(() => _modeId = value ?? 0),
+                onChanged: (value) => setState(() {
+                  _modeId = value ?? 0;
+                  _conditionOperator = _modeId == _combinedValue
+                      ? (_conditionOperator == 0 ? 1 : _conditionOperator)
+                      : 0;
+                  _unsupportedCondition = false;
+                }),
               ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<int>(
-                key: const ValueKey('entry-condition-operator'),
-                initialValue: _conditionOperator,
-                isExpanded: true,
-                decoration: const InputDecoration(labelText: 'Combine conditions', border: OutlineInputBorder()),
-                items: const [
-                  DropdownMenuItem(value: 0, child: Text('Single condition')),
-                  DropdownMenuItem(value: 1, child: Text('AND')),
-                  DropdownMenuItem(value: 2, child: Text('OR')),
-                ],
-                onChanged: (value) => setState(() => _conditionOperator = value ?? 0),
-              ),
-              if (_conditionOperator != 0) ...[
+              if (_modeId == _combinedValue) ...[
                 const SizedBox(height: 12),
                 DropdownButtonFormField<int>(
-                  key: const ValueKey('entry-condition-second'),
-                  initialValue: _secondModeId,
+                  key: const ValueKey('entry-condition-operator'),
+                  initialValue: _conditionOperator,
                   isExpanded: true,
-                  decoration: const InputDecoration(labelText: 'Second condition', border: OutlineInputBorder()),
-                  items: [
-                    const DropdownMenuItem(value: 0, child: Text('Always')),
-                    for (final mode in widget.controller.config.modes)
-                      DropdownMenuItem(value: mode.id, child: Text('Mode: ${mode.name}')),
-                    for (final mode in widget.controller.config.modes)
-                      DropdownMenuItem(value: -mode.id, child: Text('Not in mode: ${mode.name}')),
+                  decoration: const InputDecoration(
+                    labelText: 'Match conditions',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 1, child: Text('All (AND)')),
+                    DropdownMenuItem(value: 2, child: Text('Any (OR)')),
                   ],
-                  onChanged: (value) => setState(() => _secondModeId = value ?? 0),
+                  onChanged: (value) =>
+                      setState(() => _conditionOperator = value ?? 0),
+                ),
+                for (var i = 0; i < _combinedConditions.length; i++) ...[
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButtonFormField<int>(
+                          key: ValueKey(
+                            'entry-condition-$i-${_combinedConditions[i]}',
+                          ),
+                          initialValue: _combinedConditions[i],
+                          isExpanded: true,
+                          decoration: InputDecoration(
+                            labelText: 'Condition ${i + 1}',
+                            border: const OutlineInputBorder(),
+                          ),
+                          items: [
+                            const DropdownMenuItem(
+                              value: 0,
+                              child: Text('Always'),
+                            ),
+                            const DropdownMenuItem(
+                              value: neverConditionValue,
+                              child: Text('Never (disabled)'),
+                            ),
+                            for (final mode in widget.controller.config.modes)
+                              DropdownMenuItem(
+                                value: mode.id,
+                                child: Text('Mode: ${mode.name}'),
+                              ),
+                            for (final mode in widget.controller.config.modes)
+                              DropdownMenuItem(
+                                value: -mode.id,
+                                child: Text('Not in mode: ${mode.name}'),
+                              ),
+                          ],
+                          onChanged: (value) => setState(
+                            () => _combinedConditions[i] = value ?? 0,
+                          ),
+                        ),
+                      ),
+                      if (_combinedConditions.length > 2)
+                        IconButton(
+                          tooltip: 'Remove condition',
+                          icon: const Icon(Icons.remove_circle_outline),
+                          onPressed: () =>
+                              setState(() => _combinedConditions.removeAt(i)),
+                        ),
+                    ],
+                  ),
+                ],
+                TextButton.icon(
+                  onPressed: () => setState(() => _combinedConditions.add(0)),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Add condition'),
                 ),
               ],
               if (_unsupportedCondition)
@@ -478,8 +589,9 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                                       (effect) => effect.id == _entry.effectId,
                                     )
                                     .toList(),
-                                _modeId,
-                                _secondModeId,
+                                _modeId == _combinedValue
+                                    ? _combinedConditions
+                                    : [_modeId],
                                 _conditionOperator,
                               );
                             }

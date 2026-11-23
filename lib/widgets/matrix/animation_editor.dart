@@ -100,7 +100,9 @@ class _AnimationEditorState extends State<AnimationEditor> {
     final value = _effect.deepCopy()
       ..name = _name.text.trim()
       ..durationMs = int.tryParse(_duration.text) ?? 0
-      ..periodMs = _effect.kind == MatrixEffect_Kind.STATIC_COLOR
+      ..periodMs =
+          _effect.kind == MatrixEffect_Kind.STATIC_COLOR ||
+              _effect.kind == MatrixEffect_Kind.DIMMING
           ? 0
           : _effect.kind == MatrixEffect_Kind.FILL && !_effect.loop
           ? int.tryParse(_duration.text) ?? 0
@@ -114,6 +116,12 @@ class _AnimationEditorState extends State<AnimationEditor> {
           ? int.tryParse(_wavelength.text) ?? 0
           : 0;
     value.gradientColors.clear();
+    if (value.kind == MatrixEffect_Kind.DIMMING) {
+      value
+        ..red = 0
+        ..green = 0
+        ..blue = 0;
+    }
     if (value.kind != MatrixEffect_Kind.KEYFRAMES) value.keyframes.clear();
     if (value.kind == MatrixEffect_Kind.FLOWING_GRADIENT) {
       value.gradientColors.addAll(_gradient.map((color) => color.deepCopy()));
@@ -246,6 +254,10 @@ class _AnimationEditorState extends State<AnimationEditor> {
                     ),
                 ],
                 onChanged: (kind) => setState(() {
+                  if (kind == MatrixEffect_Kind.DIMMING &&
+                      _effect.kind != kind) {
+                    _effect.alpha = 128;
+                  }
                   _effect.kind = kind!;
                   if (kind == MatrixEffect_Kind.KEYFRAMES &&
                       _effect.keyframes.isEmpty) {
@@ -270,7 +282,28 @@ class _AnimationEditorState extends State<AnimationEditor> {
                 }),
               ),
               const SizedBox(height: 18),
-              if (_effect.kind == MatrixEffect_Kind.RAINBOW) ...[
+              if (_effect.kind == MatrixEffect_Kind.DIMMING) ...[
+                const Text(
+                  'Dim lower-priority lighting across the layout. Use a transparent entry background to show the lighting underneath.',
+                ),
+                Row(
+                  children: [
+                    const Text('Dim by'),
+                    Expanded(
+                      child: Slider(
+                        key: const ValueKey('animation-dim-amount'),
+                        max: 100,
+                        divisions: 100,
+                        value: (_effect.alpha * 100 / 255).roundToDouble(),
+                        onChanged: (value) => setState(
+                          () => _effect.alpha = (value * 255 / 100).round(),
+                        ),
+                      ),
+                    ),
+                    Text('${(_effect.alpha * 100 / 255).round()}%'),
+                  ],
+                ),
+              ] else if (_effect.kind == MatrixEffect_Kind.RAINBOW) ...[
                 const Text('Rainbow uses the full color spectrum.'),
                 Row(
                   children: [
@@ -399,6 +432,7 @@ class _AnimationEditorState extends State<AnimationEditor> {
                     : '0 holds indefinitely. Finite default-state animations restart after ending.',
               ),
               if (_effect.kind != MatrixEffect_Kind.STATIC_COLOR &&
+                  _effect.kind != MatrixEffect_Kind.DIMMING &&
                   _effect.kind != MatrixEffect_Kind.KEYFRAMES &&
                   !(_effect.kind == MatrixEffect_Kind.FILL && !_effect.loop))
                 _number(

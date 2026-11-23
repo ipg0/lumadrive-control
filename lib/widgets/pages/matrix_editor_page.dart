@@ -284,18 +284,24 @@ class _MatrixEditorPageState extends ConsumerState<MatrixEditorPage>
                         trigger: _trigger!,
                         controller: _editor,
                         onCancel: _closeForm,
-                        onSave: (value, trigger, effects, modeId, secondModeId, conditionOperator) {
-                          final saved = _editor.saveEntry(
-                            value,
-                            trigger,
-                            newEffects: effects,
-                            modeId: modeId,
-                            secondModeId: secondModeId,
-                            conditionOperator: conditionOperator,
-                          );
-                          if (saved) _closeForm();
-                          return saved;
-                        },
+                        onSave:
+                            (
+                              value,
+                              trigger,
+                              effects,
+                              conditions,
+                              conditionOperator,
+                            ) {
+                              final saved = _editor.saveEntry(
+                                value,
+                                trigger,
+                                newEffects: effects,
+                                conditionValues: conditions,
+                                conditionOperator: conditionOperator,
+                              );
+                              if (saved) _closeForm();
+                              return saved;
+                            },
                       )
                     else ...[
                       Text(

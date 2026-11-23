@@ -350,24 +350,93 @@ void main() {
   });
   testWidgets('edits an AND condition with an inverted mode', (tester) async {
     final editor = await open(tester);
-    editor.config.modes.addAll([MatrixMode(id: 1, name: 'Day'), MatrixMode(id: 2, name: 'Night')]);
+    editor.config.modes.addAll([
+      MatrixMode(id: 1, name: 'Day'),
+      MatrixMode(id: 2, name: 'Night'),
+    ]);
     await tester.tap(find.byKey(const ValueKey('matrix-entry-1')));
     await tester.pumpAndSettle();
     final first = find.byKey(const ValueKey('entry-mode'));
-    await tester.ensureVisible(first); await tester.tap(first); await tester.pumpAndSettle();
-    await tester.tap(find.text('Mode: Day').last); await tester.pumpAndSettle();
-    final operator = find.byKey(const ValueKey('entry-condition-operator'));
-    await tester.ensureVisible(operator); await tester.tap(operator); await tester.pumpAndSettle();
-    await tester.tap(find.text('AND').last); await tester.pumpAndSettle();
-    final second = find.byKey(const ValueKey('entry-condition-second'));
-    await tester.ensureVisible(second); await tester.tap(second); await tester.pumpAndSettle();
-    await tester.tap(find.text('Not in mode: Night').last); await tester.pumpAndSettle();
+    await tester.ensureVisible(first);
+    await tester.tap(first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Combined').last);
+    await tester.pumpAndSettle();
+    final condition1 = find.byKey(const ValueKey('entry-condition-0-0'));
+    await tester.ensureVisible(condition1);
+    await tester.tap(condition1);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Mode: Day').last);
+    await tester.pumpAndSettle();
+    final second = find.byKey(const ValueKey('entry-condition-1-0'));
+    await tester.ensureVisible(second);
+    await tester.tap(second);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Not in mode: Night').last);
+    await tester.pumpAndSettle();
     final save = find.byKey(const ValueKey('save-entry'));
-    await tester.ensureVisible(save); await tester.tap(save); await tester.pumpAndSettle();
-    final group = editor.config.conditions.firstWhere((c) => c.id == editor.config.entries.single.conditionId);
+    await tester.ensureVisible(save);
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    final group = editor.config.conditions.firstWhere(
+      (c) => c.id == editor.config.entries.single.conditionId,
+    );
     expect(group.kind, MatrixCondition_Kind.AND);
-    expect(editor.config.conditions.firstWhere((c) => c.id == group.rightId).inverted, isTrue);
+    expect(
+      editor.config.conditions
+          .firstWhere((c) => c.id == group.rightId)
+          .inverted,
+      isTrue,
+    );
     expect(tester.takeException(), isNull);
+  });
+  testWidgets('selects never and edits a combined list', (tester) async {
+    final editor = await open(tester);
+    await tester.tap(find.byKey(const ValueKey('matrix-entry-1')));
+    await tester.pumpAndSettle();
+    final picker = find.byKey(const ValueKey('entry-mode'));
+    await tester.ensureVisible(picker);
+    await tester.tap(picker);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Never (disabled)').last);
+    await tester.pumpAndSettle();
+    final save = find.byKey(const ValueKey('save-entry'));
+    await tester.ensureVisible(save);
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    expect(
+      editor.config.conditions
+          .firstWhere((c) => c.id == editor.config.entries.single.conditionId)
+          .kind,
+      MatrixCondition_Kind.NEVER,
+    );
+
+    await tester.tap(find.byKey(const ValueKey('matrix-entry-1')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(picker);
+    await tester.tap(picker);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Combined').last);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Add condition'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Add condition'));
+    await tester.pumpAndSettle();
+    expect(find.text('Condition 3'), findsOneWidget);
+    await tester.ensureVisible(save);
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    final root = editor.config.conditions.firstWhere(
+      (c) => c.id == editor.config.entries.single.conditionId,
+    );
+    expect(root.kind, MatrixCondition_Kind.AND);
+    expect(
+      editor.config.conditions.firstWhere((c) => c.id == root.leftId).kind,
+      MatrixCondition_Kind.AND,
+    );
+    await tester.tap(find.byKey(const ValueKey('matrix-entry-1')));
+    await tester.pumpAndSettle();
+    expect(find.text('Condition 3'), findsOneWidget);
   });
   testWidgets(
     'flowing gradient exposes geometry, colors and preview with no overflow',
@@ -517,7 +586,15 @@ void main() {
     final editor = await open(tester, config: config);
     await tester.tap(find.byKey(const ValueKey('add-entry')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const ValueKey('entry-transparency')), findsNothing);
+    final defaultTransparency = tester.widget<SwitchListTile>(
+      find.byKey(const ValueKey('entry-transparency')),
+    );
+    expect(defaultTransparency.value, isTrue);
+    expect(defaultTransparency.onChanged, isNull);
+    expect(
+      find.text('Default-state entries always have a transparent background.'),
+      findsOneWidget,
+    );
     expect(
       tester
           .widget<TextFormField>(find.byKey(const ValueKey('entry-priority')))

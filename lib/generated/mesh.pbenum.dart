@@ -188,6 +188,8 @@ class MatrixEffect_Kind extends $pb.ProtobufEnum {
       MatrixEffect_Kind._(6, _omitEnumNames ? '' : 'RAINBOW');
   static const MatrixEffect_Kind FILL =
       MatrixEffect_Kind._(7, _omitEnumNames ? '' : 'FILL');
+  static const MatrixEffect_Kind DIMMING =
+      MatrixEffect_Kind._(8, _omitEnumNames ? '' : 'DIMMING');
 
   static const $core.List<MatrixEffect_Kind> values = <MatrixEffect_Kind>[
     EFFECT_UNSPECIFIED,
@@ -198,10 +200,11 @@ class MatrixEffect_Kind extends $pb.ProtobufEnum {
     FLOWING_GRADIENT,
     RAINBOW,
     FILL,
+    DIMMING,
   ];
 
   static final $core.List<MatrixEffect_Kind?> _byValue =
-      $pb.ProtobufEnum.$_initByValueList(values, 7);
+      $pb.ProtobufEnum.$_initByValueList(values, 8);
   static MatrixEffect_Kind? valueOf($core.int value) =>
       value < 0 || value >= _byValue.length ? null : _byValue[value];
 
@@ -247,6 +250,8 @@ class MatrixCondition_Kind extends $pb.ProtobufEnum {
       MatrixCondition_Kind._(3, _omitEnumNames ? '' : 'AND');
   static const MatrixCondition_Kind OR =
       MatrixCondition_Kind._(4, _omitEnumNames ? '' : 'OR');
+  static const MatrixCondition_Kind NEVER =
+      MatrixCondition_Kind._(5, _omitEnumNames ? '' : 'NEVER');
 
   static const $core.List<MatrixCondition_Kind> values = <MatrixCondition_Kind>[
     CONDITION_UNSPECIFIED,
@@ -254,10 +259,11 @@ class MatrixCondition_Kind extends $pb.ProtobufEnum {
     MODE,
     AND,
     OR,
+    NEVER,
   ];
 
   static final $core.List<MatrixCondition_Kind?> _byValue =
-      $pb.ProtobufEnum.$_initByValueList(values, 4);
+      $pb.ProtobufEnum.$_initByValueList(values, 5);
   static MatrixCondition_Kind? valueOf($core.int value) =>
       value < 0 || value >= _byValue.length ? null : _byValue[value];
 

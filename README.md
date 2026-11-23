@@ -2,6 +2,15 @@
 
 Lumadrive Control is the control app for Lumadrive.
 
+## Formatting hook
+
+Run `git config --local core.hooksPath .githooks` once after cloning to enable
+the pre-commit formatter. It formats staged Dart files with `dart format` and
+skips generated bindings. Dart must be on `PATH`, available through the Flutter
+SDK in `android/local.properties`, or specified with `DART_BIN` or
+`FLUTTER_ROOT`. Partially staged files are formatted in the Git index only;
+unstaged edits remain untouched.
+
 ## Versioned builds
 
 Build with the wrapper to derive the app version from the nearest reachable Git
