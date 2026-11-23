@@ -32,10 +32,16 @@ class _NodeNameDialogState extends State<NodeNameDialog> {
         textCapitalization: TextCapitalization.sentences,
         decoration: const InputDecoration(
           labelText: 'Node name', hintText: 'For example, Front doors',
-          helperText: 'Saved on this device. Leave blank to use the address.',
-          helperMaxLines: 2, border: OutlineInputBorder(),
+          border: OutlineInputBorder(),
         ),
         onSubmitted: (_) => Navigator.of(context).pop(_name.text.trim()),
+      ),
+      const SizedBox(height: 4),
+      Text(
+        'Saved on this device. Leave blank to use the address.',
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
       ),
     ]),
     actions: [

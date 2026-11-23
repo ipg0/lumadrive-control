@@ -154,14 +154,14 @@ class _ModeDashboardState extends ConsumerState<ModeDashboard> {
                             vertical: 6,
                           ),
                           foregroundColor: selected
-                              ? colors.onPrimaryContainer
+                              ? colors.onSecondaryContainer
                               : colors.onSurface,
                           backgroundColor: selected
-                              ? colors.primaryContainer
+                              ? colors.secondaryContainer
                               : colors.surfaceContainerHigh,
                           side: BorderSide(
                             color: selected
-                                ? colors.primary
+                                ? colors.secondary
                                 : colors.outlineVariant,
                             width: selected ? 2 : 1,
                           ),

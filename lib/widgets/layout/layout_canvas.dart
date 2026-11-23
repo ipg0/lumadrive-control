@@ -169,8 +169,8 @@ class _LayoutCanvasState extends State<LayoutCanvas> {
     final colors = Theme.of(context).colorScheme;
     final palette = [
       colors.primary,
-      colors.tertiary,
       colors.secondary,
+      colors.tertiary,
       Colors.tealAccent.shade100,
       Colors.orange.shade200,
     ];

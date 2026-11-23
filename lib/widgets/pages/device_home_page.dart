@@ -156,7 +156,7 @@ class _DeviceHomePageState extends ConsumerState<DeviceHomePage> {
           child: ListTile(
             leading: Icon(
               Icons.table_rows_outlined,
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.secondary,
             ),
             title: const Text('Matrix & animations'),
             subtitle: const Text(

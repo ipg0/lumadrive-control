@@ -88,16 +88,16 @@ class _CarLayoutState extends State<CarLayout> {
                             vertical: 6,
                           ),
                           backgroundColor: selected
-                              ? colors.primaryContainer.withValues(alpha: .96)
+                              ? colors.secondaryContainer.withValues(alpha: .96)
                               : colors.surfaceContainerHigh.withValues(
                                   alpha: .92,
                                 ),
                           foregroundColor: selected
-                              ? colors.onPrimaryContainer
+                              ? colors.onSecondaryContainer
                               : colors.onSurface,
                           side: BorderSide(
                             color: selected
-                                ? colors.primary
+                                ? colors.secondary
                                 : colors.outlineVariant,
                           ),
                           shape: RoundedRectangleBorder(
@@ -637,7 +637,7 @@ class _CarPainter extends CustomPainter {
       ..close();
     canvas.drawPath(rearGlass, glass);
     canvas.drawPath(rearGlass, seam);
-    final tail = Paint()..color = colors.tertiary.withValues(alpha: .8);
+    final tail = Paint()..color = colors.secondary.withValues(alpha: .8);
     canvas.drawRRect(panel(.28, .905, .35, .92, radius: 3), tail);
     canvas.drawRRect(panel(.65, .905, .72, .92, radius: 3), tail);
     canvas.restore();
@@ -689,7 +689,7 @@ class _CarPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(w * .83, h * .83),
       5,
-      Paint()..color = colors.tertiary,
+      Paint()..color = colors.secondary,
     );
   }
 
