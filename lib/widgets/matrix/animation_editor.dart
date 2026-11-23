@@ -21,6 +21,7 @@ class AnimationEditor extends StatefulWidget {
   final int canvasSize;
   final int? centerIndex;
   final FutureOr<bool> Function(MatrixEffect) onSave;
+  final Future<int?> Function(MatrixEffect)? onPreview;
   final VoidCallback onCancel;
   final String saveLabel, previewCaption;
   final String? Function()? failureMessage;
@@ -33,6 +34,7 @@ class AnimationEditor extends StatefulWidget {
     required this.canvasSize,
     this.centerIndex,
     required this.onSave,
+    this.onPreview,
     required this.onCancel,
     this.saveLabel = 'Apply animation',
     this.previewCaption =
@@ -515,6 +517,53 @@ class _AnimationEditorState extends State<AnimationEditor> {
                   centerIndex: widget.centerIndex,
                   caption: widget.previewCaption,
                 ),
+              if (widget.onPreview != null) ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  key: const ValueKey('preview-on-lights'),
+                  onPressed: _saving
+                      ? null
+                      : () async {
+                          if (!_form.currentState!.validate()) return;
+                          final validation = validateKeyframes(_value());
+                          if (validation != null) {
+                            setState(() => _saveError = validation);
+                            return;
+                          }
+                          setState(() {
+                            _saving = true;
+                            _saveError = null;
+                          });
+                          try {
+                            final value = _value();
+                            final id = await widget.onPreview!(value);
+                            if (mounted) {
+                              setState(() {
+                                if (value.id != 0) _effect.id = value.id;
+                                if (id != null) {
+                                  _effect.id = id;
+                                } else {
+                                  _saveError =
+                                      widget.failureMessage?.call() ??
+                                      'Could not preview this animation.';
+                                }
+                              });
+                            }
+                          } catch (error) {
+                            if (mounted) {
+                              setState(() => _saveError = error.toString());
+                            }
+                          } finally {
+                            if (mounted) setState(() => _saving = false);
+                          }
+                        },
+                  icon: const Icon(Icons.lightbulb_outline),
+                  label: const Text('Preview on lights'),
+                ),
+                const Text(
+                  'Saves this animation to the controller before previewing.',
+                ),
+              ],
               const SizedBox(height: 20),
               Wrap(
                 alignment: WrapAlignment.end,

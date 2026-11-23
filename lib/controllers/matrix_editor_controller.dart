@@ -455,6 +455,21 @@ class MatrixEditorController extends ChangeNotifier {
     ...saved.effects.map((effect) => effect.id),
   ]);
 
+  Future<int?> previewEffect(MatrixEffect value) async {
+    final id = value.id == 0 ? nextEffectId : value.id;
+    final next = value.deepCopy()..id = id;
+    if (!await applyEffect(next)) return null;
+    value.id = id;
+    try {
+      await repository.preview(id);
+      return id;
+    } catch (exception) {
+      error = _message(exception);
+      _changed();
+      return null;
+    }
+  }
+
   Future<bool> applyEffect(MatrixEffect value) async {
     if (_disposed || applying || readingCurrent) return false;
     applying = true;

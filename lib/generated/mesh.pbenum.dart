@@ -282,6 +282,8 @@ class LayoutRequest_Operation extends $pb.ProtobufEnum {
       LayoutRequest_Operation._(2, _omitEnumNames ? '' : 'READ_MATRIX');
   static const LayoutRequest_Operation READ_ACTIVE_MATRIX =
       LayoutRequest_Operation._(3, _omitEnumNames ? '' : 'READ_ACTIVE_MATRIX');
+  static const LayoutRequest_Operation PREVIEW =
+      LayoutRequest_Operation._(4, _omitEnumNames ? '' : 'PREVIEW');
 
   static const $core.List<LayoutRequest_Operation> values =
       <LayoutRequest_Operation>[
@@ -289,10 +291,11 @@ class LayoutRequest_Operation extends $pb.ProtobufEnum {
     IDENTIFY,
     READ_MATRIX,
     READ_ACTIVE_MATRIX,
+    PREVIEW,
   ];
 
   static final $core.List<LayoutRequest_Operation?> _byValue =
-      $pb.ProtobufEnum.$_initByValueList(values, 3);
+      $pb.ProtobufEnum.$_initByValueList(values, 4);
   static LayoutRequest_Operation? valueOf($core.int value) =>
       value < 0 || value >= _byValue.length ? null : _byValue[value];
 

@@ -209,6 +209,33 @@ void main() {
     },
   );
 
+  testWidgets('preview saves the edited animation and requests playback', (
+    tester,
+  ) async {
+    final editor = await open(tester);
+    final repository = editor.repository as FakeMatrixEditorRepository;
+    await tester.tap(find.text('Animations (1)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('matrix-animation-1')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('animation-name')),
+      'Previewed',
+    );
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+    final button = find.byKey(const ValueKey('preview-on-lights'));
+    await tester.ensureVisible(button);
+    await tester.pumpAndSettle();
+    await tester.tap(button);
+    await tester.pumpAndSettle();
+    expect(repository.previewed, 1);
+    expect(
+      MatrixConfig.fromBuffer(repository.document.config).effects.single.name,
+      'Previewed',
+    );
+    expect(find.byKey(const ValueKey('animation-name')), findsOneWidget);
+  });
   testWidgets('reads current MCU state without replacing a draft', (
     tester,
   ) async {

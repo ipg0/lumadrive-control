@@ -72,6 +72,12 @@ class MemoryMatrixStore implements MatrixDraftStore {
 }
 
 class FakeMatrixEditorRepository implements MatrixEditorRepository {
+  int? previewed;
+  @override
+  Future<void> preview(int effectId) async {
+    previewed = effectId;
+  }
+
   MatrixDocument document = editorDocument();
   Future<MatrixDocument> Function()? readCurrent;
   bool disconnected = false, failApply = false;

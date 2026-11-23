@@ -37,6 +37,8 @@ class MeshController extends AsyncNotifier<MeshState> {
       _connectedClient.readCurrentMatrix();
   Stream<MatrixUploadProgress> updateMatrix(MatrixUpdate update) =>
       _connectedClient.updateMatrix(update);
+  Future<void> previewAnimation(int id) =>
+      _connectedClient.previewAnimation(id);
 
   Future<void> identifyOutput(
     int snapshotId,

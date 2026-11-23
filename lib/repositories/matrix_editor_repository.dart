@@ -11,6 +11,7 @@ abstract interface class MatrixEditorRepository {
   Future<MatrixDocument> current();
   Future<MatrixStatus> status();
   Stream<MatrixUploadProgress> apply(MatrixUpdate update);
+  Future<void> preview(int effectId);
 }
 
 class ConnectedMatrixEditorRepository implements MatrixEditorRepository {
@@ -19,12 +20,14 @@ class ConnectedMatrixEditorRepository implements MatrixEditorRepository {
   final Future<MatrixDocument> Function() readActiveDocument;
   final Future<MatrixStatus> Function() readStatus;
   final Stream<MatrixUploadProgress> Function(MatrixUpdate) updateMatrix;
+  final Future<void> Function(int)? previewAnimation;
   ConnectedMatrixEditorRepository({
     required this.isAvailable,
     required this.readDocument,
     required this.readActiveDocument,
     required this.readStatus,
     required this.updateMatrix,
+    this.previewAnimation,
   });
   void _check() {
     if (!isAvailable()) throw StateError('This controller is disconnected');
@@ -61,6 +64,15 @@ class ConnectedMatrixEditorRepository implements MatrixEditorRepository {
       _check();
       yield value;
     }
+    _check();
+  }
+
+  @override
+  Future<void> preview(int effectId) async {
+    _check();
+    final callback = previewAnimation;
+    if (callback == null) throw StateError('Animation preview is unavailable');
+    await callback(effectId);
     _check();
   }
 }

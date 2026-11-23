@@ -356,8 +356,23 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                       : automaticLayoutCenter(widget.controller.config.layout),
                   saveLabel: 'Use animation',
                   previewCaption: 'Preview on this phone. Use animation selects it for this entry draft.',
+                  onPreview: widget.controller.previewEffect,
+                  failureMessage: () => widget.controller.error,
                   onCancel: () => setState(() => _newAnimation = null),
                   onSave: (value) {
+                    if (value.id != 0 &&
+                        widget.controller.effect(value.id) != null) {
+                      if (widget.controller.effect(value.id) != value) {
+                        if (!widget.controller.saveEffect(value)) return false;
+                        widget.controller.editing = true;
+                      }
+                      setState(() {
+                        _entry.effectId = value.id;
+                        _newAnimation = null;
+                        _updateName();
+                      });
+                      return true;
+                    }
                     final used = {
                       ...effects.map((effect) => effect.id),
                       ...widget.controller.saved.effects.map(

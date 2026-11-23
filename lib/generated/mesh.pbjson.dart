@@ -936,6 +936,7 @@ const LayoutRequest_Operation$json = {
     {'1': 'IDENTIFY', '2': 1},
     {'1': 'READ_MATRIX', '2': 2},
     {'1': 'READ_ACTIVE_MATRIX', '2': 3},
+    {'1': 'PREVIEW', '2': 4},
   ],
 };
 
@@ -945,9 +946,9 @@ final $typed_data.Uint8List layoutRequestDescriptor = $convert.base64Decode(
     'Rpb24YAiABKA4yJS5tZXNoX2ludGVyb3AuTGF5b3V0UmVxdWVzdC5PcGVyYXRpb25SCW9wZXJh'
     'dGlvbhIfCgtzbmFwc2hvdF9pZBgDIAEoB1IKc25hcHNob3RJZBIWCgZvZmZzZXQYBCABKA1SBm'
     '9mZnNldBIhCgxvdXRwdXRfaW5kZXgYBSABKA1SC291dHB1dEluZGV4Ei4KEGlkZW50aWZ5X29w'
-    'dGlvbnMYBiABKAdIAFIPaWRlbnRpZnlPcHRpb25ziAEBIkwKCU9wZXJhdGlvbhIICgRSRUFEEA'
+    'dGlvbnMYBiABKAdIAFIPaWRlbnRpZnlPcHRpb25ziAEBIlkKCU9wZXJhdGlvbhIICgRSRUFEEA'
     'ASDAoISURFTlRJRlkQARIPCgtSRUFEX01BVFJJWBACEhYKElJFQURfQUNUSVZFX01BVFJJWBAD'
-    'QhMKEV9pZGVudGlmeV9vcHRpb25z');
+    'EgsKB1BSRVZJRVcQBEITChFfaWRlbnRpZnlfb3B0aW9ucw==');
 
 @$core.Deprecated('Use layoutResponseDescriptor instead')
 const LayoutResponse$json = {
@@ -1094,6 +1095,32 @@ final $typed_data.Uint8List animationLayerDescriptor = $convert.base64Decode(
     'ABKAsyGi5tZXNoX2ludGVyb3AuTWF0cml4RWZmZWN0UgZlZmZlY3QSGgoIcHJpb3JpdHkYBCAB'
     'KA1SCHByaW9yaXR5EhQKBW9yZGVyGAUgASgNUgVvcmRlchIrChFvcGFxdWVfYmFja2dyb3VuZB'
     'gGIAEoCFIQb3BhcXVlQmFja2dyb3VuZEoECAMQBFIHZHJpdmVycw==');
+
+@$core.Deprecated('Use animationPreviewDescriptor instead')
+const AnimationPreview$json = {
+  '1': 'AnimationPreview',
+  '2': [
+    {'1': 'master_session', '3': 1, '4': 1, '5': 4, '10': 'masterSession'},
+    {'1': 'revision', '3': 2, '4': 1, '5': 4, '10': 'revision'},
+    {'1': 'start_at_us', '3': 3, '4': 1, '5': 4, '10': 'startAtUs'},
+    {'1': 'end_at_us', '3': 4, '4': 1, '5': 4, '10': 'endAtUs'},
+    {
+      '1': 'effect',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.mesh_interop.MatrixEffect',
+      '10': 'effect'
+    },
+  ],
+};
+
+/// Descriptor for `AnimationPreview`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List animationPreviewDescriptor = $convert.base64Decode(
+    'ChBBbmltYXRpb25QcmV2aWV3EiUKDm1hc3Rlcl9zZXNzaW9uGAEgASgEUg1tYXN0ZXJTZXNzaW'
+    '9uEhoKCHJldmlzaW9uGAIgASgEUghyZXZpc2lvbhIeCgtzdGFydF9hdF91cxgDIAEoBFIJc3Rh'
+    'cnRBdFVzEhoKCWVuZF9hdF91cxgEIAEoBFIHZW5kQXRVcxIyCgZlZmZlY3QYBSABKAsyGi5tZX'
+    'NoX2ludGVyb3AuTWF0cml4RWZmZWN0UgZlZmZlY3Q=');
 
 @$core.Deprecated('Use animationOutputMappingDescriptor instead')
 const AnimationOutputMapping$json = {

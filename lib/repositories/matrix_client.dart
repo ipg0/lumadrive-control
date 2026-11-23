@@ -156,11 +156,35 @@ class MatrixClient {
           operation: LayoutRequest_Operation.IDENTIFY,
           snapshotId: snapshotId,
           identifyOptions:
-              outputIndex | (pixelCount << 8) | (reversed ? 1 << 20 : 0) | (wholeNode ? 1 << 21 : 0),
+              outputIndex |
+              (pixelCount << 8) |
+              (reversed ? 1 << 20 : 0) |
+              (wholeNode ? 1 << 21 : 0),
         ),
       );
       if (!response.complete) {
         throw MatrixUploadException('Unable to identify output');
+      }
+    } finally {
+      _uploading = false;
+    }
+  }
+
+  Future<void> previewAnimation(int effectId) async {
+    if (effectId <= 0 || effectId > 0xffffffff) {
+      throw ArgumentError('Invalid animation ID');
+    }
+    if (_uploading) throw StateError('Controller is busy');
+    _uploading = true;
+    try {
+      final response = await _layoutCall(
+        LayoutRequest(
+          operation: LayoutRequest_Operation.PREVIEW,
+          identifyOptions: effectId,
+        ),
+      );
+      if (!response.complete) {
+        throw MatrixUploadException('Unable to preview animation');
       }
     } finally {
       _uploading = false;

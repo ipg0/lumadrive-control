@@ -3009,6 +3009,118 @@ class AnimationLayer extends $pb.GeneratedMessage {
   void clearOpaqueBackground() => $_clearField(6);
 }
 
+class AnimationPreview extends $pb.GeneratedMessage {
+  factory AnimationPreview({
+    $fixnum.Int64? masterSession,
+    $fixnum.Int64? revision,
+    $fixnum.Int64? startAtUs,
+    $fixnum.Int64? endAtUs,
+    MatrixEffect? effect,
+  }) {
+    final result = create();
+    if (masterSession != null) result.masterSession = masterSession;
+    if (revision != null) result.revision = revision;
+    if (startAtUs != null) result.startAtUs = startAtUs;
+    if (endAtUs != null) result.endAtUs = endAtUs;
+    if (effect != null) result.effect = effect;
+    return result;
+  }
+
+  AnimationPreview._();
+
+  factory AnimationPreview.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AnimationPreview.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AnimationPreview',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'mesh_interop'),
+      createEmptyInstance: create)
+    ..a<$fixnum.Int64>(
+        1, _omitFieldNames ? '' : 'masterSession', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(
+        2, _omitFieldNames ? '' : 'revision', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(
+        3, _omitFieldNames ? '' : 'startAtUs', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'endAtUs', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOM<MatrixEffect>(5, _omitFieldNames ? '' : 'effect',
+        subBuilder: MatrixEffect.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AnimationPreview clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AnimationPreview copyWith(void Function(AnimationPreview) updates) =>
+      super.copyWith((message) => updates(message as AnimationPreview))
+          as AnimationPreview;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AnimationPreview create() => AnimationPreview._();
+  @$core.override
+  AnimationPreview createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static AnimationPreview getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AnimationPreview>(create);
+  static AnimationPreview? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get masterSession => $_getI64(0);
+  @$pb.TagNumber(1)
+  set masterSession($fixnum.Int64 value) => $_setInt64(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasMasterSession() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearMasterSession() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get revision => $_getI64(1);
+  @$pb.TagNumber(2)
+  set revision($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasRevision() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearRevision() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $fixnum.Int64 get startAtUs => $_getI64(2);
+  @$pb.TagNumber(3)
+  set startAtUs($fixnum.Int64 value) => $_setInt64(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasStartAtUs() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearStartAtUs() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $fixnum.Int64 get endAtUs => $_getI64(3);
+  @$pb.TagNumber(4)
+  set endAtUs($fixnum.Int64 value) => $_setInt64(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasEndAtUs() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearEndAtUs() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  MatrixEffect get effect => $_getN(4);
+  @$pb.TagNumber(5)
+  set effect(MatrixEffect value) => $_setField(5, value);
+  @$pb.TagNumber(5)
+  $core.bool hasEffect() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearEffect() => $_clearField(5);
+  @$pb.TagNumber(5)
+  MatrixEffect ensureEffect() => $_ensure(4);
+}
+
 class AnimationOutputMapping extends $pb.GeneratedMessage {
   factory AnimationOutputMapping({
     MatrixDriver? driver,

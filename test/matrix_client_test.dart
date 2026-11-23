@@ -153,7 +153,9 @@ class LayoutTransport extends FakeTransport {
       response.error = error!;
       return;
     }
-    if (request.operation == LayoutRequest_Operation.IDENTIFY) {
+    if (request.operation == LayoutRequest_Operation.PREVIEW) {
+      response.complete = true;
+    } else if (request.operation == LayoutRequest_Operation.IDENTIFY) {
       expect(request.snapshotId, 0x12345678);
       expect(request.outputIndex, 0);
       response.complete = true;
@@ -181,14 +183,17 @@ class LayoutTransport extends FakeTransport {
 }
 
 void main() {
-  test('empty v0 configuration remains transferable at minimum BLE MTU', () async {
-    final transport = FakeTransport(23);
-    addTearDown(transport.notifications.close);
-    final result = await MatrixClient(transport).upload(MatrixConfig()).last;
-    expect(result.status.stage, MatrixStatus_Stage.ACTIVE);
-    expect(transport.received, [8, 0]);
-    expect(MatrixConfig.fromBuffer(transport.received).schemaVersion, 0);
-  });
+  test(
+    'empty v0 configuration remains transferable at minimum BLE MTU',
+    () async {
+      final transport = FakeTransport(23);
+      addTearDown(transport.notifications.close);
+      final result = await MatrixClient(transport).upload(MatrixConfig()).last;
+      expect(result.status.stage, MatrixStatus_Stage.ACTIVE);
+      expect(transport.received, [8, 0]);
+      expect(MatrixConfig.fromBuffer(transport.received).schemaVersion, 0);
+    },
+  );
   test(
     'matrix document can carry a full 16 KiB configuration plus node metadata',
     () async {
@@ -319,9 +324,23 @@ void main() {
         LayoutRequest_Operation.IDENTIFY,
       );
       await client.identifyOutput(result.snapshotId, 5, wholeNode: true);
-      expect(transport.frames.last.layoutRequest.identifyOptions, 5 | (1 << 21));
+      expect(
+        transport.frames.last.layoutRequest.identifyOptions,
+        5 | (1 << 21),
+      );
+      await client.previewAnimation(42);
+      expect(
+        transport.frames.last.layoutRequest.operation,
+        LayoutRequest_Operation.PREVIEW,
+      );
+      expect(transport.frames.last.layoutRequest.identifyOptions, 42);
       await expectLater(
-        client.identifyOutput(result.snapshotId, 5, wholeNode: true, pixelCount: 8),
+        client.identifyOutput(
+          result.snapshotId,
+          5,
+          wholeNode: true,
+          pixelCount: 8,
+        ),
         throwsArgumentError,
       );
     });

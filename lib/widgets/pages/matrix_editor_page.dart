@@ -69,6 +69,8 @@ class _MatrixEditorPageState extends ConsumerState<MatrixEditorPage>
               ref.read(meshControllerProvider.notifier).getMatrixStatus(),
           updateMatrix: (value) =>
               ref.read(meshControllerProvider.notifier).updateMatrix(value),
+          previewAnimation: (id) =>
+              ref.read(meshControllerProvider.notifier).previewAnimation(id),
         ),
       );
     }
@@ -265,6 +267,7 @@ class _MatrixEditorPageState extends ConsumerState<MatrixEditorPage>
                             ? _editor.config.centerIndex
                             : automaticLayoutCenter(_editor.config.layout),
                         onCancel: _closeForm,
+                        onPreview: _editor.previewEffect,
                         failureMessage: () => _editor.error,
                         onSaveDraft: (value) {
                           final saved = _editor.saveEffect(value);
