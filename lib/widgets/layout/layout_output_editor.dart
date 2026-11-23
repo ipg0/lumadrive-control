@@ -203,7 +203,7 @@ class _LayoutOutputEditorState extends State<LayoutOutputEditor> {
             title: const Text('Reverse direction'),
             subtitle: Text(widget.advanced
                 ? 'Mapping ${row.from} → ${row.to}'
-                : 'Directions should flow continuously around the car from rear left to rear right, following the arrows above.'),
+                : 'Follow the arrows on the graphic so directions flow continuously around the car. For example, left doors should flow from back to front, and right doors from front to back.'),
             value: row.from > row.to,
             onChanged: editable ? (_) => editor.reverse(key) : null,
           ),
