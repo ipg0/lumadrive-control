@@ -16,7 +16,7 @@ class MatrixEntryEditor extends StatefulWidget {
     MatrixEntry,
     MatrixSource,
     List<MatrixEffect>,
-    List<int>,
+    List<MatrixCondition>,
     int,
   )
   onSave;
@@ -42,7 +42,13 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
   bool _automaticName = false;
   int _modeId = 0;
   static const _combinedValue = -4294967297;
+  static const _gpioValue = -4294967298;
   final List<int> _combinedConditions = [0, 0];
+  final List<MatrixCondition> _combinedGpios = [
+    MatrixCondition(),
+    MatrixCondition(),
+  ];
+  MatrixCondition _gpioCondition = MatrixCondition();
   int _conditionOperator = 0;
   bool _unsupportedCondition = false;
   late final TextEditingController _name, _priority;
@@ -60,6 +66,8 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
         ? 0
         : c?.kind == MatrixCondition_Kind.NEVER
         ? neverConditionValue
+        : c?.kind == MatrixCondition_Kind.GPIO_STATE
+        ? _gpioValue
         : c?.kind == MatrixCondition_Kind.MODE
         ? (c!.inverted ? -c.modeId : c.modeId)
         : null;
@@ -69,6 +77,7 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
       _conditionOperator = condition.kind == MatrixCondition_Kind.AND ? 1 : 2;
       _modeId = _combinedValue;
       _combinedConditions.clear();
+      _combinedGpios.clear();
       final seen = <int>{};
       void collect(MatrixCondition? node) {
         if (node == null || !seen.add(node.id)) {
@@ -92,6 +101,7 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
             _unsupportedCondition = true;
           } else {
             _combinedConditions.add(value);
+            _combinedGpios.add(node.deepCopy());
           }
         }
         seen.remove(node.id);
@@ -104,6 +114,7 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
         _unsupportedCondition = true;
       } else {
         _modeId = value;
+        if (value == _gpioValue) _gpioCondition = condition.deepCopy();
       }
     }
     _automaticName = _entry.id == 0 && _entry.name.isEmpty;
@@ -158,6 +169,106 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
       _trigger.nodeMac = node.nodeMac;
       _trigger.gpio = node.gpios.first;
     }
+  }
+
+  MatrixCondition _selection(int value, MatrixCondition gpio) {
+    if (value == _gpioValue) {
+      return gpio.deepCopy()..kind = MatrixCondition_Kind.GPIO_STATE;
+    }
+    return MatrixCondition(
+      kind: value == neverConditionValue
+          ? MatrixCondition_Kind.NEVER
+          : value == 0
+          ? MatrixCondition_Kind.ALWAYS
+          : MatrixCondition_Kind.MODE,
+      modeId: value == neverConditionValue ? 0 : value.abs(),
+      inverted: value != neverConditionValue && value < 0,
+    );
+  }
+
+  Widget _gpioConditionFields(MatrixCondition value, int index) {
+    final nodes = _nodes.toList();
+    if (value.nodeMac.length == 6 &&
+        !nodes.any((n) => listEquals(n.nodeMac, value.nodeMac))) {
+      nodes.add(
+        widget.controller.document?.nodes
+                .where((n) => listEquals(n.nodeMac, value.nodeMac))
+                .firstOrNull ??
+            MatrixInputNode(nodeMac: value.nodeMac),
+      );
+    }
+    final node = nodes
+        .where((n) => listEquals(n.nodeMac, value.nodeMac))
+        .firstOrNull;
+    final pins = (node?.gpios ?? <int>[]).toList();
+    if (node != null && !pins.contains(value.gpio)) pins.add(value.gpio);
+    return Column(
+      children: [
+        const SizedBox(height: 12),
+        DropdownButtonFormField<String>(
+          key: ValueKey('condition-node-$index-${_key(value.nodeMac)}'),
+          initialValue: node == null ? null : _key(node.nodeMac),
+          decoration: const InputDecoration(
+            labelText: 'Input node',
+            border: OutlineInputBorder(),
+          ),
+          isExpanded: true,
+          items: [
+            for (final option in nodes)
+              DropdownMenuItem(
+                value: _key(option.nodeMac),
+                child: Text(
+                  '${listEquals(option.nodeMac, widget.controller.document?.masterMac) ? 'Controller' : 'Node'} · ${nodeSuffix(option.nodeMac)}',
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+          ],
+          validator: (v) =>
+              v == null ? 'Choose a node with provisioned inputs' : null,
+          onChanged: (v) => setState(() {
+            final selected = nodes.firstWhere((n) => _key(n.nodeMac) == v);
+            value.nodeMac = selected.nodeMac;
+            if (selected.gpios.isNotEmpty) value.gpio = selected.gpios.first;
+          }),
+        ),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<int>(
+          key: ValueKey(
+            'condition-pin-$index-${_key(value.nodeMac)}-${value.gpio}',
+          ),
+          initialValue: pins.contains(value.gpio) ? value.gpio : null,
+          decoration: const InputDecoration(
+            labelText: 'GPIO input',
+            border: OutlineInputBorder(),
+          ),
+          items: [
+            for (final pin in pins)
+              DropdownMenuItem(
+                value: pin,
+                enabled: node?.known != true || node!.gpios.contains(pin),
+                child: Text('GPIO $pin'),
+              ),
+          ],
+          validator: (pin) => pin == null
+              ? 'Choose a provisioned GPIO input'
+              : node?.known == true && !node!.gpios.contains(pin)
+              ? 'Pin is not provisioned on this node'
+              : null,
+          onChanged: node?.known != true
+              ? null
+              : (pin) => setState(() => value.gpio = pin!),
+        ),
+        const SizedBox(height: 12),
+        SegmentedButton<bool>(
+          segments: const [
+            ButtonSegment(value: true, label: Text('High')),
+            ButtonSegment(value: false, label: Text('Low')),
+          ],
+          selected: {value.high},
+          onSelectionChanged: (v) => setState(() => value.high = v.first),
+        ),
+      ],
+    );
   }
 
   @override
@@ -469,6 +580,10 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                     value: _combinedValue,
                     child: Text('Combined'),
                   ),
+                  const DropdownMenuItem(
+                    value: _gpioValue,
+                    child: Text('GPIO state'),
+                  ),
                   for (final mode in widget.controller.config.modes)
                     DropdownMenuItem(
                       value: mode.id,
@@ -488,6 +603,8 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                   _unsupportedCondition = false;
                 }),
               ),
+              if (_modeId == _gpioValue)
+                _gpioConditionFields(_gpioCondition, -1),
               if (_modeId == _combinedValue) ...[
                 const SizedBox(height: 12),
                 DropdownButtonFormField<int>(
@@ -529,6 +646,10 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                               value: neverConditionValue,
                               child: Text('Never (disabled)'),
                             ),
+                            const DropdownMenuItem(
+                              value: _gpioValue,
+                              child: Text('GPIO state'),
+                            ),
                             for (final mode in widget.controller.config.modes)
                               DropdownMenuItem(
                                 value: mode.id,
@@ -549,14 +670,21 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                         IconButton(
                           tooltip: 'Remove condition',
                           icon: const Icon(Icons.remove_circle_outline),
-                          onPressed: () =>
-                              setState(() => _combinedConditions.removeAt(i)),
+                          onPressed: () => setState(() {
+                            _combinedConditions.removeAt(i);
+                            _combinedGpios.removeAt(i);
+                          }),
                         ),
                     ],
                   ),
+                  if (_combinedConditions[i] == _gpioValue)
+                    _gpioConditionFields(_combinedGpios[i], i),
                 ],
                 TextButton.icon(
-                  onPressed: () => setState(() => _combinedConditions.add(0)),
+                  onPressed: () => setState(() {
+                    _combinedConditions.add(0);
+                    _combinedGpios.add(MatrixCondition());
+                  }),
                   icon: const Icon(Icons.add),
                   label: const Text('Add condition'),
                 ),
@@ -590,8 +718,18 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                                     )
                                     .toList(),
                                 _modeId == _combinedValue
-                                    ? _combinedConditions
-                                    : [_modeId],
+                                    ? [
+                                        for (
+                                          var i = 0;
+                                          i < _combinedConditions.length;
+                                          i++
+                                        )
+                                          _selection(
+                                            _combinedConditions[i],
+                                            _combinedGpios[i],
+                                          ),
+                                      ]
+                                    : [_selection(_modeId, _gpioCondition)],
                                 _conditionOperator,
                               );
                             }

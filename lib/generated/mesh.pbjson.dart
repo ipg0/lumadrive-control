@@ -344,6 +344,9 @@ const MatrixCondition$json = {
     {'1': 'inverted', '3': 4, '4': 1, '5': 8, '10': 'inverted'},
     {'1': 'left_id', '3': 5, '4': 1, '5': 13, '10': 'leftId'},
     {'1': 'right_id', '3': 6, '4': 1, '5': 13, '10': 'rightId'},
+    {'1': 'node_mac', '3': 7, '4': 1, '5': 12, '10': 'nodeMac'},
+    {'1': 'gpio', '3': 8, '4': 1, '5': 13, '10': 'gpio'},
+    {'1': 'high', '3': 9, '4': 1, '5': 8, '10': 'high'},
   ],
   '4': [MatrixCondition_Kind$json],
 };
@@ -358,6 +361,7 @@ const MatrixCondition_Kind$json = {
     {'1': 'AND', '2': 3},
     {'1': 'OR', '2': 4},
     {'1': 'NEVER', '2': 5},
+    {'1': 'GPIO_STATE', '2': 6},
   ],
 };
 
@@ -366,9 +370,10 @@ final $typed_data.Uint8List matrixConditionDescriptor = $convert.base64Decode(
     'Cg9NYXRyaXhDb25kaXRpb24SDgoCaWQYASABKA1SAmlkEjYKBGtpbmQYAiABKA4yIi5tZXNoX2'
     'ludGVyb3AuTWF0cml4Q29uZGl0aW9uLktpbmRSBGtpbmQSFwoHbW9kZV9pZBgDIAEoDVIGbW9k'
     'ZUlkEhoKCGludmVydGVkGAQgASgIUghpbnZlcnRlZBIXCgdsZWZ0X2lkGAUgASgNUgZsZWZ0SW'
-    'QSGQoIcmlnaHRfaWQYBiABKA1SB3JpZ2h0SWQiUwoES2luZBIZChVDT05ESVRJT05fVU5TUEVD'
-    'SUZJRUQQABIKCgZBTFdBWVMQARIICgRNT0RFEAISBwoDQU5EEAMSBgoCT1IQBBIJCgVORVZFUh'
-    'AF');
+    'QSGQoIcmlnaHRfaWQYBiABKA1SB3JpZ2h0SWQSGQoIbm9kZV9tYWMYByABKAxSB25vZGVNYWMS'
+    'EgoEZ3BpbxgIIAEoDVIEZ3BpbxISCgRoaWdoGAkgASgIUgRoaWdoImMKBEtpbmQSGQoVQ09ORE'
+    'lUSU9OX1VOU1BFQ0lGSUVEEAASCgoGQUxXQVlTEAESCAoETU9ERRACEgcKA0FORBADEgYKAk9S'
+    'EAQSCQoFTkVWRVIQBRIOCgpHUElPX1NUQVRFEAY=');
 
 @$core.Deprecated('Use matrixModeDescriptor instead')
 const MatrixMode$json = {

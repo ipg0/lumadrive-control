@@ -768,6 +768,9 @@ class MatrixCondition extends $pb.GeneratedMessage {
     $core.bool? inverted,
     $core.int? leftId,
     $core.int? rightId,
+    $core.List<$core.int>? nodeMac,
+    $core.int? gpio,
+    $core.bool? high,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -776,6 +779,9 @@ class MatrixCondition extends $pb.GeneratedMessage {
     if (inverted != null) result.inverted = inverted;
     if (leftId != null) result.leftId = leftId;
     if (rightId != null) result.rightId = rightId;
+    if (nodeMac != null) result.nodeMac = nodeMac;
+    if (gpio != null) result.gpio = gpio;
+    if (high != null) result.high = high;
     return result;
   }
 
@@ -799,6 +805,10 @@ class MatrixCondition extends $pb.GeneratedMessage {
     ..aOB(4, _omitFieldNames ? '' : 'inverted')
     ..aI(5, _omitFieldNames ? '' : 'leftId', fieldType: $pb.PbFieldType.OU3)
     ..aI(6, _omitFieldNames ? '' : 'rightId', fieldType: $pb.PbFieldType.OU3)
+    ..a<$core.List<$core.int>>(
+        7, _omitFieldNames ? '' : 'nodeMac', $pb.PbFieldType.OY)
+    ..aI(8, _omitFieldNames ? '' : 'gpio', fieldType: $pb.PbFieldType.OU3)
+    ..aOB(9, _omitFieldNames ? '' : 'high')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -873,6 +883,33 @@ class MatrixCondition extends $pb.GeneratedMessage {
   $core.bool hasRightId() => $_has(5);
   @$pb.TagNumber(6)
   void clearRightId() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.List<$core.int> get nodeMac => $_getN(6);
+  @$pb.TagNumber(7)
+  set nodeMac($core.List<$core.int> value) => $_setBytes(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasNodeMac() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearNodeMac() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.int get gpio => $_getIZ(7);
+  @$pb.TagNumber(8)
+  set gpio($core.int value) => $_setUnsignedInt32(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasGpio() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearGpio() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.bool get high => $_getBF(8);
+  @$pb.TagNumber(9)
+  set high($core.bool value) => $_setBool(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasHigh() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearHigh() => $_clearField(9);
 }
 
 class MatrixMode extends $pb.GeneratedMessage {

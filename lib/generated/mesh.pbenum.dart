@@ -252,6 +252,8 @@ class MatrixCondition_Kind extends $pb.ProtobufEnum {
       MatrixCondition_Kind._(4, _omitEnumNames ? '' : 'OR');
   static const MatrixCondition_Kind NEVER =
       MatrixCondition_Kind._(5, _omitEnumNames ? '' : 'NEVER');
+  static const MatrixCondition_Kind GPIO_STATE =
+      MatrixCondition_Kind._(6, _omitEnumNames ? '' : 'GPIO_STATE');
 
   static const $core.List<MatrixCondition_Kind> values = <MatrixCondition_Kind>[
     CONDITION_UNSPECIFIED,
@@ -260,10 +262,11 @@ class MatrixCondition_Kind extends $pb.ProtobufEnum {
     AND,
     OR,
     NEVER,
+    GPIO_STATE,
   ];
 
   static final $core.List<MatrixCondition_Kind?> _byValue =
-      $pb.ProtobufEnum.$_initByValueList(values, 5);
+      $pb.ProtobufEnum.$_initByValueList(values, 6);
   static MatrixCondition_Kind? valueOf($core.int value) =>
       value < 0 || value >= _byValue.length ? null : _byValue[value];
 

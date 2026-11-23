@@ -348,6 +348,46 @@ void main() {
     expect(editor.config.entries.single.priority, 10);
     expect(tester.takeException(), isNull);
   });
+  testWidgets('saves and reopens a node GPIO high condition', (tester) async {
+    final editor = await open(tester);
+    await tester.tap(find.byKey(const ValueKey('matrix-entry-1')));
+    await tester.pumpAndSettle();
+    final picker = find.byKey(const ValueKey('entry-mode'));
+    await tester.ensureVisible(picker);
+    await tester.tap(picker);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('GPIO state').last);
+    await tester.pumpAndSettle();
+    final node = find.byWidgetPredicate(
+      (w) => w.key.toString().contains('condition-node--1-'),
+    );
+    await tester.ensureVisible(node);
+    await tester.pumpAndSettle();
+    await tester.tap(node);
+    await tester.pumpAndSettle();
+    await tester.tap(find.textContaining('Node ·').last);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('High'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('High'));
+    await tester.pumpAndSettle();
+    final save = find.byKey(const ValueKey('save-entry'));
+    await tester.ensureVisible(save);
+    await tester.pumpAndSettle();
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    final condition = editor.config.conditions.firstWhere(
+      (c) => c.id == editor.config.entries.single.conditionId,
+    );
+    expect(condition.kind, MatrixCondition_Kind.GPIO_STATE);
+    expect(condition.nodeMac.first, 4);
+    expect(condition.gpio, 12);
+    expect(condition.high, isTrue);
+    await tester.tap(find.byKey(const ValueKey('matrix-entry-1')));
+    await tester.pumpAndSettle();
+    expect(find.text('GPIO state'), findsOneWidget);
+    expect(find.text('High'), findsOneWidget);
+  });
   testWidgets('edits an AND condition with an inverted mode', (tester) async {
     final editor = await open(tester);
     editor.config.modes.addAll([

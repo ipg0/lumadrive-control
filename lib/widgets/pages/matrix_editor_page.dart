@@ -296,7 +296,7 @@ class _MatrixEditorPageState extends ConsumerState<MatrixEditorPage>
                                 value,
                                 trigger,
                                 newEffects: effects,
-                                conditionValues: conditions,
+                                conditionSelections: conditions,
                                 conditionOperator: conditionOperator,
                               );
                               if (saved) _closeForm();

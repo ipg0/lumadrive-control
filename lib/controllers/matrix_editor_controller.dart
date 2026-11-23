@@ -258,6 +258,19 @@ class MatrixEditorController extends ChangeNotifier {
     }
     final conditions = {for (final c in config.conditions) c.id: c};
     final visiting = <int>{}, visited = <int>{};
+    bool validGpioCondition(MatrixCondition c) {
+      if (c.nodeMac.length != 6 ||
+          c.nodeMac.every((b) => b == 0) ||
+          (c.nodeMac.first & 1) != 0 ||
+          c.gpio > 39) {
+        return false;
+      }
+      final node = document?.nodes
+          .where((n) => listEquals(n.nodeMac, c.nodeMac))
+          .firstOrNull;
+      return node == null || !node.known || node.gpios.contains(c.gpio);
+    }
+
     bool validCondition(int id) {
       final c = conditions[id];
       if (c == null || visiting.contains(id)) return false;
@@ -266,6 +279,8 @@ class MatrixEditorController extends ChangeNotifier {
       final valid =
           c.kind == MatrixCondition_Kind.ALWAYS ||
           c.kind == MatrixCondition_Kind.NEVER ||
+          (c.kind == MatrixCondition_Kind.GPIO_STATE &&
+              validGpioCondition(c)) ||
           (c.kind == MatrixCondition_Kind.MODE &&
               config.modes.any((m) => m.id == c.modeId)) ||
           ((c.kind == MatrixCondition_Kind.AND ||
@@ -554,6 +569,7 @@ class MatrixEditorController extends ChangeNotifier {
     int secondModeId = 0,
     int conditionOperator = 0,
     List<int>? conditionValues,
+    List<MatrixCondition>? conditionSelections,
   }) {
     if (_disposed || applying) return false;
     if (value.id == 0 && config.entries.length >= 32) {
@@ -582,40 +598,46 @@ class MatrixEditorController extends ChangeNotifier {
     final stagedConditions = config.conditions
         .map((c) => c.deepCopy())
         .toList();
+    MatrixCondition fromValue(int id) => MatrixCondition(
+      kind: id == neverConditionValue
+          ? MatrixCondition_Kind.NEVER
+          : id == 0
+          ? MatrixCondition_Kind.ALWAYS
+          : MatrixCondition_Kind.MODE,
+      modeId: id == neverConditionValue ? 0 : id.abs(),
+      inverted: id != neverConditionValue && id < 0,
+    );
     final values =
-        conditionValues ?? [modeId, if (conditionOperator != 0) secondModeId];
+        conditionSelections ??
+        (conditionValues ?? [modeId, if (conditionOperator != 0) secondModeId])
+            .map(fromValue)
+            .toList();
     if (values.isEmpty || (conditionOperator != 0 && values.length < 2)) {
       error = 'A combined condition needs at least two conditions.';
       _changed();
       return false;
     }
-    MatrixCondition? leaf(int id) => stagedConditions
+    MatrixCondition? leaf(MatrixCondition value) => stagedConditions
         .where(
-          (c) => id == neverConditionValue
-              ? c.kind == MatrixCondition_Kind.NEVER
-              : id == 0
-              ? c.kind == MatrixCondition_Kind.ALWAYS
-              : c.kind == MatrixCondition_Kind.MODE &&
-                    c.modeId == id.abs() &&
-                    c.inverted == (id < 0),
+          (c) =>
+              c.kind == value.kind &&
+              (value.kind == MatrixCondition_Kind.MODE
+                  ? c.modeId == value.modeId && c.inverted == value.inverted
+                  : value.kind == MatrixCondition_Kind.GPIO_STATE
+                  ? listEquals(c.nodeMac, value.nodeMac) &&
+                        c.gpio == value.gpio &&
+                        c.high == value.high
+                  : true),
         )
         .firstOrNull;
     final groupKind = conditionOperator == 1
         ? MatrixCondition_Kind.AND
         : MatrixCondition_Kind.OR;
-    MatrixCondition ensureLeaf(int id) {
-      final existing = leaf(id);
+    MatrixCondition ensureLeaf(MatrixCondition value) {
+      final existing = leaf(value);
       if (existing != null) return existing;
-      final created = MatrixCondition(
-        id: _id(stagedConditions.map((c) => c.id)),
-        kind: id == neverConditionValue
-            ? MatrixCondition_Kind.NEVER
-            : id == 0
-            ? MatrixCondition_Kind.ALWAYS
-            : MatrixCondition_Kind.MODE,
-        modeId: id == neverConditionValue ? 0 : id.abs(),
-        inverted: id != neverConditionValue && id < 0,
-      );
+      final created = value.deepCopy()
+        ..id = _id(stagedConditions.map((c) => c.id));
       stagedConditions.add(created);
       return created;
     }
