@@ -111,6 +111,22 @@ void main() {
       await tester.tap(find.byKey(const ValueKey('save-animation')));
       await tester.pumpAndSettle();
       expect(editor.config.effects, isEmpty);
+      final editAnimation = find.byKey(const ValueKey('edit-entry-animation'));
+      await tester.ensureVisible(editAnimation);
+      await tester.tap(editAnimation);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const ValueKey('animation-name')));
+      await tester.enterText(
+        find.byKey(const ValueKey('animation-name')),
+        'Edited pulse',
+      );
+      FocusManager.instance.primaryFocus?.unfocus();
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const ValueKey('save-animation')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('save-animation')));
+      await tester.pumpAndSettle();
+      expect(editor.config.effects, isEmpty);
       expect(
         tester
             .widget<TextFormField>(find.byKey(const ValueKey('entry-name')))
@@ -135,13 +151,54 @@ void main() {
         editor.config.entries.single.effectId,
         editor.config.effects.single.id,
       );
-      expect(editor.config.effects.single.name, 'Quick pulse');
+      expect(editor.config.effects.single.name, 'Edited pulse');
       expect(editor.config.effects.single.kind, MatrixEffect_Kind.BREATHE);
       expect((editor.repository as FakeMatrixEditorRepository).applied, isNull);
       expect(editor.validationError, isNull);
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('edits a selected library animation without losing entry edits', (
+    tester,
+  ) async {
+    final editor = await open(tester);
+    await tester.tap(find.byKey(const ValueKey('matrix-entry-1')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const ValueKey('entry-name')),
+      'Entry draft',
+    );
+    final edit = find.byKey(const ValueKey('edit-entry-animation'));
+    await tester.ensureVisible(edit);
+    await tester.tap(edit);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('animation-name')));
+    await tester.enterText(
+      find.byKey(const ValueKey('animation-name')),
+      'Updated animation',
+    );
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('save-animation')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('save-animation')));
+    await tester.pumpAndSettle();
+    expect(editor.config.effects.single.name, 'Updated animation');
+    expect(
+      tester
+          .widget<TextFormField>(find.byKey(const ValueKey('entry-name')))
+          .controller!
+          .text,
+      'Entry draft',
+    );
+    await tester.ensureVisible(find.byKey(const ValueKey('save-entry')));
+    await tester.tap(find.byKey(const ValueKey('save-entry')));
+    await tester.pumpAndSettle();
+    expect(editor.config.entries.single.name, 'Entry draft');
+    expect(editor.config.entries.single.effectId, 1);
+    expect((editor.repository as FakeMatrixEditorRepository).applied, isNull);
+  });
 
   testWidgets('static color clears legacy modulation when saved', (
     tester,

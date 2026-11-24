@@ -1105,8 +1105,9 @@ class _ColorPickerDialogState extends State<_ColorPickerDialog> {
   }
 
   void _readHex() {
-    if (_updatingHex || !RegExp(r'^[0-9a-fA-F]{6}$').hasMatch(_hex.text))
+    if (_updatingHex || !RegExp(r'^[0-9a-fA-F]{6}$').hasMatch(_hex.text)) {
       return;
+    }
     final color = colorFromHex(_hex.text, enableAlpha: false);
     if (color == null) return;
     final hsv = HSVColor.fromColor(color);

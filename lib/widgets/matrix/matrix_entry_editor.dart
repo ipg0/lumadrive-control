@@ -335,18 +335,32 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
               ),
               const SizedBox(height: 16),
               if (_newAnimation == null)
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    key: const ValueKey('create-entry-animation'),
-                    icon: const Icon(Icons.add),
-                    label: const Text('Create animation'),
-                    onPressed: effects.length >= 32
-                        ? null
-                        : () => setState(
-                            () => _newAnimation = newSimpleAnimation(),
-                          ),
-                  ),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    TextButton.icon(
+                      key: const ValueKey('create-entry-animation'),
+                      icon: const Icon(Icons.add),
+                      label: const Text('Create animation'),
+                      onPressed: effects.length >= 32
+                          ? null
+                          : () => setState(
+                              () => _newAnimation = newSimpleAnimation(),
+                            ),
+                    ),
+                    TextButton.icon(
+                      key: const ValueKey('edit-entry-animation'),
+                      icon: const Icon(Icons.edit_outlined),
+                      label: const Text('Edit animation'),
+                      onPressed: effects.any((e) => e.id == _entry.effectId)
+                          ? () => setState(
+                              () => _newAnimation = effects
+                                  .firstWhere((e) => e.id == _entry.effectId)
+                                  .deepCopy(),
+                            )
+                          : null,
+                    ),
+                  ],
                 ),
               if (_newAnimation != null) ...[
                 AnimationEditor(
@@ -369,6 +383,18 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                   failureMessage: () => widget.controller.error,
                   onCancel: () => setState(() => _newAnimation = null),
                   onSave: (value) {
+                    final stagedIndex = _newEffects.indexWhere(
+                      (effect) => effect.id == value.id && value.id != 0,
+                    );
+                    if (stagedIndex >= 0) {
+                      setState(() {
+                        _newEffects[stagedIndex] = value.deepCopy();
+                        _entry.effectId = value.id;
+                        _newAnimation = null;
+                        _updateName();
+                      });
+                      return true;
+                    }
                     if (value.id != 0 &&
                         widget.controller.effect(value.id) != null) {
                       if (widget.controller.effect(value.id) != value) {
