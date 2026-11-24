@@ -11,6 +11,7 @@ import 'package:lumadrive_control/utils/stringify_mac.dart';
 
 import 'simple_animation_preview.dart';
 import 'keyframe_editor.dart';
+import 'signal_editor_dialog.dart';
 
 String? unsignedNumber(String? value, {int min = 0, int max = 0xffffffff}) {
   final number = int.tryParse(value ?? '');
@@ -33,6 +34,9 @@ class AnimationEditor extends StatefulWidget {
   final List<MatrixLayout> layout;
   final List<LayoutOutput> outputCatalog;
   final Map<String, String> nodeNames;
+  final List<SignalGenerator> signals;
+  final int Function()? nextSignalId;
+  final void Function(SignalGenerator)? onSignalSave;
   const AnimationEditor({
     super.key,
     required this.initial,
@@ -50,6 +54,9 @@ class AnimationEditor extends StatefulWidget {
     this.layout = const [],
     this.outputCatalog = const [],
     this.nodeNames = const {},
+    this.signals = const [],
+    this.nextSignalId,
+    this.onSignalSave,
   });
   @override
   State<AnimationEditor> createState() => _AnimationEditorState();
@@ -64,6 +71,9 @@ class _AnimationEditorState extends State<AnimationEditor> {
   bool _saving = false;
   bool _automaticName = false;
   late bool _breatheColors;
+  late bool _modulated;
+  late int _signalId;
+  late AnimationModulation_Curve _mappingCurve;
   String? _saveError;
   late final TextEditingController _name,
       _duration,
@@ -72,10 +82,22 @@ class _AnimationEditorState extends State<AnimationEditor> {
       _wavelength,
       _regionStart,
       _regionEnd;
+  late final TextEditingController _signalMin, _signalMax;
   @override
   void initState() {
     super.initState();
     _effect = widget.initial.deepCopy();
+    _modulated = _effect.hasModulation();
+    _signalId = _modulated ? _effect.modulation.signalId : 0;
+    _mappingCurve = _modulated
+        ? _effect.modulation.curve
+        : AnimationModulation_Curve.LINEAR;
+    _signalMin = TextEditingController(
+      text: _modulated ? '${_effect.modulation.minimum}' : '0',
+    );
+    _signalMax = TextEditingController(
+      text: _modulated ? '${_effect.modulation.maximum}' : '1',
+    );
     _breatheColors =
         _effect.kind == MatrixEffect_Kind.BREATHE &&
         _effect.gradientColors.isNotEmpty;
@@ -119,6 +141,8 @@ class _AnimationEditorState extends State<AnimationEditor> {
       _wavelength,
       _regionStart,
       _regionEnd,
+      _signalMin,
+      _signalMax,
     ]) {
       field.dispose();
     }
@@ -144,6 +168,16 @@ class _AnimationEditorState extends State<AnimationEditor> {
               _effect.kind == MatrixEffect_Kind.RAINBOW)
           ? int.tryParse(_wavelength.text) ?? 0
           : 0;
+    if (_modulated) {
+      value.modulation = AnimationModulation(
+        signalId: _signalId,
+        minimum: double.tryParse(_signalMin.text) ?? 0,
+        maximum: double.tryParse(_signalMax.text) ?? 1,
+        curve: _mappingCurve,
+      );
+    } else {
+      value.clearModulation();
+    }
     if (value.kind == MatrixEffect_Kind.KEYFRAMES ||
         _regionStart.text.trim().isEmpty) {
       value.clearRegionStart();
@@ -173,8 +207,9 @@ class _AnimationEditorState extends State<AnimationEditor> {
         ..green = first.green
         ..blue = first.blue
         ..alpha = first.alpha;
-      if (value.kind == MatrixEffect_Kind.FLOWING_GRADIENT)
+      if (value.kind == MatrixEffect_Kind.FLOWING_GRADIENT) {
         value.secondaryColor = _gradient[1].deepCopy();
+      }
     }
     return value;
   }
@@ -184,6 +219,28 @@ class _AnimationEditorState extends State<AnimationEditor> {
     _gradient.insert(index + delta, color);
     _gradientIds.insert(index + delta, id);
   });
+
+  Future<void> _editSignal([SignalGenerator? existing]) async {
+    if (widget.onSignalSave == null || widget.nextSignalId == null) return;
+    final initial =
+        existing?.deepCopy() ??
+        SignalGenerator(
+          id: widget.nextSignalId!(),
+          name: 'Signal ${widget.nextSignalId!()}',
+          kind: SignalGenerator_Kind.SINE,
+          periodMs: 1000,
+          amplitude: 1,
+          offset: 0,
+          phase: 0,
+        );
+    final result = await showDialog<SignalGenerator>(
+      context: context,
+      builder: (_) => SignalEditorDialog(signal: initial),
+    );
+    if (result == null || !mounted) return;
+    widget.onSignalSave!(result);
+    setState(() => _signalId = result.id);
+  }
 
   Widget _regionField(bool start) {
     final field = start ? _regionStart : _regionEnd;
@@ -428,6 +485,122 @@ class _AnimationEditorState extends State<AnimationEditor> {
                 _regionField(false),
                 const SizedBox(height: 18),
               ],
+              SwitchListTile(
+                key: const ValueKey('animation-modulated'),
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Modulate animation'),
+                subtitle: const Text(
+                  'A signal controls the animation position; playback stays active.',
+                ),
+                value: _modulated,
+                onChanged: (v) => setState(() => _modulated = v),
+              ),
+              if (_modulated) ...[
+                DropdownButtonFormField<int>(
+                  key: ValueKey('modulation-signal-$_signalId'),
+                  initialValue: widget.signals.any((s) => s.id == _signalId)
+                      ? _signalId
+                      : null,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    labelText: 'Signal',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: [
+                    for (final signal in widget.signals)
+                      DropdownMenuItem(
+                        value: signal.id,
+                        child: Text(signal.name),
+                      ),
+                  ],
+                  onChanged: (v) => setState(() => _signalId = v ?? 0),
+                  validator: (v) => v == null ? 'Choose a signal' : null,
+                ),
+                Wrap(
+                  spacing: 8,
+                  children: [
+                    TextButton.icon(
+                      onPressed: widget.onSignalSave == null
+                          ? null
+                          : () => _editSignal(),
+                      icon: const Icon(Icons.add),
+                      label: const Text('New generator'),
+                    ),
+                    if (widget.signals.any(
+                      (s) =>
+                          s.id == _signalId &&
+                          s.kind != SignalGenerator_Kind.SENSOR,
+                    ))
+                      TextButton(
+                        onPressed: () => _editSignal(
+                          widget.signals.firstWhere((s) => s.id == _signalId),
+                        ),
+                        child: const Text('Edit generator'),
+                      ),
+                  ],
+                ),
+                for (final field in [
+                  (_signalMin, 'Input minimum'),
+                  (_signalMax, 'Input maximum'),
+                ])
+                  TextFormField(
+                    controller: field.$1,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      signed: true,
+                      decimal: true,
+                    ),
+                    decoration: InputDecoration(
+                      labelText: field.$2,
+                      border: const OutlineInputBorder(),
+                    ),
+                    onChanged: (_) => setState(() {}),
+                    validator: (text) {
+                      final number = double.tryParse(text ?? ''),
+                          min = double.tryParse(_signalMin.text),
+                          max = double.tryParse(_signalMax.text);
+                      if (number == null || !number.isFinite) {
+                        return 'Enter a finite number';
+                      }
+                      if (min != null && max != null && min >= max) {
+                        return 'Minimum must be less than maximum';
+                      }
+                      return null;
+                    },
+                  ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<AnimationModulation_Curve>(
+                  initialValue: _mappingCurve,
+                  decoration: const InputDecoration(
+                    labelText: 'Mapping curve',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                      value: AnimationModulation_Curve.LINEAR,
+                      child: Text('Linear'),
+                    ),
+                    DropdownMenuItem(
+                      value: AnimationModulation_Curve.EASE_IN,
+                      child: Text('Ease in'),
+                    ),
+                    DropdownMenuItem(
+                      value: AnimationModulation_Curve.EASE_OUT,
+                      child: Text('Ease out'),
+                    ),
+                    DropdownMenuItem(
+                      value: AnimationModulation_Curve.SMOOTH,
+                      child: Text('Smooth'),
+                    ),
+                  ],
+                  onChanged: (v) => setState(() => _mappingCurve = v!),
+                ),
+                if (_effect.kind == MatrixEffect_Kind.STATIC_COLOR ||
+                    _effect.kind == MatrixEffect_Kind.DIMMING)
+                  const Text(
+                    'This animation has no changing frames, so modulation will not change its appearance.',
+                  ),
+                const SizedBox(height: 18),
+              ],
               if (_effect.kind == MatrixEffect_Kind.BREATHE)
                 SwitchListTile(
                   key: const ValueKey('breathe-cycle-colors'),
@@ -661,6 +834,12 @@ class _AnimationEditorState extends State<AnimationEditor> {
               if (_effect.kind == MatrixEffect_Kind.KEYFRAMES)
                 KeyframeEditor(
                   effect: _effect,
+                  signal: _modulated
+                      ? widget.signals
+                            .where((s) => s.id == _signalId)
+                            .firstOrNull
+                      : null,
+                  modulation: _modulated ? _value().modulation : null,
                   canvasSize: widget.canvasSize,
                   centerIndex: widget.centerIndex,
                   layout: widget.layout,
@@ -674,6 +853,11 @@ class _AnimationEditorState extends State<AnimationEditor> {
               else
                 SimpleAnimationPreview(
                   effect: _value(),
+                  signal: _modulated
+                      ? widget.signals
+                            .where((s) => s.id == _signalId)
+                            .firstOrNull
+                      : null,
                   canvasSize: widget.canvasSize,
                   centerIndex: widget.centerIndex,
                   caption: widget.previewCaption,

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lumadrive_control/generated/mesh.pb.dart';
+import 'package:lumadrive_control/utils/animation_signal.dart';
 import 'package:lumadrive_control/utils/car_positions.dart';
 
 const maxKeyframes = 16;
@@ -109,8 +110,9 @@ Color sampleKeyframes(
   MatrixEffect effect,
   int timeMs,
   int pixel,
-  int canvasSize,
-) {
+  int canvasSize, [
+  bool samplePosition = false,
+]) {
   if (canvasSize <= 0 ||
       pixel < 0 ||
       pixel >= canvasSize ||
@@ -123,7 +125,9 @@ Color sampleKeyframes(
     (tracks[f.trackId] ??= []).add(f);
     cycle = math.max(cycle, f.timeMs);
   }
-  final time = effect.loop && cycle > 0 ? timeMs % cycle : timeMs;
+  final time = effect.loop && !samplePosition && cycle > 0
+      ? timeMs % cycle
+      : timeMs;
   var result = Colors.transparent;
   for (final frames in tracks.values) {
     var a = frames.first;
@@ -179,6 +183,8 @@ class KeyframeEditor extends StatefulWidget {
   final int canvasSize;
   final int? centerIndex;
   final List<MatrixLayout> layout;
+  final SignalGenerator? signal;
+  final AnimationModulation? modulation;
   final VoidCallback onChanged;
   final Widget Function(MatrixColor, ValueChanged<MatrixColor>) colorEditor;
   const KeyframeEditor({
@@ -187,6 +193,8 @@ class KeyframeEditor extends StatefulWidget {
     required this.canvasSize,
     this.centerIndex,
     required this.layout,
+    this.signal,
+    this.modulation,
     required this.onChanged,
     required this.colorEditor,
   });
@@ -224,7 +232,17 @@ class _KeyframeEditorState extends State<KeyframeEditor>
     super.initState();
     _playback = AnimationController(vsync: this)
       ..addListener(() {
-        if (mounted) setState(() => _playhead = _playback.value * _cycle);
+        if (mounted) {
+          setState(
+            () => _playhead = widget.signal != null && widget.modulation != null
+                ? mapSignal(
+                        virtualSignal(widget.signal!, _playback.value),
+                        widget.modulation!,
+                      ) *
+                      _cycle
+                : _playback.value * _cycle,
+          );
+        }
       });
     if (widget.effect.keyframes.isNotEmpty) {
       _select(widget.effect.keyframes.first);
@@ -263,10 +281,15 @@ class _KeyframeEditorState extends State<KeyframeEditor>
       setState(() => _playing = false);
       return;
     }
-    _playback.duration = Duration(milliseconds: _cycle);
+    _playback.duration = Duration(
+      milliseconds: widget.signal != null && widget.modulation != null
+          ? widget.signal!.periodMs
+          : _cycle,
+    );
     _playback.value = (_playhead / _cycle).clamp(0.0, 1.0);
     setState(() => _playing = true);
-    if (widget.effect.loop) {
+    if (widget.effect.loop ||
+        (widget.signal != null && widget.modulation != null)) {
       _playback.repeat();
     } else {
       _playback
@@ -402,6 +425,7 @@ class _KeyframeEditorState extends State<KeyframeEditor>
                                               count)
                                           .floor(),
                                       math.max(1, widget.canvasSize),
+                                      widget.modulation != null,
                                     ),
                                     scheme.surfaceContainerHighest,
                                   ),

@@ -171,6 +171,66 @@ class MatrixInterpolation extends $pb.ProtobufEnum {
   const MatrixInterpolation._(super.value, super.name);
 }
 
+class SignalGenerator_Kind extends $pb.ProtobufEnum {
+  static const SignalGenerator_Kind SIGNAL_UNSPECIFIED =
+      SignalGenerator_Kind._(0, _omitEnumNames ? '' : 'SIGNAL_UNSPECIFIED');
+  static const SignalGenerator_Kind SINE =
+      SignalGenerator_Kind._(1, _omitEnumNames ? '' : 'SINE');
+  static const SignalGenerator_Kind TRIANGLE =
+      SignalGenerator_Kind._(2, _omitEnumNames ? '' : 'TRIANGLE');
+  static const SignalGenerator_Kind SQUARE =
+      SignalGenerator_Kind._(3, _omitEnumNames ? '' : 'SQUARE');
+  static const SignalGenerator_Kind SAWTOOTH =
+      SignalGenerator_Kind._(4, _omitEnumNames ? '' : 'SAWTOOTH');
+  static const SignalGenerator_Kind REVERSE_SAWTOOTH =
+      SignalGenerator_Kind._(5, _omitEnumNames ? '' : 'REVERSE_SAWTOOTH');
+  static const SignalGenerator_Kind SENSOR =
+      SignalGenerator_Kind._(6, _omitEnumNames ? '' : 'SENSOR');
+
+  static const $core.List<SignalGenerator_Kind> values = <SignalGenerator_Kind>[
+    SIGNAL_UNSPECIFIED,
+    SINE,
+    TRIANGLE,
+    SQUARE,
+    SAWTOOTH,
+    REVERSE_SAWTOOTH,
+    SENSOR,
+  ];
+
+  static final $core.List<SignalGenerator_Kind?> _byValue =
+      $pb.ProtobufEnum.$_initByValueList(values, 6);
+  static SignalGenerator_Kind? valueOf($core.int value) =>
+      value < 0 || value >= _byValue.length ? null : _byValue[value];
+
+  const SignalGenerator_Kind._(super.value, super.name);
+}
+
+class AnimationModulation_Curve extends $pb.ProtobufEnum {
+  static const AnimationModulation_Curve LINEAR =
+      AnimationModulation_Curve._(0, _omitEnumNames ? '' : 'LINEAR');
+  static const AnimationModulation_Curve EASE_IN =
+      AnimationModulation_Curve._(1, _omitEnumNames ? '' : 'EASE_IN');
+  static const AnimationModulation_Curve EASE_OUT =
+      AnimationModulation_Curve._(2, _omitEnumNames ? '' : 'EASE_OUT');
+  static const AnimationModulation_Curve SMOOTH =
+      AnimationModulation_Curve._(3, _omitEnumNames ? '' : 'SMOOTH');
+
+  static const $core.List<AnimationModulation_Curve> values =
+      <AnimationModulation_Curve>[
+    LINEAR,
+    EASE_IN,
+    EASE_OUT,
+    SMOOTH,
+  ];
+
+  static final $core.List<AnimationModulation_Curve?> _byValue =
+      $pb.ProtobufEnum.$_initByValueList(values, 3);
+  static AnimationModulation_Curve? valueOf($core.int value) =>
+      value < 0 || value >= _byValue.length ? null : _byValue[value];
+
+  const AnimationModulation_Curve._(super.value, super.name);
+}
+
 class MatrixEffect_Kind extends $pb.ProtobufEnum {
   static const MatrixEffect_Kind EFFECT_UNSPECIFIED =
       MatrixEffect_Kind._(0, _omitEnumNames ? '' : 'EFFECT_UNSPECIFIED');

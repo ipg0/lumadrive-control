@@ -239,6 +239,249 @@ class MatrixColor extends $pb.GeneratedMessage {
   void clearAlpha() => $_clearField(4);
 }
 
+class SignalGenerator extends $pb.GeneratedMessage {
+  factory SignalGenerator({
+    $core.int? id,
+    $core.String? name,
+    SignalGenerator_Kind? kind,
+    $core.int? periodMs,
+    $core.double? amplitude,
+    $core.double? offset,
+    $core.double? phase,
+    $core.List<$core.int>? nodeMac,
+    $core.int? sensorId,
+  }) {
+    final result = create();
+    if (id != null) result.id = id;
+    if (name != null) result.name = name;
+    if (kind != null) result.kind = kind;
+    if (periodMs != null) result.periodMs = periodMs;
+    if (amplitude != null) result.amplitude = amplitude;
+    if (offset != null) result.offset = offset;
+    if (phase != null) result.phase = phase;
+    if (nodeMac != null) result.nodeMac = nodeMac;
+    if (sensorId != null) result.sensorId = sensorId;
+    return result;
+  }
+
+  SignalGenerator._();
+
+  factory SignalGenerator.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory SignalGenerator.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'SignalGenerator',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'mesh_interop'),
+      createEmptyInstance: create)
+    ..aI(1, _omitFieldNames ? '' : 'id', fieldType: $pb.PbFieldType.OU3)
+    ..aOS(2, _omitFieldNames ? '' : 'name')
+    ..aE<SignalGenerator_Kind>(3, _omitFieldNames ? '' : 'kind',
+        enumValues: SignalGenerator_Kind.values)
+    ..aI(4, _omitFieldNames ? '' : 'periodMs', fieldType: $pb.PbFieldType.OU3)
+    ..aD(5, _omitFieldNames ? '' : 'amplitude', fieldType: $pb.PbFieldType.OF)
+    ..aD(6, _omitFieldNames ? '' : 'offset', fieldType: $pb.PbFieldType.OF)
+    ..aD(7, _omitFieldNames ? '' : 'phase', fieldType: $pb.PbFieldType.OF)
+    ..a<$core.List<$core.int>>(
+        8, _omitFieldNames ? '' : 'nodeMac', $pb.PbFieldType.OY)
+    ..aI(9, _omitFieldNames ? '' : 'sensorId', fieldType: $pb.PbFieldType.OU3)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SignalGenerator clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  SignalGenerator copyWith(void Function(SignalGenerator) updates) =>
+      super.copyWith((message) => updates(message as SignalGenerator))
+          as SignalGenerator;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static SignalGenerator create() => SignalGenerator._();
+  @$core.override
+  SignalGenerator createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static SignalGenerator getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<SignalGenerator>(create);
+  static SignalGenerator? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get id => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set id($core.int value) => $_setUnsignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get name => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set name($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasName() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearName() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  SignalGenerator_Kind get kind => $_getN(2);
+  @$pb.TagNumber(3)
+  set kind(SignalGenerator_Kind value) => $_setField(3, value);
+  @$pb.TagNumber(3)
+  $core.bool hasKind() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearKind() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.int get periodMs => $_getIZ(3);
+  @$pb.TagNumber(4)
+  set periodMs($core.int value) => $_setUnsignedInt32(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasPeriodMs() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearPeriodMs() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.double get amplitude => $_getN(4);
+  @$pb.TagNumber(5)
+  set amplitude($core.double value) => $_setFloat(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasAmplitude() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearAmplitude() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.double get offset => $_getN(5);
+  @$pb.TagNumber(6)
+  set offset($core.double value) => $_setFloat(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasOffset() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearOffset() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.double get phase => $_getN(6);
+  @$pb.TagNumber(7)
+  set phase($core.double value) => $_setFloat(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasPhase() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearPhase() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.List<$core.int> get nodeMac => $_getN(7);
+  @$pb.TagNumber(8)
+  set nodeMac($core.List<$core.int> value) => $_setBytes(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasNodeMac() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearNodeMac() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.int get sensorId => $_getIZ(8);
+  @$pb.TagNumber(9)
+  set sensorId($core.int value) => $_setUnsignedInt32(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasSensorId() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearSensorId() => $_clearField(9);
+}
+
+class AnimationModulation extends $pb.GeneratedMessage {
+  factory AnimationModulation({
+    $core.int? signalId,
+    $core.double? minimum,
+    $core.double? maximum,
+    AnimationModulation_Curve? curve,
+  }) {
+    final result = create();
+    if (signalId != null) result.signalId = signalId;
+    if (minimum != null) result.minimum = minimum;
+    if (maximum != null) result.maximum = maximum;
+    if (curve != null) result.curve = curve;
+    return result;
+  }
+
+  AnimationModulation._();
+
+  factory AnimationModulation.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AnimationModulation.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AnimationModulation',
+      package: const $pb.PackageName(_omitMessageNames ? '' : 'mesh_interop'),
+      createEmptyInstance: create)
+    ..aI(1, _omitFieldNames ? '' : 'signalId', fieldType: $pb.PbFieldType.OU3)
+    ..aD(2, _omitFieldNames ? '' : 'minimum', fieldType: $pb.PbFieldType.OF)
+    ..aD(3, _omitFieldNames ? '' : 'maximum', fieldType: $pb.PbFieldType.OF)
+    ..aE<AnimationModulation_Curve>(4, _omitFieldNames ? '' : 'curve',
+        enumValues: AnimationModulation_Curve.values)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AnimationModulation clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AnimationModulation copyWith(void Function(AnimationModulation) updates) =>
+      super.copyWith((message) => updates(message as AnimationModulation))
+          as AnimationModulation;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AnimationModulation create() => AnimationModulation._();
+  @$core.override
+  AnimationModulation createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static AnimationModulation getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AnimationModulation>(create);
+  static AnimationModulation? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.int get signalId => $_getIZ(0);
+  @$pb.TagNumber(1)
+  set signalId($core.int value) => $_setUnsignedInt32(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSignalId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSignalId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.double get minimum => $_getN(1);
+  @$pb.TagNumber(2)
+  set minimum($core.double value) => $_setFloat(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMinimum() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMinimum() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.double get maximum => $_getN(2);
+  @$pb.TagNumber(3)
+  set maximum($core.double value) => $_setFloat(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasMaximum() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearMaximum() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  AnimationModulation_Curve get curve => $_getN(3);
+  @$pb.TagNumber(4)
+  set curve(AnimationModulation_Curve value) => $_setField(4, value);
+  @$pb.TagNumber(4)
+  $core.bool hasCurve() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearCurve() => $_clearField(4);
+}
+
 class MatrixKeyframe extends $pb.GeneratedMessage {
   factory MatrixKeyframe({
     $core.int? timeMs,
@@ -435,6 +678,7 @@ class MatrixEffect extends $pb.GeneratedMessage {
     $core.bool? fillFromCenter,
     $core.int? regionStart,
     $core.int? regionEnd,
+    AnimationModulation? modulation,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -456,6 +700,7 @@ class MatrixEffect extends $pb.GeneratedMessage {
     if (fillFromCenter != null) result.fillFromCenter = fillFromCenter;
     if (regionStart != null) result.regionStart = regionStart;
     if (regionEnd != null) result.regionEnd = regionEnd;
+    if (modulation != null) result.modulation = modulation;
     return result;
   }
 
@@ -498,6 +743,8 @@ class MatrixEffect extends $pb.GeneratedMessage {
     ..aI(18, _omitFieldNames ? '' : 'regionStart',
         fieldType: $pb.PbFieldType.OU3)
     ..aI(19, _omitFieldNames ? '' : 'regionEnd', fieldType: $pb.PbFieldType.OU3)
+    ..aOM<AnimationModulation>(20, _omitFieldNames ? '' : 'modulation',
+        subBuilder: AnimationModulation.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -679,6 +926,17 @@ class MatrixEffect extends $pb.GeneratedMessage {
   $core.bool hasRegionEnd() => $_has(18);
   @$pb.TagNumber(19)
   void clearRegionEnd() => $_clearField(19);
+
+  @$pb.TagNumber(20)
+  AnimationModulation get modulation => $_getN(19);
+  @$pb.TagNumber(20)
+  set modulation(AnimationModulation value) => $_setField(20, value);
+  @$pb.TagNumber(20)
+  $core.bool hasModulation() => $_has(19);
+  @$pb.TagNumber(20)
+  void clearModulation() => $_clearField(20);
+  @$pb.TagNumber(20)
+  AnimationModulation ensureModulation() => $_ensure(19);
 }
 
 class MatrixSource extends $pb.GeneratedMessage {
@@ -1272,6 +1530,7 @@ class MatrixConfig extends $pb.GeneratedMessage {
     $core.Iterable<MatrixMode>? modes,
     $core.int? activeModeId,
     $core.int? centerIndex,
+    $core.Iterable<SignalGenerator>? signals,
   }) {
     final result = create();
     if (schemaVersion != null) result.schemaVersion = schemaVersion;
@@ -1284,6 +1543,7 @@ class MatrixConfig extends $pb.GeneratedMessage {
     if (modes != null) result.modes.addAll(modes);
     if (activeModeId != null) result.activeModeId = activeModeId;
     if (centerIndex != null) result.centerIndex = centerIndex;
+    if (signals != null) result.signals.addAll(signals);
     return result;
   }
 
@@ -1319,6 +1579,8 @@ class MatrixConfig extends $pb.GeneratedMessage {
         fieldType: $pb.PbFieldType.OU3)
     ..aI(10, _omitFieldNames ? '' : 'centerIndex',
         fieldType: $pb.PbFieldType.OU3)
+    ..pPM<SignalGenerator>(11, _omitFieldNames ? '' : 'signals',
+        subBuilder: SignalGenerator.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1393,6 +1655,9 @@ class MatrixConfig extends $pb.GeneratedMessage {
   $core.bool hasCenterIndex() => $_has(9);
   @$pb.TagNumber(10)
   void clearCenterIndex() => $_clearField(10);
+
+  @$pb.TagNumber(11)
+  $pb.PbList<SignalGenerator> get signals => $_getList(10);
 }
 
 class TransferBegin extends $pb.GeneratedMessage {
@@ -1836,6 +2101,7 @@ class MatrixUpdate extends $pb.GeneratedMessage {
     $core.Iterable<MatrixEntry>? entries,
     $core.Iterable<MatrixMode>? modes,
     $core.int? activeModeId,
+    $core.Iterable<SignalGenerator>? signals,
   }) {
     final result = create();
     if (expectedRevision != null) result.expectedRevision = expectedRevision;
@@ -1846,6 +2112,7 @@ class MatrixUpdate extends $pb.GeneratedMessage {
     if (entries != null) result.entries.addAll(entries);
     if (modes != null) result.modes.addAll(modes);
     if (activeModeId != null) result.activeModeId = activeModeId;
+    if (signals != null) result.signals.addAll(signals);
     return result;
   }
 
@@ -1880,6 +2147,8 @@ class MatrixUpdate extends $pb.GeneratedMessage {
         subBuilder: MatrixMode.create)
     ..aI(8, _omitFieldNames ? '' : 'activeModeId',
         fieldType: $pb.PbFieldType.OU3)
+    ..pPM<SignalGenerator>(9, _omitFieldNames ? '' : 'signals',
+        subBuilder: SignalGenerator.create)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -1942,6 +2211,9 @@ class MatrixUpdate extends $pb.GeneratedMessage {
   $core.bool hasActiveModeId() => $_has(7);
   @$pb.TagNumber(8)
   void clearActiveModeId() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $pb.PbList<SignalGenerator> get signals => $_getList(8);
 }
 
 class MatrixInputNode extends $pb.GeneratedMessage {

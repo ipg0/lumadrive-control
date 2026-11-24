@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:lumadrive_control/generated/mesh.pb.dart';
 import 'package:lumadrive_control/utils/gradient_palette.dart';
+import 'package:lumadrive_control/utils/animation_signal.dart';
 
 Color sampleSimpleAnimation(
   MatrixEffect effect,
@@ -10,6 +11,7 @@ Color sampleSimpleAnimation(
   double position,
   int canvasSize, [
   int? centerIndex,
+  bool samplePosition = false,
 ]) {
   final start = effect.hasRegionStart() ? effect.regionStart : 0;
   final end = effect.hasRegionEnd() ? effect.regionEnd : canvasSize;
@@ -28,7 +30,7 @@ Color sampleSimpleAnimation(
   final primary = rgba(effect.red, effect.green, effect.blue, effect.alpha);
   final p = phase % 1;
   if (effect.kind == MatrixEffect_Kind.FILL) {
-    final progress = effect.loop ? p : phase.clamp(0.0, 1.0);
+    final progress = effect.loop && !samplePosition ? p : phase.clamp(0.0, 1.0);
     final count = math.max(1, canvasSize);
     final filled = (progress * count).ceil();
     final pixel = position.floor().clamp(0, count - 1);
@@ -114,12 +116,14 @@ class SimpleAnimationPreview extends StatefulWidget {
   final String caption;
   final int canvasSize;
   final int? centerIndex;
+  final SignalGenerator? signal;
   const SimpleAnimationPreview({
     super.key,
     required this.effect,
     this.caption = 'One cycle on your phone. Nothing is sent until Apply.',
     required this.canvasSize,
     this.centerIndex,
+    this.signal,
   });
   @override
   State<SimpleAnimationPreview> createState() => _SimpleAnimationPreviewState();
@@ -141,14 +145,20 @@ class _SimpleAnimationPreviewState extends State<SimpleAnimationPreview>
   }
 
   Duration get _period => Duration(
-    milliseconds: widget.effect.periodMs < 2 ? 1000 : widget.effect.periodMs,
+    milliseconds: widget.effect.hasModulation() && widget.signal != null
+        ? widget.signal!.periodMs
+        : widget.effect.periodMs < 2
+        ? 1000
+        : widget.effect.periodMs,
   );
   @override
   void didUpdateWidget(covariant SimpleAnimationPreview oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.effect.periodMs != widget.effect.periodMs ||
         oldWidget.effect.kind != widget.effect.kind ||
-        oldWidget.effect.loop != widget.effect.loop) {
+        oldWidget.effect.loop != widget.effect.loop ||
+        oldWidget.signal?.periodMs != widget.signal?.periodMs ||
+        oldWidget.effect.hasModulation() != widget.effect.hasModulation()) {
       _phase.duration = _period;
       if (_playing) {
         _phase.stop();
@@ -158,7 +168,9 @@ class _SimpleAnimationPreviewState extends State<SimpleAnimationPreview>
   }
 
   void _play() {
-    if (widget.effect.kind == MatrixEffect_Kind.FILL && !widget.effect.loop) {
+    if (!widget.effect.hasModulation() &&
+        widget.effect.kind == MatrixEffect_Kind.FILL &&
+        !widget.effect.loop) {
       _phase.forward(from: _phase.value >= 1 ? 0 : _phase.value);
     } else {
       _phase.repeat(period: _period);
@@ -215,10 +227,20 @@ class _SimpleAnimationPreviewState extends State<SimpleAnimationPreview>
                           color: Color.alphaBlend(
                             sampleSimpleAnimation(
                               widget.effect,
-                              _phase.value,
+                              widget.effect.hasModulation() &&
+                                      widget.signal != null
+                                  ? mapSignal(
+                                      virtualSignal(
+                                        widget.signal!,
+                                        _phase.value,
+                                      ),
+                                      widget.effect.modulation,
+                                    )
+                                  : _phase.value,
                               i * math.max(1, widget.canvasSize) / count,
                               widget.canvasSize,
                               widget.centerIndex,
+                              widget.effect.hasModulation(),
                             ),
                             const Color(0xff25252b),
                           ),

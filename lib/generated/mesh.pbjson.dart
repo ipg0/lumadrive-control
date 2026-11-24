@@ -157,6 +157,92 @@ final $typed_data.Uint8List matrixColorDescriptor = $convert.base64Decode(
     'CgtNYXRyaXhDb2xvchIQCgNyZWQYASABKA1SA3JlZBIUCgVncmVlbhgCIAEoDVIFZ3JlZW4SEg'
     'oEYmx1ZRgDIAEoDVIEYmx1ZRIUCgVhbHBoYRgEIAEoDVIFYWxwaGE=');
 
+@$core.Deprecated('Use signalGeneratorDescriptor instead')
+const SignalGenerator$json = {
+  '1': 'SignalGenerator',
+  '2': [
+    {'1': 'id', '3': 1, '4': 1, '5': 13, '10': 'id'},
+    {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
+    {
+      '1': 'kind',
+      '3': 3,
+      '4': 1,
+      '5': 14,
+      '6': '.mesh_interop.SignalGenerator.Kind',
+      '10': 'kind'
+    },
+    {'1': 'period_ms', '3': 4, '4': 1, '5': 13, '10': 'periodMs'},
+    {'1': 'amplitude', '3': 5, '4': 1, '5': 2, '10': 'amplitude'},
+    {'1': 'offset', '3': 6, '4': 1, '5': 2, '10': 'offset'},
+    {'1': 'phase', '3': 7, '4': 1, '5': 2, '10': 'phase'},
+    {'1': 'node_mac', '3': 8, '4': 1, '5': 12, '10': 'nodeMac'},
+    {'1': 'sensor_id', '3': 9, '4': 1, '5': 13, '10': 'sensorId'},
+  ],
+  '4': [SignalGenerator_Kind$json],
+};
+
+@$core.Deprecated('Use signalGeneratorDescriptor instead')
+const SignalGenerator_Kind$json = {
+  '1': 'Kind',
+  '2': [
+    {'1': 'SIGNAL_UNSPECIFIED', '2': 0},
+    {'1': 'SINE', '2': 1},
+    {'1': 'TRIANGLE', '2': 2},
+    {'1': 'SQUARE', '2': 3},
+    {'1': 'SAWTOOTH', '2': 4},
+    {'1': 'REVERSE_SAWTOOTH', '2': 5},
+    {'1': 'SENSOR', '2': 6},
+  ],
+};
+
+/// Descriptor for `SignalGenerator`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List signalGeneratorDescriptor = $convert.base64Decode(
+    'Cg9TaWduYWxHZW5lcmF0b3ISDgoCaWQYASABKA1SAmlkEhIKBG5hbWUYAiABKAlSBG5hbWUSNg'
+    'oEa2luZBgDIAEoDjIiLm1lc2hfaW50ZXJvcC5TaWduYWxHZW5lcmF0b3IuS2luZFIEa2luZBIb'
+    'CglwZXJpb2RfbXMYBCABKA1SCHBlcmlvZE1zEhwKCWFtcGxpdHVkZRgFIAEoAlIJYW1wbGl0dW'
+    'RlEhYKBm9mZnNldBgGIAEoAlIGb2Zmc2V0EhQKBXBoYXNlGAcgASgCUgVwaGFzZRIZCghub2Rl'
+    'X21hYxgIIAEoDFIHbm9kZU1hYxIbCglzZW5zb3JfaWQYCSABKA1SCHNlbnNvcklkInIKBEtpbm'
+    'QSFgoSU0lHTkFMX1VOU1BFQ0lGSUVEEAASCAoEU0lORRABEgwKCFRSSUFOR0xFEAISCgoGU1FV'
+    'QVJFEAMSDAoIU0FXVE9PVEgQBBIUChBSRVZFUlNFX1NBV1RPT1RIEAUSCgoGU0VOU09SEAY=');
+
+@$core.Deprecated('Use animationModulationDescriptor instead')
+const AnimationModulation$json = {
+  '1': 'AnimationModulation',
+  '2': [
+    {'1': 'signal_id', '3': 1, '4': 1, '5': 13, '10': 'signalId'},
+    {'1': 'minimum', '3': 2, '4': 1, '5': 2, '10': 'minimum'},
+    {'1': 'maximum', '3': 3, '4': 1, '5': 2, '10': 'maximum'},
+    {
+      '1': 'curve',
+      '3': 4,
+      '4': 1,
+      '5': 14,
+      '6': '.mesh_interop.AnimationModulation.Curve',
+      '10': 'curve'
+    },
+  ],
+  '4': [AnimationModulation_Curve$json],
+};
+
+@$core.Deprecated('Use animationModulationDescriptor instead')
+const AnimationModulation_Curve$json = {
+  '1': 'Curve',
+  '2': [
+    {'1': 'LINEAR', '2': 0},
+    {'1': 'EASE_IN', '2': 1},
+    {'1': 'EASE_OUT', '2': 2},
+    {'1': 'SMOOTH', '2': 3},
+  ],
+};
+
+/// Descriptor for `AnimationModulation`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List animationModulationDescriptor = $convert.base64Decode(
+    'ChNBbmltYXRpb25Nb2R1bGF0aW9uEhsKCXNpZ25hbF9pZBgBIAEoDVIIc2lnbmFsSWQSGAoHbW'
+    'luaW11bRgCIAEoAlIHbWluaW11bRIYCgdtYXhpbXVtGAMgASgCUgdtYXhpbXVtEj0KBWN1cnZl'
+    'GAQgASgOMicubWVzaF9pbnRlcm9wLkFuaW1hdGlvbk1vZHVsYXRpb24uQ3VydmVSBWN1cnZlIj'
+    'oKBUN1cnZlEgoKBkxJTkVBUhAAEgsKB0VBU0VfSU4QARIMCghFQVNFX09VVBACEgoKBlNNT09U'
+    'SBAD');
+
 @$core.Deprecated('Use matrixKeyframeDescriptor instead')
 const MatrixKeyframe$json = {
   '1': 'MatrixKeyframe',
@@ -268,6 +354,14 @@ const MatrixEffect$json = {
       '10': 'regionEnd',
       '17': true
     },
+    {
+      '1': 'modulation',
+      '3': 20,
+      '4': 1,
+      '5': 11,
+      '6': '.mesh_interop.AnimationModulation',
+      '10': 'modulation'
+    },
   ],
   '4': [MatrixEffect_Kind$json],
   '8': [
@@ -306,10 +400,11 @@ final $typed_data.Uint8List matrixEffectDescriptor = $convert.base64Decode(
     '1lEkIKD2dyYWRpZW50X2NvbG9ycxgQIAMoCzIZLm1lc2hfaW50ZXJvcC5NYXRyaXhDb2xvclIO'
     'Z3JhZGllbnRDb2xvcnMSKAoQZmlsbF9mcm9tX2NlbnRlchgRIAEoCFIOZmlsbEZyb21DZW50ZX'
     'ISJgoMcmVnaW9uX3N0YXJ0GBIgASgNSABSC3JlZ2lvblN0YXJ0iAEBEiIKCnJlZ2lvbl9lbmQY'
-    'EyABKA1IAVIJcmVnaW9uRW5kiAEBIpEBCgRLaW5kEhYKEkVGRkVDVF9VTlNQRUNJRklFRBAAEh'
-    'AKDFNUQVRJQ19DT0xPUhABEg0KCUtFWUZSQU1FUxACEgkKBUJMSU5LEAMSCwoHQlJFQVRIRRAE'
-    'EhQKEEZMT1dJTkdfR1JBRElFTlQQBRILCgdSQUlOQk9XEAYSCAoERklMTBAHEgsKB0RJTU1JTk'
-    'cQCEIPCg1fcmVnaW9uX3N0YXJ0Qg0KC19yZWdpb25fZW5k');
+    'EyABKA1IAVIJcmVnaW9uRW5kiAEBEkEKCm1vZHVsYXRpb24YFCABKAsyIS5tZXNoX2ludGVyb3'
+    'AuQW5pbWF0aW9uTW9kdWxhdGlvblIKbW9kdWxhdGlvbiKRAQoES2luZBIWChJFRkZFQ1RfVU5T'
+    'UEVDSUZJRUQQABIQCgxTVEFUSUNfQ09MT1IQARINCglLRVlGUkFNRVMQAhIJCgVCTElOSxADEg'
+    'sKB0JSRUFUSEUQBBIUChBGTE9XSU5HX0dSQURJRU5UEAUSCwoHUkFJTkJPVxAGEggKBEZJTEwQ'
+    'BxILCgdESU1NSU5HEAhCDwoNX3JlZ2lvbl9zdGFydEINCgtfcmVnaW9uX2VuZA==');
 
 @$core.Deprecated('Use matrixSourceDescriptor instead')
 const MatrixSource$json = {
@@ -544,6 +639,14 @@ const MatrixConfig$json = {
       '10': 'centerIndex',
       '17': true
     },
+    {
+      '1': 'signals',
+      '3': 11,
+      '4': 3,
+      '5': 11,
+      '6': '.mesh_interop.SignalGenerator',
+      '10': 'signals'
+    },
   ],
   '8': [
     {'1': '_center_index'},
@@ -560,8 +663,9 @@ final $typed_data.Uint8List matrixConfigDescriptor = $convert.base64Decode(
     'IyCgZsYXlvdXQYBiADKAsyGi5tZXNoX2ludGVyb3AuTWF0cml4TGF5b3V0UgZsYXlvdXQSJwoP'
     'ZmFjdG9yeV9kZWZhdWx0GAcgASgIUg5mYWN0b3J5RGVmYXVsdBIuCgVtb2RlcxgIIAMoCzIYLm'
     '1lc2hfaW50ZXJvcC5NYXRyaXhNb2RlUgVtb2RlcxIkCg5hY3RpdmVfbW9kZV9pZBgJIAEoDVIM'
-    'YWN0aXZlTW9kZUlkEiYKDGNlbnRlcl9pbmRleBgKIAEoDUgAUgtjZW50ZXJJbmRleIgBAUIPCg'
-    '1fY2VudGVyX2luZGV4');
+    'YWN0aXZlTW9kZUlkEiYKDGNlbnRlcl9pbmRleBgKIAEoDUgAUgtjZW50ZXJJbmRleIgBARI3Cg'
+    'dzaWduYWxzGAsgAygLMh0ubWVzaF9pbnRlcm9wLlNpZ25hbEdlbmVyYXRvclIHc2lnbmFsc0IP'
+    'Cg1fY2VudGVyX2luZGV4');
 
 @$core.Deprecated('Use transferBeginDescriptor instead')
 const TransferBegin$json = {
@@ -755,6 +859,14 @@ const MatrixUpdate$json = {
       '10': 'modes'
     },
     {'1': 'active_mode_id', '3': 8, '4': 1, '5': 13, '10': 'activeModeId'},
+    {
+      '1': 'signals',
+      '3': 9,
+      '4': 3,
+      '5': 11,
+      '6': '.mesh_interop.SignalGenerator',
+      '10': 'signals'
+    },
   ],
 };
 
@@ -767,7 +879,8 @@ final $typed_data.Uint8List matrixUpdateDescriptor = $convert.base64Decode(
     'IAMoCzIdLm1lc2hfaW50ZXJvcC5NYXRyaXhDb25kaXRpb25SCmNvbmRpdGlvbnMSMwoHZW50cm'
     'llcxgGIAMoCzIZLm1lc2hfaW50ZXJvcC5NYXRyaXhFbnRyeVIHZW50cmllcxIuCgVtb2RlcxgH'
     'IAMoCzIYLm1lc2hfaW50ZXJvcC5NYXRyaXhNb2RlUgVtb2RlcxIkCg5hY3RpdmVfbW9kZV9pZB'
-    'gIIAEoDVIMYWN0aXZlTW9kZUlk');
+    'gIIAEoDVIMYWN0aXZlTW9kZUlkEjcKB3NpZ25hbHMYCSADKAsyHS5tZXNoX2ludGVyb3AuU2ln'
+    'bmFsR2VuZXJhdG9yUgdzaWduYWxz');
 
 @$core.Deprecated('Use matrixInputNodeDescriptor instead')
 const MatrixInputNode$json = {

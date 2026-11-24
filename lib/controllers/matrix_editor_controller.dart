@@ -61,6 +61,7 @@ MatrixUpdate matrixPatch(MatrixConfig config) => MatrixUpdate(
   entries: config.entries,
   modes: config.modes,
   activeModeId: config.activeModeId,
+  signals: config.signals,
 );
 bool sameMatrix(MatrixConfig a, MatrixConfig b) =>
     listEquals(matrixPatch(a).writeToBuffer(), matrixPatch(b).writeToBuffer());
@@ -127,6 +128,7 @@ class MatrixEditorController extends ChangeNotifier {
       config.conditions.length,
       config.entries.length,
       config.modes.length,
+      config.signals.length,
     ].any((n) => n > 32)) {
       return 'Up to 32 entries and 32 definitions per type are supported.';
     }
@@ -136,6 +138,7 @@ class MatrixEditorController extends ChangeNotifier {
       config.conditions.map((e) => e.id),
       config.entries.map((e) => e.id),
       config.modes.map((e) => e.id),
+      config.signals.map((e) => e.id),
     ]) {
       if (ids.any((id) => id <= 0 || id > 0xffffffff) ||
           ids.toSet().length != ids.length) {
@@ -146,6 +149,15 @@ class MatrixEditorController extends ChangeNotifier {
       return 'Configure the car layout before adding playback entries.';
     }
     for (final e in config.effects) {
+      if (e.hasModulation()) {
+        final m = e.modulation;
+        if (!m.minimum.isFinite ||
+            !m.maximum.isFinite ||
+            m.minimum >= m.maximum ||
+            !config.signals.any((signal) => signal.id == m.signalId)) {
+          return 'Invalid animation modulation or missing signal.';
+        }
+      }
       final extent = config.layout.fold<int>(
         0,
         (n, row) => math.max(n, math.max(row.from, row.to)),
@@ -225,6 +237,18 @@ class MatrixEditorController extends ChangeNotifier {
           (e.gradientColors.length == 1 ||
               (e.gradientColors.isEmpty && !e.hasSecondaryColor()))) {
         return 'A gradient needs 2–$maxGradientColors colors.';
+      }
+    }
+    for (final signal in config.signals) {
+      if (signal.name.trim().isEmpty ||
+          utf8.encode(signal.name).length > 32 ||
+          !signal.amplitude.isFinite ||
+          !signal.offset.isFinite ||
+          !signal.phase.isFinite ||
+          signal.kind == SignalGenerator_Kind.SIGNAL_UNSPECIFIED ||
+          (signal.kind != SignalGenerator_Kind.SENSOR &&
+              signal.periodMs < 20)) {
+        return 'Invalid signal generator.';
       }
     }
     for (final entry in config.entries) {
@@ -476,6 +500,21 @@ class MatrixEditorController extends ChangeNotifier {
     ...config.effects.map((effect) => effect.id),
     ...saved.effects.map((effect) => effect.id),
   ]);
+  int get nextSignalId => _id([
+    ...config.signals.map((s) => s.id),
+    ...saved.signals.map((s) => s.id),
+  ]);
+  void saveSignal(SignalGenerator value) {
+    final signal = value.deepCopy();
+    if (signal.id == 0) signal.id = nextSignalId;
+    final index = config.signals.indexWhere((s) => s.id == signal.id);
+    if (index < 0) {
+      config.signals.add(signal);
+    } else {
+      config.signals[index] = signal;
+    }
+    _edited();
+  }
 
   Future<int?> previewEffect(MatrixEffect value) async {
     final id = value.id == 0 ? nextEffectId : value.id;
@@ -515,6 +554,20 @@ class MatrixEditorController extends ChangeNotifier {
         throw StateError('The animation library is full.');
       }
       final submitted = saved;
+      if (next.hasModulation()) {
+        final signal = config.signals
+            .where((s) => s.id == next.modulation.signalId)
+            .firstOrNull;
+        if (signal == null) throw StateError('Choose a signal generator.');
+        final signalIndex = submitted.signals.indexWhere(
+          (s) => s.id == signal.id,
+        );
+        if (signalIndex < 0) {
+          submitted.signals.add(signal.deepCopy());
+        } else {
+          submitted.signals[signalIndex] = signal.deepCopy();
+        }
+      }
       final index = submitted.effects.indexWhere(
         (effect) => effect.id == next.id,
       );

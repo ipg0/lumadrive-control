@@ -136,6 +136,9 @@ class FakeMatrixEditorRepository implements MatrixEditorRepository {
     config.modes
       ..clear()
       ..addAll(update.modes);
+    config.signals
+      ..clear()
+      ..addAll(update.signals);
     config.activeModeId = update.activeModeId;
     document
       ..config = config.writeToBuffer()

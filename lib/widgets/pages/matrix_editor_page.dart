@@ -284,6 +284,9 @@ class _MatrixEditorPageState extends ConsumerState<MatrixEditorPage>
                         layout: _editor.config.layout,
                         nodeNames: nodeNames,
                         outputCatalog: _layoutOutputs,
+                        signals: _editor.config.signals,
+                        nextSignalId: () => _editor.nextSignalId,
+                        onSignalSave: _editor.saveSignal,
                         existingNames: _editor.config.effects
                             .where((effect) => effect.id != _animation!.id)
                             .map(animationTitle),

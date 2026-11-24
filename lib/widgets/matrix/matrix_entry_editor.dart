@@ -355,6 +355,9 @@ class _MatrixEntryEditorState extends State<MatrixEntryEditor> {
                   layout: widget.controller.config.layout,
                   nodeNames: widget.nodeNames,
                   outputCatalog: widget.outputCatalog,
+                  signals: widget.controller.config.signals,
+                  nextSignalId: () => widget.controller.nextSignalId,
+                  onSignalSave: widget.controller.saveSignal,
                   existingNames: effects.map(animationTitle),
                   canvasSize: widget.controller.canvasSize,
                   centerIndex: widget.controller.config.hasCenterIndex()

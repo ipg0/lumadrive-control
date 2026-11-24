@@ -233,7 +233,7 @@ void main() {
     expect(editor.validationError, contains('255'));
     effect.gradientColors.first.red = 255;
     effect.kind = MatrixEffect_Kind.STATIC_COLOR;
-    expect(editor.validationError, contains('require a flowing gradient'));
+    expect(editor.validationError, contains('require a gradient or breathe'));
   });
   test('entry background opacity is saved without creating another entry', () {
     editor.config.modes.add(MatrixMode(id: 1, name: 'Night'));
@@ -268,14 +268,32 @@ void main() {
     expect(editor.validationError, contains('transparent background'));
   });
   test('saves mode negation and a combined condition', () {
-    editor.config.modes.addAll([MatrixMode(id: 1, name: 'Day'), MatrixMode(id: 2, name: 'Night')]);
+    editor.config.modes.addAll([
+      MatrixMode(id: 1, name: 'Day'),
+      MatrixMode(id: 2, name: 'Night'),
+    ]);
     final entry = editor.config.entries.single.deepCopy();
     final source = editor.config.sources.single.deepCopy();
-    expect(editor.saveEntry(entry, source, modeId: 1, secondModeId: -2, conditionOperator: 1), isTrue);
-    final group = editor.config.conditions.firstWhere((c) => c.id == editor.config.entries.single.conditionId);
+    expect(
+      editor.saveEntry(
+        entry,
+        source,
+        modeId: 1,
+        secondModeId: -2,
+        conditionOperator: 1,
+      ),
+      isTrue,
+    );
+    final group = editor.config.conditions.firstWhere(
+      (c) => c.id == editor.config.entries.single.conditionId,
+    );
     expect(group.kind, MatrixCondition_Kind.AND);
-    final left = editor.config.conditions.firstWhere((c) => c.id == group.leftId);
-    final right = editor.config.conditions.firstWhere((c) => c.id == group.rightId);
+    final left = editor.config.conditions.firstWhere(
+      (c) => c.id == group.leftId,
+    );
+    final right = editor.config.conditions.firstWhere(
+      (c) => c.id == group.rightId,
+    );
     expect(left.modeId, 1);
     expect(right.modeId, 2);
     expect(right.inverted, isTrue);
