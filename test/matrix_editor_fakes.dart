@@ -79,12 +79,14 @@ class FakeMatrixEditorRepository implements MatrixEditorRepository {
   }
 
   MatrixDocument document = editorDocument();
+  Future<MatrixDocument> Function()? onRead;
   Future<MatrixDocument> Function()? readCurrent;
   bool disconnected = false, failApply = false;
   MatrixUpdate? applied;
   @override
   Future<MatrixDocument> read() async {
     if (disconnected) throw StateError('Disconnected');
+    if (onRead != null) return onRead!();
     return document.deepCopy()..freeze();
   }
 

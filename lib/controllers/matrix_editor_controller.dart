@@ -90,6 +90,7 @@ class MatrixEditorController extends ChangeNotifier {
   String? error, notice;
   double? progress;
   bool _disposed = false;
+  int _connectionGeneration = 0;
   Timer? _poll, _persistTimer;
   Completer<void>? _refreshDone;
   Future<void> _writes = Future.value();
@@ -105,7 +106,6 @@ class MatrixEditorController extends ChangeNotifier {
   bool get canApply =>
       connected &&
       dirty &&
-      !refreshing &&
       !readingCurrent &&
       !applying &&
       !editing &&
@@ -374,6 +374,7 @@ class MatrixEditorController extends ChangeNotifier {
     if (available) {
       unawaited(refresh());
     } else {
+      _connectionGeneration++;
       if (document != null) {
         final offline = document!.deepCopy();
         for (final node in offline.nodes) {
@@ -390,12 +391,14 @@ class MatrixEditorController extends ChangeNotifier {
       return;
     }
     refreshing = true;
+    final connectionGeneration = _connectionGeneration;
     final done = _refreshDone = Completer<void>();
     _changed();
     try {
       var fresh = await repository.read();
+      if (_disposed || connectionGeneration != _connectionGeneration) return;
       final status = await repository.status();
-      if (_disposed) return;
+      if (_disposed || connectionGeneration != _connectionGeneration) return;
       if (fresh.config.isEmpty ||
           MatrixConfig.fromBuffer(fresh.config).schemaVersion != 0) {
         throw StateError('Unsupported configuration format');
@@ -453,7 +456,7 @@ class MatrixEditorController extends ChangeNotifier {
       error = null;
       _persist();
     } catch (e) {
-      if (!_disposed) {
+      if (!_disposed && connectionGeneration == _connectionGeneration) {
         connectionChanged(false);
         error = _message(e);
       }
@@ -834,6 +837,20 @@ class MatrixEditorController extends ChangeNotifier {
     progress = 0;
     _changed();
     try {
+      await _refreshDone?.future;
+      if (_disposed) return;
+      if (!connected ||
+          conflict ||
+          validationError != null ||
+          document == null) {
+        throw StateError(
+          validationError ?? 'Refresh the controller before applying.',
+        );
+      }
+      if (!dirty) {
+        notice = 'Matrix is already current.';
+        return;
+      }
       final update = matrixPatch(config)
         ..expectedRevision = document!.revision
         ..masterSession = document!.masterSession;
@@ -861,18 +878,17 @@ class MatrixEditorController extends ChangeNotifier {
   }
 
   Future<void> readCurrent() async {
-    if (_disposed ||
-        !connected ||
-        readingCurrent ||
-        refreshing ||
-        applying ||
-        editing) {
+    if (_disposed || !connected || readingCurrent || applying || editing) {
       return;
     }
     readingCurrent = true;
     error = null;
     _changed();
     try {
+      await _refreshDone?.future;
+      if (_disposed) return;
+      if (!connected)
+        throw StateError('Connect to the controller to read its state.');
       final current = await repository.current();
       if (_disposed) return;
       currentDocument = current;

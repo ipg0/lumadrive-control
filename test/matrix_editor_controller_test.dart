@@ -100,6 +100,100 @@ void main() {
     expect(repository.applied, isNull);
   });
   test(
+    'Apply waits for a background refresh before submitting the draft',
+    () async {
+      editor.saveEffect(editor.effect(1)!.deepCopy()..name = 'Draft');
+      final pendingRead = Completer<MatrixDocument>();
+      repository.onRead = () => pendingRead.future;
+      final refresh = editor.refresh();
+      expect(editor.refreshing, isTrue);
+      expect(editor.canApply, isTrue);
+      final apply = editor.apply();
+      expect(editor.applying, isTrue);
+      expect(repository.applied, isNull);
+      repository.onRead = null;
+      pendingRead.complete(editorDocument());
+      await refresh;
+      await apply;
+      expect(repository.applied!.effects.single.name, 'Draft');
+      expect(editor.dirty, isFalse);
+    },
+  );
+
+  test('Apply rechecks conflicts discovered by a background refresh', () async {
+    editor.saveEffect(editor.effect(1)!.deepCopy()..name = 'Draft');
+    final pendingRead = Completer<MatrixDocument>();
+    repository.onRead = () => pendingRead.future;
+    final refresh = editor.refresh();
+    final apply = editor.apply();
+    final changed = editorFixture();
+    changed.effects.single.name = 'Changed remotely';
+    repository.onRead = null;
+    pendingRead.complete(editorDocument(changed)..revision = Int64(8));
+    await refresh;
+    await apply;
+    expect(editor.conflict, isTrue);
+    expect(repository.applied, isNull);
+    expect(editor.effect(1)!.name, 'Draft');
+    expect(editor.error, isNotNull);
+  });
+
+  test('read current waits for a background refresh', () async {
+    final pendingRead = Completer<MatrixDocument>();
+    var currentCalled = false;
+    repository.onRead = () => pendingRead.future;
+    repository.readCurrent = () async {
+      currentCalled = true;
+      return editorDocument();
+    };
+    final refresh = editor.refresh();
+    final read = editor.readCurrent();
+    expect(editor.readingCurrent, isTrue);
+    expect(currentCalled, isFalse);
+    repository.onRead = null;
+    pendingRead.complete(editorDocument());
+    await refresh;
+    await read;
+    expect(currentCalled, isTrue);
+    expect(editor.currentDocument, isNotNull);
+  });
+
+  test('read current aborts if the background refresh disconnects', () async {
+    final pendingRead = Completer<MatrixDocument>();
+    var currentCalled = false;
+    repository.onRead = () => pendingRead.future;
+    repository.readCurrent = () async {
+      currentCalled = true;
+      return editorDocument();
+    };
+    final refresh = editor.refresh();
+    final read = editor.readCurrent();
+    expect(editor.readingCurrent, isTrue);
+    expect(currentCalled, isFalse);
+    pendingRead.completeError(StateError('Disconnected'));
+    await refresh;
+    await read;
+    expect(currentCalled, isFalse);
+    expect(editor.readingCurrent, isFalse);
+    expect(editor.connected, isFalse);
+  });
+
+  test('a stale refresh cannot reconnect after disconnection', () async {
+    editor.saveEffect(editor.effect(1)!.deepCopy()..name = 'Draft');
+    final pendingRead = Completer<MatrixDocument>();
+    repository.onRead = () => pendingRead.future;
+    final refresh = editor.refresh();
+    final apply = editor.apply();
+    editor.connectionChanged(false);
+    repository.onRead = null;
+    pendingRead.complete(editorDocument());
+    await refresh;
+    await apply;
+    expect(editor.connected, isFalse);
+    expect(repository.applied, isNull);
+    expect(editor.effect(1)!.name, 'Draft');
+  });
+  test(
     'reading active state preserves the draft and blocks Apply while reading',
     () async {
       editor.saveEffect(editor.effect(1)!.deepCopy()..name = 'My draft');

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -180,6 +181,35 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('save-animation')));
     await tester.pumpAndSettle();
     expect(editor.config.effects.single.hasModulation(), isFalse);
+  });
+
+  testWidgets('background refresh keeps matrix actions enabled', (
+    tester,
+  ) async {
+    final editor = await open(tester);
+    editor.saveEffect(editor.effect(1)!.deepCopy()..name = 'Draft');
+    await tester.pump();
+    final repository = editor.repository as FakeMatrixEditorRepository;
+    final pendingRead = Completer<MatrixDocument>();
+    repository.onRead = () => pendingRead.future;
+    final refresh = editor.refresh();
+    await tester.pump();
+    expect(
+      tester
+          .widget<FilledButton>(find.byKey(const ValueKey('apply-matrix')))
+          .onPressed,
+      isNotNull,
+    );
+    expect(
+      tester
+          .widget<TextButton>(find.byKey(const ValueKey('read-current-matrix')))
+          .onPressed,
+      isNotNull,
+    );
+    repository.onRead = null;
+    pendingRead.complete(editorDocument());
+    await refresh;
+    await tester.pumpAndSettle();
   });
 
   testWidgets('cancelling an entry discards its unused inline animation', (

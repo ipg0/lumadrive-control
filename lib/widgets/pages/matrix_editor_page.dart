@@ -502,7 +502,6 @@ class _MatrixEditorPageState extends ConsumerState<MatrixEditorPage>
               onPressed:
                   !_editor.connected ||
                       _editor.applying ||
-                      _editor.refreshing ||
                       _editor.readingCurrent
                   ? null
                   : _editor.readCurrent,
