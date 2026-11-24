@@ -4,8 +4,8 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-// Flutter IDE launches do not go through tool/flutter_versioned.sh. Embed the
-// checkout identity in debug APKs so package_info_plus reports the actual build.
+// Direct Flutter and IDE builds do not go through tool/flutter_versioned.sh.
+// Embed the checkout identity in Android packages as well.
 fun gitOutput(vararg arguments: String): String? = try {
     val result = providers.exec {
         workingDir(rootProject.projectDir.parentFile)
@@ -22,6 +22,14 @@ val debugGitDescription = gitOutput(
     "describe", "--tags", "--always", "--dirty", "--match", "v[0-9]*", "--match", "[0-9]*"
 )
 val debugGitBuildNumber = gitOutput("rev-list", "--count", "HEAD")
+    ?.toIntOrNull()?.takeIf { it in 1..2100000000 }
+val pubspecVersion = Regex("(?m)^version:\\s*([^\\s#]+)")
+    .find(rootProject.projectDir.parentFile.resolve("pubspec.yaml").readText())
+    ?.groupValues?.get(1)?.split("+", limit = 2)
+val pubspecVersionName = pubspecVersion?.getOrNull(0)
+val pubspecVersionCode = pubspecVersion?.getOrNull(1)?.toIntOrNull()
+val releaseGitDescription = debugGitDescription?.removePrefix("v")
+val releaseBuildNumber = providers.environmentVariable("LUMADRIVE_BUILD_NUMBER").orNull
     ?.toIntOrNull()?.takeIf { it in 1..2100000000 }
 
 android {
@@ -63,6 +71,18 @@ androidComponents {
         variant.outputs.forEach { output ->
             debugGitDescription?.let { output.versionName.set(it) }
             debugGitBuildNumber?.let { output.versionCode.set(it) }
+        }
+    }
+    onVariants(selector().withBuildType("release")) { variant ->
+        variant.outputs.forEach { output ->
+            // Flutter passes pubspec defaults even when no override was supplied.
+            // Preserve explicit non-default --build-name/--build-number values.
+            if (flutter.versionName == pubspecVersionName) {
+                releaseGitDescription?.let { output.versionName.set(it) }
+            }
+            if (flutter.versionCode == pubspecVersionCode) {
+                (releaseBuildNumber ?: debugGitBuildNumber)?.let { output.versionCode.set(it) }
+            }
         }
     }
 }

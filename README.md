@@ -33,11 +33,13 @@ for example `LUMADRIVE_BUILD_NUMBER=42 bash tool/flutter_versioned.sh build apk`
 Shallow checkouts must be unshallowed or provide this override, and need the
 release tags fetched to derive the intended version.
 
-Android debug builds, including IDE launches, use the Git description as the
-version name (including the commit and `-dirty` when applicable) and the
-reachable commit count as the build number. If Git is unavailable, they fall
-back to `pubspec.yaml`. Android release builds and other platforms still use
-the wrapper for Git-derived versioning.
+Android debug and release builds, including IDE launches and direct
+`flutter build apk` calls, use the Git description as the version name
+(including the commit and `-dirty` when applicable) and the reachable commit
+count as the build number. Explicit Flutter build name and number overrides
+take precedence when they differ from the `pubspec.yaml` defaults. If Git is
+unavailable, Android falls back to `pubspec.yaml`. Other platforms use the
+wrapper for Git-derived versioning.
 
 ## Getting Started
 
