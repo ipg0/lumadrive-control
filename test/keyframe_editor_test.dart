@@ -77,7 +77,7 @@ void main() {
                   alpha: 255,
                 ),
                 canvasSize: 60,
-        centerIndex: 12,
+                centerIndex: 12,
                 onCancel: () {},
                 onSave: (effect) {
                   saved = effect;
@@ -93,8 +93,11 @@ void main() {
       await tester.tap(find.text('Keyframes').last);
       await tester.pumpAndSettle();
       expect(find.byKey(const ValueKey('keyframe-canvas')), findsOneWidget);
-    expect(find.byKey(const ValueKey('keyframe-center-marker')), findsOneWidget);
-    expect(find.text('Center: 12'), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('keyframe-center-marker')),
+        findsOneWidget,
+      );
+      expect(find.text('Center: 12'), findsOneWidget);
       final add = find.byKey(const ValueKey('add-keyframe'));
       await tester.ensureVisible(add);
       await tester.pumpAndSettle();
@@ -126,6 +129,67 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('modulated keyframes use signal positions instead of times', (
+    tester,
+  ) async {
+    MatrixEffect? saved;
+    final effect = MatrixEffect(
+      kind: MatrixEffect_Kind.KEYFRAMES,
+      keyframes: defaultKeyframes(20),
+      loop: true,
+      modulation: AnimationModulation(signalId: 1, minimum: 0, maximum: 1),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: AnimationEditor(
+              initial: effect,
+              canvasSize: 20,
+              signals: [
+                SignalGenerator(
+                  id: 1,
+                  name: 'Wave',
+                  kind: SignalGenerator_Kind.SINE,
+                  periodMs: 1000,
+                  amplitude: 1,
+                ),
+              ],
+              onCancel: () {},
+              onSave: (value) {
+                saved = value;
+                return true;
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+    expect(find.byKey(const ValueKey('animation-duration')), findsNothing);
+    expect(find.byKey(const ValueKey('animation-period')), findsNothing);
+    expect(find.text('Loop'), findsNothing);
+    final add = find.byKey(const ValueKey('add-keyframe'));
+    await tester.ensureVisible(add);
+    await tester.pumpAndSettle();
+    await tester.tap(add);
+    await tester.pumpAndSettle();
+    final position = find.byKey(const ValueKey('keyframe-time'));
+    await tester.ensureVisible(position);
+    await tester.pumpAndSettle();
+    expect(find.text('Position (%)'), findsOneWidget);
+    await tester.enterText(position, '25');
+    await tester.pumpAndSettle();
+    final save = find.byKey(const ValueKey('save-animation'));
+    await tester.ensureVisible(save);
+    await tester.pumpAndSettle();
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+    expect(saved, isNotNull);
+    expect(saved!.keyframes[1].timeMs, 500);
+    expect(saved!.loop, isFalse);
+    expect(saved!.durationMs, 0);
+  });
 
   testWidgets('rejects overlapping times before saving', (tester) async {
     MatrixEffect? saved;

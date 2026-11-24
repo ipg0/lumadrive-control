@@ -362,6 +362,13 @@ const MatrixEffect$json = {
       '6': '.mesh_interop.AnimationModulation',
       '10': 'modulation'
     },
+    {
+      '1': 'breathe_stop_at_last',
+      '3': 21,
+      '4': 1,
+      '5': 8,
+      '10': 'breatheStopAtLast'
+    },
   ],
   '4': [MatrixEffect_Kind$json],
   '8': [
@@ -401,10 +408,11 @@ final $typed_data.Uint8List matrixEffectDescriptor = $convert.base64Decode(
     'Z3JhZGllbnRDb2xvcnMSKAoQZmlsbF9mcm9tX2NlbnRlchgRIAEoCFIOZmlsbEZyb21DZW50ZX'
     'ISJgoMcmVnaW9uX3N0YXJ0GBIgASgNSABSC3JlZ2lvblN0YXJ0iAEBEiIKCnJlZ2lvbl9lbmQY'
     'EyABKA1IAVIJcmVnaW9uRW5kiAEBEkEKCm1vZHVsYXRpb24YFCABKAsyIS5tZXNoX2ludGVyb3'
-    'AuQW5pbWF0aW9uTW9kdWxhdGlvblIKbW9kdWxhdGlvbiKRAQoES2luZBIWChJFRkZFQ1RfVU5T'
-    'UEVDSUZJRUQQABIQCgxTVEFUSUNfQ09MT1IQARINCglLRVlGUkFNRVMQAhIJCgVCTElOSxADEg'
-    'sKB0JSRUFUSEUQBBIUChBGTE9XSU5HX0dSQURJRU5UEAUSCwoHUkFJTkJPVxAGEggKBEZJTEwQ'
-    'BxILCgdESU1NSU5HEAhCDwoNX3JlZ2lvbl9zdGFydEINCgtfcmVnaW9uX2VuZA==');
+    'AuQW5pbWF0aW9uTW9kdWxhdGlvblIKbW9kdWxhdGlvbhIvChRicmVhdGhlX3N0b3BfYXRfbGFz'
+    'dBgVIAEoCFIRYnJlYXRoZVN0b3BBdExhc3QikQEKBEtpbmQSFgoSRUZGRUNUX1VOU1BFQ0lGSU'
+    'VEEAASEAoMU1RBVElDX0NPTE9SEAESDQoJS0VZRlJBTUVTEAISCQoFQkxJTksQAxILCgdCUkVB'
+    'VEhFEAQSFAoQRkxPV0lOR19HUkFESUVOVBAFEgsKB1JBSU5CT1cQBhIICgRGSUxMEAcSCwoHRE'
+    'lNTUlORxAIQg8KDV9yZWdpb25fc3RhcnRCDQoLX3JlZ2lvbl9lbmQ=');
 
 @$core.Deprecated('Use matrixSourceDescriptor instead')
 const MatrixSource$json = {

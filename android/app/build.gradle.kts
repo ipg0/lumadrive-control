@@ -4,6 +4,26 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Flutter IDE launches do not go through tool/flutter_versioned.sh. Embed the
+// checkout identity in debug APKs so package_info_plus reports the actual build.
+fun gitOutput(vararg arguments: String): String? = try {
+    val result = providers.exec {
+        workingDir(rootProject.projectDir.parentFile)
+        commandLine("git", *arguments)
+        isIgnoreExitValue = true
+    }
+    if (result.result.get().exitValue == 0) result.standardOutput.asText.get().trim()
+        .takeIf { it.isNotEmpty() } else null
+} catch (_: Exception) {
+    null
+}
+
+val debugGitDescription = gitOutput(
+    "describe", "--tags", "--always", "--dirty", "--match", "v[0-9]*", "--match", "[0-9]*"
+)
+val debugGitBuildNumber = gitOutput("rev-list", "--count", "HEAD")
+    ?.toIntOrNull()?.takeIf { it in 1..2100000000 }
+
 android {
     namespace = "com.lumadrive.lumadrive_control"
     compileSdk = 37 //- flutter.compileSdkVersion
@@ -34,6 +54,15 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+        }
+    }
+}
+
+androidComponents {
+    onVariants(selector().withBuildType("debug")) { variant ->
+        variant.outputs.forEach { output ->
+            debugGitDescription?.let { output.versionName.set(it) }
+            debugGitBuildNumber?.let { output.versionCode.set(it) }
         }
     }
 }

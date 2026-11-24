@@ -250,6 +250,19 @@ class _KeyframeEditorState extends State<KeyframeEditor>
   }
 
   @override
+  void didUpdateWidget(covariant KeyframeEditor oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if ((oldWidget.modulation != null) != (widget.modulation != null) &&
+        _selected != null) {
+      _time.text = _framePosition(_selected!);
+    }
+  }
+
+  String _framePosition(MatrixKeyframe frame) => widget.modulation == null
+      ? '${frame.timeMs}'
+      : (100 * frame.timeMs / _cycle).toStringAsFixed(1);
+
+  @override
   void dispose() {
     _playback.dispose();
     for (final c in [_time, _position, _width]) {
@@ -264,7 +277,7 @@ class _KeyframeEditorState extends State<KeyframeEditor>
   void _select(MatrixKeyframe f) {
     _track = f.trackId;
     _selected = f;
-    _time.text = '${f.timeMs}';
+    _time.text = _framePosition(f);
     _position.text = '${f.position}';
     _width.text = '${f.hasWidth() ? f.width : 1}';
     _playhead = f.timeMs.toDouble();
@@ -311,6 +324,9 @@ class _KeyframeEditorState extends State<KeyframeEditor>
       track: id,
       preset: preset,
     );
+    if (widget.modulation != null) {
+      frames.last.timeMs = _cycle;
+    }
     widget.effect.keyframes.addAll(frames);
     _select(frames.first);
     _changed();
@@ -323,6 +339,8 @@ class _KeyframeEditorState extends State<KeyframeEditor>
     final index = frames.indexOf(f);
     final next = index + 1 < frames.length
         ? frames[index + 1].timeMs
+        : widget.modulation != null
+        ? _cycle
         : math.min(0xffffffff, f.timeMs + 1000);
     if (next - f.timeMs < 2) return;
     final added = f.deepCopy()..timeMs = f.timeMs + (next - f.timeMs) ~/ 2;
@@ -541,22 +559,26 @@ class _KeyframeEditorState extends State<KeyframeEditor>
               ),
             ),
             Text(
-              '${(_playhead / 1000).toStringAsFixed(1)} / ${(_cycle / 1000).toStringAsFixed(1)} s',
+              widget.modulation != null
+                  ? '${(100 * _playhead / _cycle).toStringAsFixed(1)}%'
+                  : '${(_playhead / 1000).toStringAsFixed(1)} / ${(_cycle / 1000).toStringAsFixed(1)} s',
             ),
           ],
         ),
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('Loop'),
-          value: widget.effect.loop,
-          onChanged: (v) {
-            _playback.stop();
-            _playing = false;
-            widget.effect.loop = v;
-            _changed();
-          },
-        ),
-        if (hasKeyframeLoopJump(widget.effect, widget.canvasSize))
+        if (widget.modulation == null)
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Loop'),
+            value: widget.effect.loop,
+            onChanged: (v) {
+              _playback.stop();
+              _playing = false;
+              widget.effect.loop = v;
+              _changed();
+            },
+          ),
+        if (widget.modulation == null &&
+            hasKeyframeLoopJump(widget.effect, widget.canvasSize))
           Text(
             'The loop ends at a different position, width or color and may jump.',
             style: Theme.of(context).textTheme.bodySmall,
@@ -627,7 +649,9 @@ class _KeyframeEditorState extends State<KeyframeEditor>
                       top: 0,
                       child: IconButton(
                         key: ValueKey('keyframe-${f.trackId}-${f.timeMs}'),
-                        tooltip: '${f.timeMs} ms',
+                        tooltip: widget.modulation == null
+                            ? '${f.timeMs} ms'
+                            : '${_framePosition(f)}%',
                         onPressed: () {
                           _playback.stop();
                           setState(() {
@@ -656,7 +680,8 @@ class _KeyframeEditorState extends State<KeyframeEditor>
               key: const ValueKey('add-keyframe'),
               onPressed:
                   frame == null ||
-                      widget.effect.keyframes.length >= maxKeyframes
+                      widget.effect.keyframes.length >= maxKeyframes ||
+                      (widget.modulation != null && frame.timeMs >= _cycle)
                   ? null
                   : _addFrame,
               icon: const Icon(Icons.add),
@@ -690,7 +715,15 @@ class _KeyframeEditorState extends State<KeyframeEditor>
               ),
               IconButton(
                 tooltip: 'Delete keyframe',
-                onPressed: index == 0 || frames.length <= 2
+                onPressed:
+                    index == 0 ||
+                        frames.length <= 2 ||
+                        (widget.modulation != null &&
+                            frame.timeMs == _cycle &&
+                            widget.effect.keyframes
+                                    .where((f) => f.timeMs == _cycle)
+                                    .length ==
+                                1)
                     ? null
                     : () {
                         widget.effect.keyframes.remove(frame);
@@ -705,27 +738,55 @@ class _KeyframeEditorState extends State<KeyframeEditor>
             key: const ValueKey('keyframe-time'),
             controller: _time,
             focusNode: _timeFocus,
-            enabled: index != 0,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: const InputDecoration(
-              labelText: 'Time (ms)',
-              helperText: 'The first keyframe starts at 0 ms.',
+            enabled:
+                index != 0 &&
+                !(widget.modulation != null && frame.timeMs == _cycle),
+            keyboardType: TextInputType.numberWithOptions(
+              decimal: widget.modulation != null,
+            ),
+            inputFormatters: widget.modulation == null
+                ? [FilteringTextInputFormatter.digitsOnly]
+                : [],
+            decoration: InputDecoration(
+              labelText: widget.modulation == null
+                  ? 'Time (ms)'
+                  : 'Position (%)',
+              helperText: widget.modulation == null
+                  ? 'The first keyframe starts at 0 ms.'
+                  : 'Keyframes span 0% to 100% of the signal range.',
             ),
             validator: (v) {
               if (index == 0) return null;
-              final n = int.tryParse(v ?? '');
+              final position = double.tryParse(v ?? '');
+              final n = widget.modulation == null
+                  ? int.tryParse(v ?? '')
+                  : position == null ||
+                        !position.isFinite ||
+                        position < 0 ||
+                        position > 100
+                  ? null
+                  : (position * _cycle / 100).round();
               if (n == null ||
                   n > 0xffffffff ||
                   n <= frames[index - 1].timeMs ||
                   (index + 1 < frames.length &&
                       n >= frames[index + 1].timeMs)) {
-                return 'Use a time between neighbouring keyframes.';
+                return widget.modulation == null
+                    ? 'Use a time between neighbouring keyframes.'
+                    : 'Use a position between neighbouring keyframes.';
               }
               return null;
             },
             onChanged: (v) {
-              final n = int.tryParse(v);
+              final position = double.tryParse(v);
+              final n = widget.modulation == null
+                  ? int.tryParse(v)
+                  : position == null ||
+                        !position.isFinite ||
+                        position < 0 ||
+                        position > 100
+                  ? null
+                  : (position * _cycle / 100).round();
               if (n != null && n <= 0xffffffff) {
                 frame.timeMs = n;
                 _changed();

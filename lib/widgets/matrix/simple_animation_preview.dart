@@ -28,7 +28,7 @@ Color sampleSimpleAnimation(
     b.clamp(0, 255),
   );
   final primary = rgba(effect.red, effect.green, effect.blue, effect.alpha);
-  final p = phase % 1;
+  final p = samplePosition ? phase.clamp(0.0, 0.999999999) : phase % 1;
   if (effect.kind == MatrixEffect_Kind.FILL) {
     final progress = effect.loop && !samplePosition ? p : phase.clamp(0.0, 1.0);
     final count = math.max(1, canvasSize);
@@ -65,8 +65,15 @@ Color sampleSimpleAnimation(
   if (effect.kind == MatrixEffect_Kind.BREATHE) {
     if (effect.gradientColors.length >= 2) {
       final colors = effect.gradientColors;
-      final scaled = p * colors.length;
+      final progress = effect.breatheStopAtLast ? phase.clamp(0.0, 1.0) : p;
+      final scaled =
+          progress *
+          (effect.breatheStopAtLast ? colors.length - 1 : colors.length);
       final index = scaled.floor();
+      if (index >= colors.length - 1 && effect.breatheStopAtLast) {
+        final last = colors.last;
+        return rgba(last.red, last.green, last.blue, last.alpha);
+      }
       final t = scaled - index;
       final fraction = t * t * (3 - 2 * t);
       final from = colors[index], to = colors[(index + 1) % colors.length];
@@ -157,6 +164,7 @@ class _SimpleAnimationPreviewState extends State<SimpleAnimationPreview>
     if (oldWidget.effect.periodMs != widget.effect.periodMs ||
         oldWidget.effect.kind != widget.effect.kind ||
         oldWidget.effect.loop != widget.effect.loop ||
+        oldWidget.effect.breatheStopAtLast != widget.effect.breatheStopAtLast ||
         oldWidget.signal?.periodMs != widget.signal?.periodMs ||
         oldWidget.effect.hasModulation() != widget.effect.hasModulation()) {
       _phase.duration = _period;
@@ -169,8 +177,11 @@ class _SimpleAnimationPreviewState extends State<SimpleAnimationPreview>
 
   void _play() {
     if (!widget.effect.hasModulation() &&
-        widget.effect.kind == MatrixEffect_Kind.FILL &&
-        !widget.effect.loop) {
+        ((widget.effect.kind == MatrixEffect_Kind.FILL &&
+                !widget.effect.loop) ||
+            (widget.effect.kind == MatrixEffect_Kind.BREATHE &&
+                widget.effect.gradientColors.length >= 2 &&
+                widget.effect.breatheStopAtLast))) {
       _phase.forward(from: _phase.value >= 1 ? 0 : _phase.value);
     } else {
       _phase.repeat(period: _period);

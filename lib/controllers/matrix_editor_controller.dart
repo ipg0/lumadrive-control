@@ -149,7 +149,7 @@ class MatrixEditorController extends ChangeNotifier {
       return 'Configure the car layout before adding playback entries.';
     }
     for (final e in config.effects) {
-      if (e.hasModulation()) {
+      if (e.kind != MatrixEffect_Kind.STATIC_COLOR && e.hasModulation()) {
         final m = e.modulation;
         if (!m.minimum.isFinite ||
             !m.maximum.isFinite ||

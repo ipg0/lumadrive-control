@@ -87,7 +87,9 @@ class _AnimationEditorState extends State<AnimationEditor> {
   void initState() {
     super.initState();
     _effect = widget.initial.deepCopy();
-    _modulated = _effect.hasModulation();
+    _modulated =
+        _effect.kind != MatrixEffect_Kind.STATIC_COLOR &&
+        _effect.hasModulation();
     _signalId = _modulated ? _effect.modulation.signalId : 0;
     _mappingCurve = _modulated
         ? _effect.modulation.curve
@@ -152,9 +154,15 @@ class _AnimationEditorState extends State<AnimationEditor> {
   MatrixEffect _value() {
     final value = _effect.deepCopy()
       ..name = _name.text.trim()
-      ..durationMs = int.tryParse(_duration.text) ?? 0
+      // A one-shot fill still needs an internal cycle length for firmware
+      // compatibility; modulation supplies its position, not its timing.
+      ..durationMs = _modulated
+          ? (_effect.kind == MatrixEffect_Kind.FILL ? 1000 : 0)
+          : int.tryParse(_duration.text) ?? 0
+      ..loop = _modulated ? false : _effect.loop
       ..periodMs =
-          _effect.kind == MatrixEffect_Kind.STATIC_COLOR ||
+          _modulated ||
+              _effect.kind == MatrixEffect_Kind.STATIC_COLOR ||
               _effect.kind == MatrixEffect_Kind.DIMMING
           ? 0
           : _effect.kind == MatrixEffect_Kind.FILL && !_effect.loop
@@ -168,7 +176,7 @@ class _AnimationEditorState extends State<AnimationEditor> {
               _effect.kind == MatrixEffect_Kind.RAINBOW)
           ? int.tryParse(_wavelength.text) ?? 0
           : 0;
-    if (_modulated) {
+    if (_modulated && value.kind != MatrixEffect_Kind.STATIC_COLOR) {
       value.modulation = AnimationModulation(
         signalId: _signalId,
         minimum: double.tryParse(_signalMin.text) ?? 0,
@@ -191,6 +199,9 @@ class _AnimationEditorState extends State<AnimationEditor> {
       value.regionEnd = int.tryParse(_regionEnd.text) ?? 0;
     }
     value.gradientColors.clear();
+    if (value.kind != MatrixEffect_Kind.BREATHE || !_breatheColors) {
+      value.breatheStopAtLast = false;
+    }
     if (value.kind == MatrixEffect_Kind.DIMMING) {
       value
         ..red = 0
@@ -449,6 +460,9 @@ class _AnimationEditorState extends State<AnimationEditor> {
                     _effect.alpha = 128;
                   }
                   _effect.kind = kind!;
+                  if (kind == MatrixEffect_Kind.STATIC_COLOR) {
+                    _modulated = false;
+                  }
                   if (kind == MatrixEffect_Kind.KEYFRAMES &&
                       _effect.keyframes.isEmpty) {
                     _effect.keyframes.addAll(
@@ -485,16 +499,17 @@ class _AnimationEditorState extends State<AnimationEditor> {
                 _regionField(false),
                 const SizedBox(height: 18),
               ],
-              SwitchListTile(
-                key: const ValueKey('animation-modulated'),
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Modulate animation'),
-                subtitle: const Text(
-                  'A signal controls the animation position; playback stays active.',
+              if (_effect.kind != MatrixEffect_Kind.STATIC_COLOR)
+                SwitchListTile(
+                  key: const ValueKey('animation-modulated'),
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Modulate animation'),
+                  subtitle: const Text(
+                    'A signal controls the animation position; playback stays active.',
+                  ),
+                  value: _modulated,
+                  onChanged: (v) => setState(() => _modulated = v),
                 ),
-                value: _modulated,
-                onChanged: (v) => setState(() => _modulated = v),
-              ),
               if (_modulated) ...[
                 DropdownButtonFormField<int>(
                   key: ValueKey('modulation-signal-$_signalId'),
@@ -594,8 +609,7 @@ class _AnimationEditorState extends State<AnimationEditor> {
                   ],
                   onChanged: (v) => setState(() => _mappingCurve = v!),
                 ),
-                if (_effect.kind == MatrixEffect_Kind.STATIC_COLOR ||
-                    _effect.kind == MatrixEffect_Kind.DIMMING)
+                if (_effect.kind == MatrixEffect_Kind.DIMMING)
                   const Text(
                     'This animation has no changing frames, so modulation will not change its appearance.',
                   ),
@@ -611,6 +625,18 @@ class _AnimationEditorState extends State<AnimationEditor> {
                   ),
                   value: _breatheColors,
                   onChanged: (value) => setState(() => _breatheColors = value),
+                ),
+              if (_effect.kind == MatrixEffect_Kind.BREATHE && _breatheColors)
+                SwitchListTile(
+                  key: const ValueKey('breathe-stop-at-last'),
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Stop at last color'),
+                  subtitle: const Text(
+                    'Hold the last color instead of cycling back to the first.',
+                  ),
+                  value: _effect.breatheStopAtLast,
+                  onChanged: (value) =>
+                      setState(() => _effect.breatheStopAtLast = value),
                 ),
               if (_effect.kind == MatrixEffect_Kind.DIMMING) ...[
                 const Text(
@@ -740,7 +766,7 @@ class _AnimationEditorState extends State<AnimationEditor> {
                   label: const Text('Add color'),
                 ),
               ],
-              if (_effect.kind == MatrixEffect_Kind.FILL)
+              if (_effect.kind == MatrixEffect_Kind.FILL && !_modulated)
                 SwitchListTile(
                   key: const ValueKey('fill-once'),
                   contentPadding: EdgeInsets.zero,
@@ -756,18 +782,21 @@ class _AnimationEditorState extends State<AnimationEditor> {
                     }
                   }),
                 ),
-              _number(
-                'Duration (ms)',
-                'animation-duration',
-                _duration,
-                min: _effect.kind == MatrixEffect_Kind.FILL && !_effect.loop
-                    ? 2
-                    : 0,
-                helper: _effect.kind == MatrixEffect_Kind.FILL && !_effect.loop
-                    ? 'The fill reaches the end at this time; speed adjusts to the layout length.'
-                    : '0 holds indefinitely. Finite default-state animations restart after ending.',
-              ),
-              if (_effect.kind != MatrixEffect_Kind.STATIC_COLOR &&
+              if (!_modulated)
+                _number(
+                  'Duration (ms)',
+                  'animation-duration',
+                  _duration,
+                  min: _effect.kind == MatrixEffect_Kind.FILL && !_effect.loop
+                      ? 2
+                      : 0,
+                  helper:
+                      _effect.kind == MatrixEffect_Kind.FILL && !_effect.loop
+                      ? 'The fill reaches the end at this time; speed adjusts to the layout length.'
+                      : '0 holds indefinitely. Finite default-state animations restart after ending.',
+                ),
+              if (!_modulated &&
+                  _effect.kind != MatrixEffect_Kind.STATIC_COLOR &&
                   _effect.kind != MatrixEffect_Kind.DIMMING &&
                   _effect.kind != MatrixEffect_Kind.KEYFRAMES &&
                   !(_effect.kind == MatrixEffect_Kind.FILL && !_effect.loop))

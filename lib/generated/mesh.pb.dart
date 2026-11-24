@@ -679,6 +679,7 @@ class MatrixEffect extends $pb.GeneratedMessage {
     $core.int? regionStart,
     $core.int? regionEnd,
     AnimationModulation? modulation,
+    $core.bool? breatheStopAtLast,
   }) {
     final result = create();
     if (id != null) result.id = id;
@@ -701,6 +702,7 @@ class MatrixEffect extends $pb.GeneratedMessage {
     if (regionStart != null) result.regionStart = regionStart;
     if (regionEnd != null) result.regionEnd = regionEnd;
     if (modulation != null) result.modulation = modulation;
+    if (breatheStopAtLast != null) result.breatheStopAtLast = breatheStopAtLast;
     return result;
   }
 
@@ -745,6 +747,7 @@ class MatrixEffect extends $pb.GeneratedMessage {
     ..aI(19, _omitFieldNames ? '' : 'regionEnd', fieldType: $pb.PbFieldType.OU3)
     ..aOM<AnimationModulation>(20, _omitFieldNames ? '' : 'modulation',
         subBuilder: AnimationModulation.create)
+    ..aOB(21, _omitFieldNames ? '' : 'breatheStopAtLast')
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -937,6 +940,15 @@ class MatrixEffect extends $pb.GeneratedMessage {
   void clearModulation() => $_clearField(20);
   @$pb.TagNumber(20)
   AnimationModulation ensureModulation() => $_ensure(19);
+
+  @$pb.TagNumber(21)
+  $core.bool get breatheStopAtLast => $_getBF(20);
+  @$pb.TagNumber(21)
+  set breatheStopAtLast($core.bool value) => $_setBool(20, value);
+  @$pb.TagNumber(21)
+  $core.bool hasBreatheStopAtLast() => $_has(20);
+  @$pb.TagNumber(21)
+  void clearBreatheStopAtLast() => $_clearField(21);
 }
 
 class MatrixSource extends $pb.GeneratedMessage {

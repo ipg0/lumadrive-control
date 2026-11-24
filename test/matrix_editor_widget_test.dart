@@ -142,6 +142,46 @@ void main() {
     },
   );
 
+  testWidgets('static color clears legacy modulation when saved', (
+    tester,
+  ) async {
+    final config = editorFixture();
+    config.effects.single.modulation = AnimationModulation(
+      signalId: 123,
+      minimum: 0,
+      maximum: 1,
+    );
+    final editor = await open(tester, config: config);
+    await tester.tap(find.text('Animations (1)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('matrix-animation-1')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('animation-modulated')), findsNothing);
+    await tester.ensureVisible(find.byKey(const ValueKey('animation-kind')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('animation-kind')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Blink').last);
+    await tester.pumpAndSettle();
+    final modulation = find.byKey(const ValueKey('animation-modulated'));
+    await tester.ensureVisible(modulation);
+    await tester.pumpAndSettle();
+    await tester.tap(modulation);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('animation-kind')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('animation-kind')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Static color').last);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('animation-modulated')), findsNothing);
+    await tester.ensureVisible(find.byKey(const ValueKey('save-animation')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('save-animation')));
+    await tester.pumpAndSettle();
+    expect(editor.config.effects.single.hasModulation(), isFalse);
+  });
+
   testWidgets('cancelling an entry discards its unused inline animation', (
     tester,
   ) async {
@@ -818,6 +858,83 @@ void main() {
     );
     expect(tester.takeException(), isNull);
   });
+  testWidgets('breathe color cycle can stop at the last color', (tester) async {
+    final config = editorFixture();
+    config.effects.single
+      ..kind = MatrixEffect_Kind.BREATHE
+      ..gradientColors.addAll([
+        MatrixColor(red: 255, alpha: 255),
+        MatrixColor(green: 255, alpha: 255),
+        MatrixColor(blue: 255, alpha: 255),
+      ]);
+    final editor = await open(tester, config: config);
+    await tester.tap(find.text('Animations (1)'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('matrix-animation-1')));
+    await tester.pumpAndSettle();
+    final toggle = find.byKey(const ValueKey('breathe-stop-at-last'));
+    await tester.ensureVisible(toggle);
+    await tester.pumpAndSettle();
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('save-animation')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('save-animation')));
+    await tester.pumpAndSettle();
+    expect(editor.config.effects.single.breatheStopAtLast, isTrue);
+  });
+
+  for (final kind in [MatrixEffect_Kind.BLINK, MatrixEffect_Kind.FILL]) {
+    testWidgets('modulated $kind hides animation timing and saves one span', (
+      tester,
+    ) async {
+      final config = editorFixture();
+      config.signals.add(
+        SignalGenerator(
+          id: 1,
+          name: 'Wave',
+          kind: SignalGenerator_Kind.SINE,
+          periodMs: 1000,
+          amplitude: 1,
+        ),
+      );
+      config.effects.single
+        ..kind = kind
+        ..durationMs = 2400
+        ..periodMs = 1600
+        ..loop = true
+        ..modulation = AnimationModulation(signalId: 1, minimum: 0, maximum: 1);
+      final editor = await open(tester, config: config);
+      await tester.tap(find.text('Animations (1)'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('matrix-animation-1')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('animation-duration')), findsNothing);
+      expect(find.byKey(const ValueKey('animation-period')), findsNothing);
+      expect(find.byKey(const ValueKey('fill-once')), findsNothing);
+      final toggle = find.byKey(const ValueKey('animation-modulated'));
+      await tester.ensureVisible(toggle);
+      await tester.pumpAndSettle();
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('animation-duration')), findsOneWidget);
+      expect(find.byKey(const ValueKey('animation-period')), findsOneWidget);
+      await tester.ensureVisible(toggle);
+      await tester.pumpAndSettle();
+      await tester.tap(toggle);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const ValueKey('save-animation')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('save-animation')));
+      await tester.pumpAndSettle();
+      final effect = editor.config.effects.single;
+      expect(effect.hasModulation(), isTrue);
+      expect(effect.loop, isFalse);
+      expect(effect.periodMs, 0);
+      expect(effect.durationMs, kind == MatrixEffect_Kind.FILL ? 1000 : 0);
+    });
+  }
+
   testWidgets('one-shot fill derives pass time from duration', (tester) async {
     final editor = await open(tester);
     await tester.tap(find.byKey(const ValueKey('matrix-entry-1')));
@@ -927,9 +1044,30 @@ void main() {
       );
       expect(sampleSimpleAnimation(blink, 0, 0, 60).a, 1);
       expect(sampleSimpleAnimation(blink, 0.5, 0, 60).a, 0);
+      expect(sampleSimpleAnimation(blink, 1, 0, 60, null, true).a, 0);
+      expect(sampleSimpleAnimation(blink, 1, 0, 60).a, 1);
       final breathe = blink.deepCopy()..kind = MatrixEffect_Kind.BREATHE;
       expect(sampleSimpleAnimation(breathe, 0, 0, 60).a, 0);
       expect(sampleSimpleAnimation(breathe, 0.5, 0, 60).a, 1);
+      final stoppingBreathe = breathe.deepCopy()
+        ..breatheStopAtLast = true
+        ..gradientColors.addAll([
+          MatrixColor(red: 255, alpha: 255),
+          MatrixColor(green: 255, alpha: 255),
+          MatrixColor(blue: 255, alpha: 255),
+        ]);
+      expect(
+        sampleSimpleAnimation(stoppingBreathe, 0.5, 0, 60),
+        const Color(0xff00ff00),
+      );
+      expect(
+        sampleSimpleAnimation(stoppingBreathe, 1, 0, 60),
+        const Color(0xff0000ff),
+      );
+      expect(
+        sampleSimpleAnimation(stoppingBreathe, 2, 0, 60),
+        const Color(0xff0000ff),
+      );
       final flow = breathe.deepCopy()
         ..kind = MatrixEffect_Kind.FLOWING_GRADIENT
         ..secondaryColor = MatrixColor(blue: 255, alpha: 255);

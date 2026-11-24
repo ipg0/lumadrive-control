@@ -33,8 +33,11 @@ for example `LUMADRIVE_BUILD_NUMBER=42 bash tool/flutter_versioned.sh build apk`
 Shallow checkouts must be unshallowed or provide this override, and need the
 release tags fetched to derive the intended version.
 
-Ordinary `flutter build` and IDE launch commands still use the version in
-`pubspec.yaml`; use the wrapper whenever Git-derived versioning is required.
+Android debug builds, including IDE launches, use the Git description as the
+version name (including the commit and `-dirty` when applicable) and the
+reachable commit count as the build number. If Git is unavailable, they fall
+back to `pubspec.yaml`. Android release builds and other platforms still use
+the wrapper for Git-derived versioning.
 
 ## Getting Started
 
