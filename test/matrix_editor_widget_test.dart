@@ -233,13 +233,17 @@ void main() {
   });
 
   testWidgets(
-    'pure primary presets apply immediately and a failed Apply can be retried',
+    'primary presets apply through the picker and a failed Apply can be retried',
     (tester) async {
       final editor = await open(tester);
       final repository = editor.repository as FakeMatrixEditorRepository;
       await tester.tap(find.text('Animations (1)'));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const ValueKey('matrix-animation-1')));
+      await tester.pumpAndSettle();
+      final picker = find.byKey(const ValueKey('pick-color-Primary color'));
+      await tester.ensureVisible(picker);
+      await tester.tap(picker);
       await tester.pumpAndSettle();
       for (final hex in ['FF0000', '0000FF', '00FF00']) {
         final swatch = find.byWidgetPredicate(
@@ -251,6 +255,8 @@ void main() {
         await tester.tap(swatch);
         await tester.pumpAndSettle();
       }
+      await tester.tap(find.text('Use color'));
+      await tester.pumpAndSettle();
       repository.failApply = true;
       await tester.ensureVisible(find.byKey(const ValueKey('save-animation')));
       await tester.pumpAndSettle();

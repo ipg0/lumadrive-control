@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:lumadrive_control/controllers/matrix_editor_controller.dart';
 import 'package:lumadrive_control/controllers/layout_editor_controller.dart'
     show defaultOutputName, outputKey, placementKey;
@@ -1000,31 +1001,33 @@ class MatrixColorEditor extends StatefulWidget {
 }
 
 class _MatrixColorEditorState extends State<MatrixColorEditor> {
-  late final TextEditingController _hex;
   String _text() => [
     widget.color.red,
     widget.color.green,
     widget.color.blue,
   ].map((c) => c.toRadixString(16).padLeft(2, '0')).join().toUpperCase();
-  @override
-  void initState() {
-    super.initState();
-    _hex = TextEditingController(text: _text());
-  }
-
-  @override
-  void dispose() {
-    _hex.dispose();
-    super.dispose();
-  }
-
   void _set(int rgb) {
     final value = widget.color.deepCopy()
       ..red = (rgb >> 16) & 255
       ..green = (rgb >> 8) & 255
       ..blue = rgb & 255;
-    _hex.text = rgb.toRadixString(16).padLeft(6, '0').toUpperCase();
     widget.onChanged(value);
+  }
+
+  Future<void> _pick() async {
+    final selected = await showDialog<Color>(
+      context: context,
+      builder: (_) => _ColorPickerDialog(
+        label: widget.label,
+        color: Color.fromARGB(
+          255,
+          widget.color.red,
+          widget.color.green,
+          widget.color.blue,
+        ),
+      ),
+    );
+    if (selected != null && mounted) _set(selected.toARGB32());
   }
 
   @override
@@ -1033,66 +1036,24 @@ class _MatrixColorEditorState extends State<MatrixColorEditor> {
     children: [
       Text(widget.label, style: Theme.of(context).textTheme.titleSmall),
       const SizedBox(height: 10),
-      Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          for (final rgb in [
-            0xffffff,
-            0xff0000,
-            0xff8000,
-            0xffff00,
-            0x00ff00,
-            0x00ffff,
-            0x0000ff,
-            0x8000ff,
-            0xff00ff,
-          ])
-            Semantics(
-              label:
-                  'Color #${rgb.toRadixString(16).padLeft(6, '0').toUpperCase()}',
-              button: true,
-              child: InkWell(
-                onTap: () => _set(rgb),
-                borderRadius: BorderRadius.circular(24),
-                child: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: Color(0xff000000 | rgb),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
-                  ),
-                ),
-              ),
+      OutlinedButton.icon(
+        key: ValueKey('pick-color-${widget.label}'),
+        onPressed: _pick,
+        icon: Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            color: Color.fromARGB(
+              255,
+              widget.color.red,
+              widget.color.green,
+              widget.color.blue,
             ),
-        ],
-      ),
-      const SizedBox(height: 12),
-      TextFormField(
-        controller: _hex,
-        maxLength: 6,
-        decoration: InputDecoration(
-          labelText: '${widget.label} hex',
-          prefixText: '#',
-          border: const OutlineInputBorder(),
+            shape: BoxShape.circle,
+            border: Border.all(color: Theme.of(context).colorScheme.outline),
+          ),
         ),
-        validator: (value) => RegExp(r'^[0-9a-fA-F]{6}$').hasMatch(value ?? '')
-            ? null
-            : 'Enter six hexadecimal digits',
-        onChanged: (value) {
-          final rgb = int.tryParse(value, radix: 16);
-          if (value.length == 6 && rgb != null) {
-            widget.onChanged(
-              widget.color.deepCopy()
-                ..red = (rgb >> 16) & 255
-                ..green = (rgb >> 8) & 255
-                ..blue = rgb & 255,
-            );
-          }
-        },
+        label: Text('Choose color · #${_text()}'),
       ),
       Row(
         children: [
@@ -1115,4 +1076,235 @@ class _MatrixColorEditorState extends State<MatrixColorEditor> {
       ),
     ],
   );
+}
+
+class _ColorPickerDialog extends StatefulWidget {
+  final String label;
+  final Color color;
+  const _ColorPickerDialog({required this.label, required this.color});
+
+  @override
+  State<_ColorPickerDialog> createState() => _ColorPickerDialogState();
+}
+
+class _ColorPickerDialogState extends State<_ColorPickerDialog> {
+  final _form = GlobalKey<FormState>();
+  late final TextEditingController _hex;
+  late HSVColor _hsv;
+  bool _updatingHex = false;
+  Color get _color => _hsv.toColor();
+
+  @override
+  void initState() {
+    super.initState();
+    _hsv = HSVColor.fromColor(widget.color);
+    _hex = TextEditingController(
+      text: colorToHex(widget.color, enableAlpha: false),
+    );
+    _hex.addListener(_readHex);
+  }
+
+  void _readHex() {
+    if (_updatingHex || !RegExp(r'^[0-9a-fA-F]{6}$').hasMatch(_hex.text))
+      return;
+    final color = colorFromHex(_hex.text, enableAlpha: false);
+    if (color == null) return;
+    final hsv = HSVColor.fromColor(color);
+    setState(() => _hsv = hsv.saturation == 0 ? hsv.withHue(_hsv.hue) : hsv);
+  }
+
+  void _setHsv(HSVColor value) {
+    setState(() => _hsv = value);
+    _updatingHex = true;
+    _hex.text = colorToHex(value.toColor(), enableAlpha: false);
+    _updatingHex = false;
+  }
+
+  @override
+  void dispose() {
+    _hex.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => AlertDialog(
+    title: Text('Choose ${widget.label.toLowerCase()}'),
+    content: SingleChildScrollView(
+      child: SizedBox(
+        width: 320,
+        child: Form(
+          key: _form,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                key: const ValueKey('color-picker-preview'),
+                height: 48,
+                decoration: BoxDecoration(
+                  color: _color,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final rgb in [
+                    0xffffff,
+                    0xff0000,
+                    0xff8000,
+                    0xffff00,
+                    0x00ff00,
+                    0x00ffff,
+                    0x0000ff,
+                    0x8000ff,
+                    0xff00ff,
+                  ])
+                    Semantics(
+                      label:
+                          'Color #${rgb.toRadixString(16).padLeft(6, '0').toUpperCase()}',
+                      button: true,
+                      child: InkWell(
+                        onTap: () => _hex.text = rgb
+                            .toRadixString(16)
+                            .padLeft(6, '0')
+                            .toUpperCase(),
+                        borderRadius: BorderRadius.circular(24),
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: Color(0xff000000 | rgb),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.outline,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              AspectRatio(
+                aspectRatio: 1.43,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      ColorPickerArea(_hsv, _setHsv, PaletteType.hsvWithHue),
+                      IgnorePointer(
+                        child: CustomPaint(
+                          painter: _SaturationValuePainter(_hsv),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 40,
+                child: ColorPickerSlider(
+                  TrackType.hue,
+                  _hsv,
+                  _setHsv,
+                  displayThumbColor: true,
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                key: const ValueKey('color-picker-hex'),
+                controller: _hex,
+                maxLength: 6,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp('[0-9a-fA-F]')),
+                ],
+                decoration: const InputDecoration(
+                  labelText: 'Hex color',
+                  prefixText: '#',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) =>
+                    RegExp(r'^[0-9a-fA-F]{6}$').hasMatch(value ?? '')
+                    ? null
+                    : 'Enter six hexadecimal digits',
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+    actions: [
+      TextButton(
+        onPressed: () => Navigator.pop(context),
+        child: const Text('Cancel'),
+      ),
+      FilledButton(
+        onPressed: () {
+          if (_form.currentState!.validate()) Navigator.pop(context, _color);
+        },
+        child: const Text('Use color'),
+      ),
+    ],
+  );
+}
+
+// Paint over the package's palette to avoid its luminosity-blended cursor.
+// Input handling and the hue slider remain provided by flutter_colorpicker.
+class _SaturationValuePainter extends CustomPainter {
+  final HSVColor hsv;
+  const _SaturationValuePainter(this.hsv);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final hue = HSVColor.fromAHSV(1, hsv.hue, 1, 1).toColor();
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = LinearGradient(colors: [Colors.white, hue])
+            .createShader(rect),
+    );
+    canvas.drawRect(
+      rect,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.transparent, Colors.black],
+        ).createShader(rect),
+    );
+    final center = Offset(
+      size.width * hsv.saturation,
+      size.height * (1 - hsv.value),
+    );
+    final radius = size.height * 0.04;
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = Colors.black
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3,
+    );
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..color = Colors.white
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _SaturationValuePainter oldDelegate) =>
+      oldDelegate.hsv != hsv;
 }
