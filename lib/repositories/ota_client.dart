@@ -15,13 +15,30 @@ class OtaException implements Exception {
   String toString() => message;
 }
 
+class OtaFleetProgress {
+  final int targetIndex, targetCount;
+  final List<int>? nodeMac;
+  final double targetProgress;
+  final bool completed;
+  const OtaFleetProgress(
+    this.targetIndex,
+    this.targetCount,
+    this.nodeMac,
+    this.targetProgress, {
+    this.completed = false,
+  });
+  double get overall => (targetIndex + targetProgress) / targetCount;
+}
+
 class OtaClient {
   OtaClient(this._transport);
   final OtaTransport _transport;
   bool _busy = false;
 
   Uint8List _frame(int command, int id, [int? value, int? extra]) {
-    final bytes = Uint8List(5 + (value == null ? 0 : 4) + (extra == null ? 0 : 4));
+    final bytes = Uint8List(
+      5 + (value == null ? 0 : 4) + (extra == null ? 0 : 4),
+    );
     final data = ByteData.sublistView(bytes);
     data.setUint8(0, command);
     data.setUint32(1, id, Endian.little);
@@ -50,31 +67,77 @@ class OtaClient {
       if (data.getUint32(4, Endian.little) == id) {
         final actualStage = data.getUint8(0);
         if (actualStage == 3) {
-          throw OtaException('Controller rejected the update (error ${data.getUint8(1)})');
+          throw OtaException(
+            'Controller rejected the update (error ${data.getUint8(1)})',
+          );
         }
-        if (actualStage == stage && data.getUint32(8, Endian.little) == offset) return;
+        if (actualStage == stage && data.getUint32(8, Endian.little) == offset)
+          return;
       }
-      await Future<void>.delayed(const Duration(milliseconds: 20));
+      await Future<void>.delayed(const Duration(milliseconds: 10));
     }
     throw const OtaException('Timed out waiting for the controller');
   }
 
-  Stream<double> upload(Uint8List image) async* {
+  Stream<OtaFleetProgress> uploadAll(
+    Uint8List image,
+    List<List<int>> nodes,
+  ) async* {
+    for (var index = 0; index <= nodes.length; index++) {
+      final node = index < nodes.length ? nodes[index] : null;
+      try {
+        yield OtaFleetProgress(index, nodes.length + 1, node, 0);
+        await for (final progress in upload(image, nodeMac: node)) {
+          yield OtaFleetProgress(index, nodes.length + 1, node, progress);
+        }
+        yield OtaFleetProgress(
+          index,
+          nodes.length + 1,
+          node,
+          1,
+          completed: true,
+        );
+      } catch (error) {
+        final target = node == null
+            ? 'controller'
+            : node.map((b) => b.toRadixString(16).padLeft(2, '0')).join(':');
+        throw OtaException('Update failed for $target: $error');
+      }
+    }
+  }
+
+  Stream<double> upload(Uint8List image, {List<int>? nodeMac}) async* {
     if (_busy) throw const OtaException('An update is already in progress');
-    if (image.isEmpty || image.length > 0xffffffff) throw const OtaException('Invalid firmware file');
-    final payload = min(_transport.mtu - 3, 512) - 9;
-    if (payload <= 0 || _transport.mtu - 3 < 13) throw const OtaException('Bluetooth MTU is too small');
+    if (image.isEmpty || image.length > 0xffffffff)
+      throw const OtaException('Invalid firmware file');
+    if (nodeMac != null &&
+        (nodeMac.length != 6 ||
+            nodeMac.any((byte) => byte < 0 || byte > 255))) {
+      throw const OtaException('Invalid node address');
+    }
+    final payload = min(
+      min(_transport.mtu - 3, 512) - 9,
+      nodeMac == null ? 512 : 200,
+    );
+    if (payload <= 0 || _transport.mtu - 3 < (nodeMac == null ? 13 : 19))
+      throw const OtaException('Bluetooth MTU is too small');
     _busy = true;
     final id = Random.secure().nextInt(0xffffffff) + 1;
     var committed = false;
     try {
-      await _transport.write(_frame(1, id, image.length, _crc32(image)));
+      await _transport.write([
+        ..._frame(1, id, image.length, _crc32(image)),
+        ...?nodeMac,
+      ]);
       await _wait(id, 0, 1);
       yield 0;
       var offset = 0;
       while (offset < image.length) {
         final end = min(offset + payload, image.length);
-        await _transport.write([..._frame(2, id, offset), ...image.sublist(offset, end)]);
+        await _transport.write([
+          ..._frame(2, id, offset),
+          ...image.sublist(offset, end),
+        ]);
         await _wait(id, end, 1);
         offset = end;
         yield offset / image.length;
@@ -85,9 +148,14 @@ class OtaClient {
       await _wait(id, image.length, 4);
       committed = true;
       await _transport.write(_frame(6, id));
+      if (nodeMac != null) await _wait(id, image.length, 5);
     } finally {
       if (!committed) {
-        try { await _transport.write(_frame(4, id)); } catch (_) { /* disconnected */ }
+        try {
+          await _transport.write(_frame(4, id));
+        } catch (_) {
+          /* disconnected */
+        }
       }
       _busy = false;
     }
