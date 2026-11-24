@@ -887,8 +887,9 @@ class MatrixEditorController extends ChangeNotifier {
     try {
       await _refreshDone?.future;
       if (_disposed) return;
-      if (!connected)
+      if (!connected) {
         throw StateError('Connect to the controller to read its state.');
+      }
       final current = await repository.current();
       if (_disposed) return;
       currentDocument = current;

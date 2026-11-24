@@ -21,14 +21,10 @@ bool isPointSource(LayoutOutput? output) =>
     output?.driverKind == MatrixDriverKind.RGB_LED_MODULE;
 String outputType(LayoutOutput output) {
   final kind = output.driverKind;
-  if (kind == MatrixDriverKind.LED_STRIP ||
-      (kind == MatrixDriverKind.KIND_UNSPECIFIED &&
-          output.driver == MatrixDriver.WS2812)) {
+  if (kind == MatrixDriverKind.LED_STRIP) {
     return 'LED strip · driver ${output.driver.value}';
   }
-  if (kind == MatrixDriverKind.RGB_LED_MODULE ||
-      (kind == MatrixDriverKind.KIND_UNSPECIFIED &&
-          output.driver == MatrixDriver.HC595)) {
+  if (kind == MatrixDriverKind.RGB_LED_MODULE) {
     return 'RGB LED ${output.sourceIndex + 1} · driver ${output.driver.value}';
   }
   return 'Output ${output.driver.value} · source ${output.sourceIndex + 1}';
@@ -40,13 +36,18 @@ String nodeSuffix(List<int> mac) => mac
     .join(':');
 String defaultOutputName(LayoutOutput output, {String? nodeName}) {
   final kind = output.driverKind;
-  final point = kind == MatrixDriverKind.RGB_LED_MODULE ||
-      (kind == MatrixDriverKind.KIND_UNSPECIFIED && output.driver == MatrixDriver.HC595);
-  final strip = kind == MatrixDriverKind.LED_STRIP ||
-      (kind == MatrixDriverKind.KIND_UNSPECIFIED && output.driver == MatrixDriver.WS2812);
-  final type = point ? 'LED' : strip ? 'Strip' : 'Output';
-  final index = '${output.driver.value}${point ? ':${output.sourceIndex + 1}' : ''}';
-  final node = nodeName == null || nodeName.trim().isEmpty ? nodeSuffix(output.nodeMac) : nodeName;
+  final point = kind == MatrixDriverKind.RGB_LED_MODULE;
+  final strip = kind == MatrixDriverKind.LED_STRIP;
+  final type = point
+      ? 'LED'
+      : strip
+      ? 'Strip'
+      : 'Output';
+  final index =
+      '${output.driver.value}${point ? ':${output.sourceIndex + 1}' : ''}';
+  final node = nodeName == null || nodeName.trim().isEmpty
+      ? nodeSuffix(output.nodeMac)
+      : nodeName;
   return '$type ($index) - $node';
 }
 
@@ -145,16 +146,26 @@ class LayoutEditorController extends ChangeNotifier {
   }
 
   String outputTitle(LayoutOutput output) => defaultOutputName(
-        output, nodeName: nodeNames[macBytesToString(output.nodeMac)],
-      );
+    output,
+    nodeName: nodeNames[macBytesToString(output.nodeMac)],
+  );
   String displayOutputTitle(LayoutOutput output) {
-    final row = layout.where((row) => placementKey(row) == outputKey(output)).firstOrNull;
+    final row = layout
+        .where((row) => placementKey(row) == outputKey(output))
+        .firstOrNull;
     return row == null ? outputTitle(output) : titleFor(row);
   }
+
   String titleFor(MatrixLayout row) => row.name.isNotEmpty
       ? row.name
-      : outputTitle(outputFor(placementKey(row)) ?? LayoutOutput(
-          nodeMac: row.nodeMac, driver: row.driver, sourceIndex: row.sourceIndex));
+      : outputTitle(
+          outputFor(placementKey(row)) ??
+              LayoutOutput(
+                nodeMac: row.nodeMac,
+                driver: row.driver,
+                sourceIndex: row.sourceIndex,
+              ),
+        );
   int lengthFor(MatrixLayout row) {
     return (row.to - row.from).abs();
   }
@@ -165,7 +176,8 @@ class LayoutEditorController extends ChangeNotifier {
   String? get validationError {
     if (fieldError != null) return fieldError;
     if (lengthError != null) return lengthError;
-    if (centerIndex != null && (centerIndex! < 0 || centerIndex! > canvasSize)) {
+    if (centerIndex != null &&
+        (centerIndex! < 0 || centerIndex! > canvasSize)) {
       return 'Center must be within the shared layout.';
     }
     if (layout.length > 84) {
@@ -176,7 +188,7 @@ class LayoutEditorController extends ChangeNotifier {
       if (row.driver.value < 1 ||
           row.driver.value > 6 ||
           row.sourceIndex < 0 ||
-          row.sourceIndex > 1) {
+          row.sourceIndex >= 12) {
         return 'Unknown driver slot or light source.';
       }
       if (!seen.add(placementKey(row))) {

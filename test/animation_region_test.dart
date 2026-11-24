@@ -36,14 +36,14 @@ void main() {
                 layout: [
                   MatrixLayout(
                     nodeMac: [2, 1, 2, 3, 4, 5],
-                    driver: MatrixDriver.HC595,
+                    driver: MatrixDriver.DRIVER_2,
                     from: 12,
                     to: 10,
                     name: 'Door light',
                   ),
                   MatrixLayout(
                     nodeMac: [4, 1, 2, 3, 4, 5],
-                    driver: MatrixDriver.HC595,
+                    driver: MatrixDriver.DRIVER_2,
                     from: 10,
                     to: 18,
                   ),
@@ -51,7 +51,7 @@ void main() {
                 outputCatalog: [
                   LayoutOutput(
                     nodeMac: [4, 1, 2, 3, 4, 5],
-                    driver: MatrixDriver.HC595,
+                    driver: MatrixDriver.DRIVER_2,
                     driverKind: MatrixDriverKind.LED_STRIP,
                   ),
                 ],

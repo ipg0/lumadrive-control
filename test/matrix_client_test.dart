@@ -97,7 +97,7 @@ MatrixConfig config() => MatrixConfig(
     17,
     (j) => MatrixLayout(
       nodeMac: [2 + j * 2, 1, 2, 3, 4, 5],
-      driver: MatrixDriver.WS2812,
+      driver: MatrixDriver.DRIVER_1,
       from: j * 60,
       to: (j + 1) * 60,
     ),
@@ -115,7 +115,7 @@ class LayoutTransport extends FakeTransport {
     outputs: [
       LayoutOutput(
         nodeMac: [2, 1, 2, 3, 4, 5],
-        driver: MatrixDriver.WS2812,
+        driver: MatrixDriver.DRIVER_1,
         pixelCount: 60,
         online: true,
         ready: true,
@@ -563,13 +563,13 @@ void main() {
         ..addAll([
           MatrixLayout(
             nodeMac: [2, 1, 2, 3, 4, 5],
-            driver: MatrixDriver.WS2812,
+            driver: MatrixDriver.DRIVER_1,
             from: 0,
             to: 60,
           ),
           MatrixLayout(
             nodeMac: [4, 1, 2, 3, 4, 5],
-            driver: MatrixDriver.HC595,
+            driver: MatrixDriver.DRIVER_2,
             from: 12,
             to: 10,
           ),

@@ -20,8 +20,8 @@ const MatrixDriver$json = {
   '1': 'MatrixDriver',
   '2': [
     {'1': 'DRIVER_UNSPECIFIED', '2': 0},
-    {'1': 'WS2812', '2': 1},
-    {'1': 'HC595', '2': 2},
+    {'1': 'DRIVER_1', '2': 1},
+    {'1': 'DRIVER_2', '2': 2},
     {'1': 'DRIVER_3', '2': 3},
     {'1': 'DRIVER_4', '2': 4},
     {'1': 'DRIVER_5', '2': 5},
@@ -31,9 +31,9 @@ const MatrixDriver$json = {
 
 /// Descriptor for `MatrixDriver`. Decode as a `google.protobuf.EnumDescriptorProto`.
 final $typed_data.Uint8List matrixDriverDescriptor = $convert.base64Decode(
-    'CgxNYXRyaXhEcml2ZXISFgoSRFJJVkVSX1VOU1BFQ0lGSUVEEAASCgoGV1MyODEyEAESCQoFSE'
-    'M1OTUQAhIMCghEUklWRVJfMxADEgwKCERSSVZFUl80EAQSDAoIRFJJVkVSXzUQBRIMCghEUklW'
-    'RVJfNhAG');
+    'CgxNYXRyaXhEcml2ZXISFgoSRFJJVkVSX1VOU1BFQ0lGSUVEEAASDAoIRFJJVkVSXzEQARIMCg'
+    'hEUklWRVJfMhACEgwKCERSSVZFUl8zEAMSDAoIRFJJVkVSXzQQBBIMCghEUklWRVJfNRAFEgwK'
+    'CERSSVZFUl82EAY=');
 
 @$core.Deprecated('Use matrixDriverKindDescriptor instead')
 const MatrixDriverKind$json = {

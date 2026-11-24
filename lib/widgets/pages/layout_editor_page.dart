@@ -46,15 +46,25 @@ class _LayoutEditorPageState extends ConsumerState<LayoutEditorPage>
     final owner = widget.controllerId ?? _owner?.remoteId;
     if (owner == null) return;
     final address = macBytesToString(mac);
-    final name = await showDialog<String>(context: context, builder: (_) =>
-        NodeNameDialog(address: address, current: suggestedNodeName(position)));
+    final name = await showDialog<String>(
+      context: context,
+      builder: (_) => NodeNameDialog(
+        address: address,
+        current: suggestedNodeName(position),
+      ),
+    );
     if (name == null || !mounted) return;
     try {
-      await ref.read(databaseRepositoryProvider).setNodeName(owner, address, name);
+      await ref
+          .read(databaseRepositoryProvider)
+          .setNodeName(owner, address, name);
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Could not save the node name. Try again.')));
+          const SnackBar(
+            content: Text('Could not save the node name. Try again.'),
+          ),
+        );
       }
     }
   }
@@ -311,7 +321,10 @@ class _LayoutEditorPageState extends ConsumerState<LayoutEditorPage>
                         CarLayout(
                           key: const ValueKey('car-layout'),
                           controller: _editor,
-                          renameNode: widget.controllerId != null || _owner != null ? _renameNode : null,
+                          renameNode:
+                              widget.controllerId != null || _owner != null
+                              ? _renameNode
+                              : null,
                         ),
                       if (_advanced && _editor.selected != null) ...[
                         const SizedBox(height: 12),
@@ -390,45 +403,49 @@ class _LayoutEditorPageState extends ConsumerState<LayoutEditorPage>
                         ),
                       const SizedBox(height: 18),
                       if (_advanced) ...[
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              'Outputs',
-                              style: theme.textTheme.titleMedium,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Outputs',
+                                style: theme.textTheme.titleMedium,
+                              ),
                             ),
-                          ),
-                          if (_advanced)
-                            TextButton.icon(
-                              onPressed: _editor.busy
-                                  ? null
-                                  : () => _showOutputs(context),
-                              icon: const Icon(Icons.add),
-                              label: const Text('Add output'),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      if ((_editor.snapshot?.outputs.length ?? 0) == 0)
-                        const Card(
-                          child: Padding(
-                            padding: EdgeInsets.all(24),
-                            child: Text(
-                              'Connect to the controller to discover its strips and modules.',
-                            ),
-                          ),
+                            if (_advanced)
+                              TextButton.icon(
+                                onPressed: _editor.busy
+                                    ? null
+                                    : () => _showOutputs(context),
+                                icon: const Icon(Icons.add),
+                                label: const Text('Add output'),
+                              ),
+                          ],
                         ),
-                      ..._outputGroups(context),
+                        const SizedBox(height: 6),
+                        if ((_editor.snapshot?.outputs.length ?? 0) == 0)
+                          const Card(
+                            child: Padding(
+                              padding: EdgeInsets.all(24),
+                              child: Text(
+                                'Connect to the controller to discover its strips and modules.',
+                              ),
+                            ),
+                          ),
+                        ..._outputGroups(context),
                       ] else
                         ExpansionTile(
                           key: const ValueKey('all-outputs'),
                           title: const Text('All outputs'),
-                          subtitle: const Text('View hardware and connection status'),
+                          subtitle: const Text(
+                            'View hardware and connection status',
+                          ),
                           children: [
                             if ((_editor.snapshot?.outputs.length ?? 0) == 0)
                               const Padding(
                                 padding: EdgeInsets.all(16),
-                                child: Text('Connect to discover strips and modules.'),
+                                child: Text(
+                                  'Connect to discover strips and modules.',
+                                ),
                               ),
                             ..._outputGroups(context),
                           ],
@@ -581,14 +598,14 @@ class _LayoutEditorPageState extends ConsumerState<LayoutEditorPage>
     return ListTile(
       key: ValueKey('output-$key'),
       leading: Icon(
-        output.driverKind == MatrixDriverKind.LED_STRIP ||
-                (output.driverKind == MatrixDriverKind.KIND_UNSPECIFIED &&
-                    output.driver == MatrixDriver.WS2812)
+        output.driverKind == MatrixDriverKind.LED_STRIP
             ? Icons.linear_scale
             : Icons.lightbulb_outline,
         color: output.online ? colors.primary : colors.onSurfaceVariant,
       ),
-      title: Text(label == null ? _editor.outputTitle(output) : _editor.titleFor(label)),
+      title: Text(
+        label == null ? _editor.outputTitle(output) : _editor.titleFor(label),
+      ),
       subtitle: Text(
         '${output.known ? '${label == null ? output.pixelCount : _editor.lengthFor(label)} ${isPointSource(output) ? 'LED' : 'LEDs'} · ' : ''}$status',
       ),

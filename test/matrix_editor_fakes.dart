@@ -10,7 +10,7 @@ MatrixConfig editorFixture() => MatrixConfig(
   layout: [
     MatrixLayout(
       nodeMac: layoutMasterMac,
-      driver: MatrixDriver.WS2812,
+      driver: MatrixDriver.DRIVER_1,
       from: 0,
       to: 60,
       name: 'Dashboard',

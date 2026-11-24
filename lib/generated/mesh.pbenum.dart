@@ -19,10 +19,10 @@ import 'package:protobuf/protobuf.dart' as $pb;
 class MatrixDriver extends $pb.ProtobufEnum {
   static const MatrixDriver DRIVER_UNSPECIFIED =
       MatrixDriver._(0, _omitEnumNames ? '' : 'DRIVER_UNSPECIFIED');
-  static const MatrixDriver WS2812 =
-      MatrixDriver._(1, _omitEnumNames ? '' : 'WS2812');
-  static const MatrixDriver HC595 =
-      MatrixDriver._(2, _omitEnumNames ? '' : 'HC595');
+  static const MatrixDriver DRIVER_1 =
+      MatrixDriver._(1, _omitEnumNames ? '' : 'DRIVER_1');
+  static const MatrixDriver DRIVER_2 =
+      MatrixDriver._(2, _omitEnumNames ? '' : 'DRIVER_2');
   static const MatrixDriver DRIVER_3 =
       MatrixDriver._(3, _omitEnumNames ? '' : 'DRIVER_3');
   static const MatrixDriver DRIVER_4 =
@@ -34,8 +34,8 @@ class MatrixDriver extends $pb.ProtobufEnum {
 
   static const $core.List<MatrixDriver> values = <MatrixDriver>[
     DRIVER_UNSPECIFIED,
-    WS2812,
-    HC595,
+    DRIVER_1,
+    DRIVER_2,
     DRIVER_3,
     DRIVER_4,
     DRIVER_5,

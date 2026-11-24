@@ -13,7 +13,7 @@ LayoutSnapshot layoutFixture({bool placed = false}) => LayoutSnapshot(
       ? [
           MatrixLayout(
             nodeMac: layoutMasterMac,
-            driver: MatrixDriver.WS2812,
+            driver: MatrixDriver.DRIVER_1,
             from: 0,
             to: 60,
             name: 'Left footwell',
@@ -23,7 +23,7 @@ LayoutSnapshot layoutFixture({bool placed = false}) => LayoutSnapshot(
   outputs: [
     LayoutOutput(
       nodeMac: layoutMasterMac,
-      driver: MatrixDriver.WS2812,
+      driver: MatrixDriver.DRIVER_1,
       driverKind: MatrixDriverKind.LED_STRIP,
       pixelCount: 60,
       known: true,
@@ -32,7 +32,7 @@ LayoutSnapshot layoutFixture({bool placed = false}) => LayoutSnapshot(
     ),
     LayoutOutput(
       nodeMac: layoutSlaveMac,
-      driver: MatrixDriver.HC595,
+      driver: MatrixDriver.DRIVER_2,
       // A second strip in slot 2 exercises ID/type independence and reversal.
       driverKind: MatrixDriverKind.LED_STRIP,
       pixelCount: 2,
